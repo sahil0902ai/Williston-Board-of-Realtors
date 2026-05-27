@@ -16,8 +16,6 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  output: 'standalone',
-  outputFileTracingRoot: __dirname,
   // Allow access to remote image placeholder.
   images: {
     remotePatterns: [
