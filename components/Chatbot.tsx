@@ -119,6 +119,7 @@ export default function Chatbot() {
             onClick={handleToggle}
             className="text-gray-text hover:text-white transition-colors"
             aria-label="Close Chat"
+            suppressHydrationWarning
           >
             <X size={20} />
           </button>
@@ -188,11 +189,13 @@ export default function Chatbot() {
             onKeyPress={handleKeyPress}
             placeholder="Ask about payouts, ROI, minimums..."
             className="flex-1 bg-navy-mid border border-border-subtle rounded-xl px-4 py-3 text-sm text-white placeholder-gray-text/50 focus:border-gold focus:outline-none"
+            suppressHydrationWarning
           />
           <button
             onClick={handleSendMessage}
             className="w-11 h-11 bg-gold hover:bg-gold-light text-navy rounded-xl flex items-center justify-center shrink-0 transition-colors"
             aria-label="Send Message"
+            suppressHydrationWarning
           >
             <Send size={16} />
           </button>
@@ -205,6 +208,7 @@ export default function Chatbot() {
         onClick={handleToggle}
         className="w-14 h-14 bg-gold hover:bg-gold-light text-navy rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-105"
         aria-label="Open chat assistant"
+        suppressHydrationWarning
       >
         {isOpen ? <X size={24} /> : <MessageCircle size={28} />}
       </button>

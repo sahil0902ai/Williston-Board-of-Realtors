@@ -527,6 +527,7 @@ export default function AdminDashboard() {
                     onChange={(e) => setAuthUsername(e.target.value)}
                     className="w-full bg-navy border border-border-subtle rounded-xl pl-10 pr-4 py-3 text-sm text-white focus:outline-none focus:border-gold"
                     placeholder="Enter admin username"
+                    suppressHydrationWarning
                   />
                 </div>
               </div>
@@ -542,6 +543,7 @@ export default function AdminDashboard() {
                     onChange={(e) => setAuthPassword(e.target.value)}
                     className="w-full bg-navy border border-border-subtle rounded-xl pl-10 pr-4 py-3 text-sm text-white focus:outline-none focus:border-gold"
                     placeholder="••••••••"
+                    suppressHydrationWarning
                   />
                 </div>
               </div>
@@ -549,6 +551,7 @@ export default function AdminDashboard() {
               <button 
                 type="submit" 
                 className="w-full py-3.5 bg-gold hover:bg-gold-light text-navy font-bold rounded-xl transition shadow-lg shadow-gold/10"
+                suppressHydrationWarning
               >
                 Access Portal
               </button>
