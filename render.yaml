@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: williston-investments
+    env: node
+    rootDir: applet
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 18.17.0
+      - key: NPM_FLAGS
+        value: --legacy-peer-deps
+      - key: NEXT_TELEMETRY_DISABLED
+        value: '1'
+    autoDeploy: true

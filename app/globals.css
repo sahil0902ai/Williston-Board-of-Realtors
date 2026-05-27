@@ -1,0 +1,53 @@
+@import "tailwindcss" source(none);
+
+@source "../components/**/*.{ts,tsx,js,jsx}";
+@source "../hooks/**/*.{ts,tsx,js,jsx}";
+@source "../lib/**/*.{ts,tsx,js,jsx}";
+@source "./**/*.{ts,tsx,js,jsx}";
+
+@theme {
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif: var(--font-cormorant), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+
+  --color-gold: #D4AF37;
+  --color-gold-light: #F3E5AB;
+  --color-gold-dark: #AA8C2C;
+  --color-navy: #04091A;
+  --color-navy-light: #0A1433;
+  --color-gray-text: #A0AABF;
+  --color-border-subtle: rgba(255, 255, 255, 0.1);
+}
+
+@layer base {
+  html, body {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
+  body {
+    @apply bg-navy text-white antialiased;
+  }
+
+  * {
+    touch-action: manipulation;
+  }
+
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+.map-container .gm-style-iw-c {
+  background-color: #0A1433 !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+}
+
+.map-container .gm-style-iw-d {
+  overflow: hidden !important;
+}
+
+.map-container .gm-style-iw-tc::after {
+  background-color: #0A1433 !important;
+}
