@@ -82,3 +82,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+// Force Vercel rebuild for latest commit
