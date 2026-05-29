@@ -8,8 +8,8 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co';
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'mockAnonKey';
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
   const supabase = createServerClient(
     supabaseUrl,
@@ -47,11 +47,12 @@ export async function middleware(request: NextRequest) {
     }
 
     // Verify if user email has admin credentials
+    const email = user.email || '';
     const isAdmin = 
-      user.email === 'admin@williston.com' || 
-      user.email === 'willistonadmin@gmail.com' || 
-      user.email === 'willistonadmin@williston.com' ||
-      user.email?.startsWith('admin@');
+      email === 'admin@williston.com' || 
+      email === 'willistonadmin@gmail.com' || 
+      email === 'willistonadmin@williston.com' ||
+      email.startsWith('admin@');
 
     if (!isAdmin) {
       // Redirect regular users to their dashboard
@@ -64,13 +65,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public (public folder assets)
-     */
     '/dashboard/:path*',
     '/admin/:path*',
   ],

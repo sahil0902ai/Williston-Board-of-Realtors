@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, CheckCircle2, ChevronDown, Check, User, Mail, Phone, Calendar, Globe, Eye, EyeOff, Lock } from 'lucide-react';
+import { registerUser } from '@/lib/auth';
 
 export default function Register() {
   const [step, setStep] = useState(1);
@@ -200,33 +201,21 @@ export default function Register() {
       const phone = `${phonePrefix} ${phoneNumber}`;
       
       try {
-        const response = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            fullName,
-            email,
-            password,
-            phone,
-            country,
-            referralCode,
-          }),
+        await registerUser({
+          fullName,
+          email,
+          password,
+          phone,
+          country,
+          referralCode,
         });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          setErrors({ submit: data.error || 'Registration failed' });
-          setIsSubmitting(false);
-          return;
-        }
 
         setIsSubmitting(false);
         setIsSuccess(true);
 
       } catch (err: any) {
         console.error('Registration submit error:', err);
-        setErrors({ submit: 'A network error occurred. Please try again.' });
+        setErrors({ submit: err.message || 'Registration failed' });
         setIsSubmitting(false);
       }
     }

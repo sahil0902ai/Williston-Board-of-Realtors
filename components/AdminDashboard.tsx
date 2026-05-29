@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getCurrentUser, logoutUser } from '@/lib/auth';
 import { 
   LayoutDashboard, Users, Layers, Building, Bed, CreditCard, 
   ArrowUpFromLine, ArrowDownToLine, Users2, FileText, Bell, 
@@ -285,45 +286,39 @@ export default function AdminDashboard() {
     { id: 10, time: '3 days ago', investor: 'Olumide Adebayor', action: 'Deposit Confirmed', amount: '₦30,000', status: 'Completed' },
   ]);
 
-  // Load session storage
+  // Load real Supabase Admin Authentication session
   useEffect(() => {
-    const isAuthed = sessionStorage.getItem('admin_authenticated');
-    if (isAuthed === 'true') {
+    async function checkAdminAuth() {
+      const user = await getCurrentUser();
+      if (!user) {
+        window.location.href = '/login';
+        return;
+      }
+
+      const email = user.email || '';
+      const isAdmin = 
+        email === 'admin@williston.com' || 
+        email === 'willistonadmin@gmail.com' || 
+        email === 'willistonadmin@williston.com' ||
+        email.startsWith('admin@');
+
+      if (!isAdmin) {
+        window.location.href = '/dashboard';
+        return;
+      }
+
       setLoggedIn(true);
     }
+    checkAdminAuth();
   }, []);
 
-  // Authentication Lockout Check
-  const handleLoginSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (failedAttempts >= 3) {
-      setLockoutMsg('Unauthorized Access! Your session has been locked due to 3 failed login attempts.');
-      return;
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch (e) {
+      console.error('Logout error:', e);
     }
-
-    if (authUsername === 'willistonadmin' && authPassword === 'admin2025') {
-      setLoggedIn(true);
-      sessionStorage.setItem('admin_authenticated', 'true');
-      setLoginError('');
-    } else {
-      const nextAttempts = failedAttempts + 1;
-      setFailedAttempts(nextAttempts);
-      if (nextAttempts >= 3) {
-        setLockoutMsg('Unauthorized Access! Your session has been locked due to 3 failed login attempts.');
-      } else {
-        setLoginError(`Invalid username or password. Attempt ${nextAttempts} of 3.`);
-      }
-    }
-  };
-
-  const handleLogout = () => {
-    setLoggedIn(false);
-    sessionStorage.removeItem('admin_authenticated');
-    setAuthUsername('');
-    setAuthPassword('');
-    setFailedAttempts(0);
-    setLockoutMsg('');
-    setActiveTab('overview');
+    window.location.href = '/login';
   };
 
   // Broadcast Handler
@@ -636,81 +631,9 @@ export default function AdminDashboard() {
 
   if (!loggedIn) {
     return (
-      <div className="min-h-screen bg-navy flex items-center justify-center p-4">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gold via-navy to-navy pointer-events-none"></div>
-        <div className="w-full max-w-md bg-navy-light/60 backdrop-blur-md border border-border-subtle rounded-2xl p-8 relative z-10 shadow-2xl">
-          <div className="flex flex-col items-center mb-8">
-            <div className="w-16 h-16 rounded-full bg-gold/10 border border-gold flex items-center justify-center text-gold mb-4 shadow-lg animate-pulse">
-              <Lock size={28} />
-            </div>
-            <h1 className="text-2xl font-serif text-white font-bold tracking-wider">Admin Access Only</h1>
-            <p className="text-gray-text text-sm mt-1">Provide credentials to enter platform manager</p>
-          </div>
-
-          {lockoutMsg ? (
-            <div className="p-4 bg-red-950/40 border border-red-500/30 rounded-xl flex items-start gap-3 mb-6 text-red-200 text-sm">
-              <ShieldAlert size={20} className="shrink-0 text-red-500" />
-              <div>
-                <div className="font-bold text-red-400">Lockout Triggered</div>
-                <div>{lockoutMsg}</div>
-                <div className="text-xs text-red-500/80 mt-2">Contact technical security manager to restore administration portal session.</div>
-              </div>
-            </div>
-          ) : (
-            <form onSubmit={handleLoginSubmit} className="space-y-5">
-              {loginError && (
-                <div className="p-3 bg-red-950/20 border border-red-500/20 rounded-xl text-red-400 text-xs flex items-center gap-2">
-                  <AlertCircle size={14} className="shrink-0" />
-                  <span>{loginError}</span>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-gray-text font-bold mb-2">Username</label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-text/50"><User size={16} /></span>
-                  <input 
-                    type="text" 
-                    required 
-                    value={authUsername}
-                    onChange={(e) => setAuthUsername(e.target.value)}
-                    className="w-full bg-navy border border-border-subtle rounded-xl pl-10 pr-4 py-3 text-sm text-white focus:outline-none focus:border-gold"
-                    placeholder="Enter admin username"
-                    suppressHydrationWarning
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-gray-text font-bold mb-2">Password</label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-text/50"><Lock size={16} /></span>
-                  <input 
-                    type="password" 
-                    required 
-                    value={authPassword}
-                    onChange={(e) => setAuthPassword(e.target.value)}
-                    className="w-full bg-navy border border-border-subtle rounded-xl pl-10 pr-4 py-3 text-sm text-white focus:outline-none focus:border-gold"
-                    placeholder="••••••••"
-                    suppressHydrationWarning
-                  />
-                </div>
-              </div>
-
-              <button 
-                type="submit" 
-                className="w-full py-3.5 bg-gold hover:bg-gold-light text-navy font-bold rounded-xl transition shadow-lg shadow-gold/10"
-                suppressHydrationWarning
-              >
-                Access Portal
-              </button>
-            </form>
-          )}
-
-          <div className="mt-8 pt-6 border-t border-border-subtle/50 text-center text-[10px] text-gray-text/50 uppercase tracking-widest font-mono">
-            Williston Board of Realtors &copy; 2026
-          </div>
-        </div>
+      <div className="min-h-screen bg-[#04091A] flex flex-col items-center justify-center text-white gap-4">
+        <RefreshCw size={40} className="animate-spin text-gold" />
+        <p className="font-serif text-sm tracking-widest text-gold uppercase font-semibold">Authenticating Admin Session...</p>
       </div>
     );
   }

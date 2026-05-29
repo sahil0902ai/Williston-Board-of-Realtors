@@ -12,6 +12,8 @@
   "dependencies": {
     "@google/genai": "^1.17.0",
     "@hookform/resolvers": "^5.2.1",
+    "@supabase/auth-helpers-nextjs": "^0.15.0",
+    "@supabase/auth-helpers-react": "^0.15.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.2",
     "autoprefixer": "^10.4.21",
@@ -29,6 +31,7 @@
     "react": "^19.2.1",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.1",
+    "react-is": "^19.2.6",
     "recharts": "^3.8.1",
     "resend": "^6.12.4",
     "speakeasy": "^2.0.0",

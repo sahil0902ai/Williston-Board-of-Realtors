@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { logoutUser } from '@/lib/auth';
 import { 
   BarChart3, 
   Briefcase, 
@@ -75,7 +76,7 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen, pr
                onClick={async () => { 
                   if(link.id === 'logout') {
                     try {
-                      await fetch('/api/auth/logout', { method: 'POST' });
+                      await logoutUser();
                     } catch (e) {
                       console.error('Logout error:', e);
                     }

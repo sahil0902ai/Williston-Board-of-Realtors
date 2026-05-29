@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, Loader2, ShieldCheck } from 'lucide-react';
+import { loginUser } from '@/lib/auth';
 
 export default function Login() {
   const router = useRouter();
@@ -62,23 +63,11 @@ export default function Login() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          password,
-          totpToken: twoFaRequired ? totpToken : undefined,
-        }),
+      const data = await loginUser({
+        email,
+        password,
+        totpToken: twoFaRequired ? totpToken : undefined,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setLoginError(data.error || 'Invalid credentials or login failed');
-        setIsSubmitting(false);
-        return;
-      }
 
       if (data.two_fa_required) {
         setTwoFaRequired(true);
@@ -93,7 +82,7 @@ export default function Login() {
 
     } catch (err: any) {
       console.error('Login submit error:', err);
-      setLoginError('A connection error occurred. Please check your internet and try again.');
+      setLoginError(err.message || 'Invalid credentials or login failed');
       setIsSubmitting(false);
     }
   };

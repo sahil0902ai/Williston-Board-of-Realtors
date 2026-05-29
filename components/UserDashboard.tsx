@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Menu, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { getCurrentUser } from '@/lib/auth';
 import Sidebar from '@/components/dashboard/Sidebar';
 import OverviewTab from '@/components/dashboard/OverviewTab';
 import MyInvestmentsTab from '@/components/dashboard/MyInvestmentsTab';
@@ -40,7 +41,15 @@ export default function UserDashboard() {
   };
 
   useEffect(() => {
-    fetchProfile();
+    async function checkAuth() {
+      const user = await getCurrentUser();
+      if (!user) {
+        router.push('/login');
+        return;
+      }
+      await fetchProfile();
+    }
+    checkAuth();
   }, []);
 
   if (loading) {
