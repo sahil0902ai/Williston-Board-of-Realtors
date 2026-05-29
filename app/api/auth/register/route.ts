@@ -24,10 +24,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Full name, email, and password are required' }, { status: 400 });
     }
 
-    // 1. Create Supabase Auth User
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // 1. Create Supabase Auth User via Admin Client to bypass public registration & email rate limits
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
+      email_confirm: true,
     });
 
     if (authError || !authData.user) {
