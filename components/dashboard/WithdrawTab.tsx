@@ -1,12 +1,14 @@
 "use client";
-import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2, AlertTriangle, Building, ChevronDown, ChevronUp, Lock, ArrowUpRight, Search } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { ArrowLeft, ArrowRight, CheckCircle2, AlertTriangle, Building, ChevronDown, ChevronUp, Lock, ArrowUpRight, Loader2 } from 'lucide-react';
 
 interface WithdrawTabProps {
   setActiveTab: (tab: string) => void;
+  profile: any;
+  fetchProfile: () => void;
 }
 
-export default function WithdrawTab({ setActiveTab }: WithdrawTabProps) {
+export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: WithdrawTabProps) {
   const [step, setStep] = useState(1);
   const [amount, setAmount] = useState('');
   const [payoutMethod, setPayoutMethod] = useState<'cashapp' | 'zelle' | 'crypto' | 'ach'>('cashapp');
@@ -23,7 +25,12 @@ export default function WithdrawTab({ setActiveTab }: WithdrawTabProps) {
   const [pin, setPin] = useState(['', '', '', '']);
   const [rulesExpanded, setRulesExpanded] = useState(false);
   
-  const availableBalance = 125000;
+  // Status States
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [refNumber, setRefNumber] = useState('');
+
+  const availableBalance = parseFloat(profile?.wallet_balance || '0');
   const pinRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
 
   const handleAmountSelect = (val: string) => {
@@ -51,9 +58,42 @@ export default function WithdrawTab({ setActiveTab }: WithdrawTabProps) {
     }
   };
 
-  useEffect(() => {
-    // cleanup omitted for simplicity
-  }, []);
+  const handleSubmitWithdrawal = async () => {
+    setIsSubmitting(true);
+    setErrorMsg('');
+
+    try {
+      const res = await fetch('/api/withdrawals/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: parseFloat(amount),
+          method: payoutMethod,
+          walletAddress: payoutMethod === 'crypto' ? `${cryptoCoin}:${cryptoAddress}` : undefined,
+          bankName: payoutMethod === 'ach' ? achBankName : undefined,
+          accountNumber: payoutMethod === 'ach' ? achAccount : undefined,
+          cashappTag: payoutMethod === 'cashapp' ? cashappTag : undefined,
+          zelleEmail: payoutMethod === 'zelle' ? zelleInfo : undefined
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to submit withdrawal request');
+      }
+
+      setRefNumber(`WD-${data.withdrawalId.substring(0, 8).toUpperCase()}`);
+      fetchProfile(); // Refresh balance in dashboard
+      setStep(5); // Advance to success step
+
+    } catch (err: any) {
+      console.error('Submit withdrawal error:', err);
+      setErrorMsg(err.message || 'An error occurred during submission. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (step === 5) {
     return (
@@ -75,7 +115,7 @@ export default function WithdrawTab({ setActiveTab }: WithdrawTabProps) {
           
           <div className="bg-navy border border-border-subtle rounded-xl p-4 w-full max-w-sm mb-8 relative z-10">
             <div className="text-xs text-gray-text uppercase tracking-widest mb-1">Reference Number</div>
-            <div className="font-mono text-lg text-white">WBR-2025-X89B2C</div>
+            <div className="font-mono text-lg text-white">{refNumber || 'WD-PENDING'}</div>
           </div>
           
           <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md relative z-10">
@@ -105,11 +145,11 @@ export default function WithdrawTab({ setActiveTab }: WithdrawTabProps) {
         <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-full blur-[40px] pointer-events-none"></div>
         <div>
            <div className="text-gray-text text-sm mb-1">Available Balance</div>
-           <div className="text-4xl font-serif text-gold">$125,000</div>
+           <div className="text-4xl font-serif text-gold">${availableBalance.toLocaleString()}</div>
         </div>
         <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg px-4 py-3 flex flex-col items-center md:items-end w-full md:w-auto">
-          <div className="text-xs text-gray-text flex items-center gap-1.5"><ArrowUpRight size={14} className="text-yellow-500" /> Pending returns</div>
-          <div className="text-yellow-500 font-medium">$18,000 <span className="text-[10px] text-gray-text font-normal">(processing)</span></div>
+          <div className="text-xs text-gray-text flex items-center gap-1.5"><ArrowUpRight size={14} className="text-yellow-500" /> Secure platform</div>
+          <div className="text-yellow-500 font-medium">FinCEN Audited <span className="text-[10px] text-gray-text font-normal">(Verified)</span></div>
         </div>
       </div>
 
@@ -136,6 +176,12 @@ export default function WithdrawTab({ setActiveTab }: WithdrawTabProps) {
       <div className="bg-navy-mid border border-border-subtle rounded-2xl overflow-hidden relative shadow-lg">
         <div className="p-6 md:p-8">
           
+          {errorMsg && (
+            <div className="mb-6 p-4 bg-red-950/20 border border-red-500/20 rounded-xl text-red-400 text-sm">
+              ⚠️ {errorMsg}
+            </div>
+          )}
+
           {step === 1 && (
             <div className="space-y-6">
               <div>
@@ -162,8 +208,8 @@ export default function WithdrawTab({ setActiveTab }: WithdrawTabProps) {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[
                      { label: '$500', val: '500' }, 
-                     { label: '$10,000', val: '10000' }, 
-                     { label: '$50,000', val: '50000' }, 
+                     { label: '$1,000', val: '1000' }, 
+                     { label: '$5,000', val: '5000' }, 
                      { label: 'Withdraw All', val: availableBalance.toString() }
                   ].map(btn => (
                     <button 
@@ -235,7 +281,7 @@ export default function WithdrawTab({ setActiveTab }: WithdrawTabProps) {
                       </div>
                    </div>
                    {payoutMethod === 'cashapp' && (
-                     <div className="mt-4 pt-4 border-t border-border-subtle animate-in fade-in slide-in-from-top-2">
+                     <div className="mt-4 pt-4 border-t border-border-subtle animate-in fade-in slide-in-from-top-2" onClick={(e) => e.stopPropagation()}>
                        <label className="text-xs text-gray-text block mb-1.5">Your Cash App $Cashtag</label>
                        <input 
                          type="text" 
@@ -266,7 +312,7 @@ export default function WithdrawTab({ setActiveTab }: WithdrawTabProps) {
                       </div>
                    </div>
                    {payoutMethod === 'zelle' && (
-                     <div className="mt-4 pt-4 border-t border-border-subtle animate-in fade-in slide-in-from-top-2">
+                     <div className="mt-4 pt-4 border-t border-border-subtle animate-in fade-in slide-in-from-top-2" onClick={(e) => e.stopPropagation()}>
                        <label className="text-xs text-gray-text block mb-1.5">Zelle Email or Phone Number</label>
                        <input 
                          type="text" 
@@ -297,7 +343,7 @@ export default function WithdrawTab({ setActiveTab }: WithdrawTabProps) {
                       </div>
                    </div>
                    {payoutMethod === 'crypto' && (
-                     <div className="mt-4 pt-4 border-t border-border-subtle space-y-4 animate-in fade-in slide-in-from-top-2">
+                     <div className="mt-4 pt-4 border-t border-border-subtle space-y-4 animate-in fade-in slide-in-from-top-2" onClick={(e) => e.stopPropagation()}>
                        {amount && !isNaN(parseFloat(amount)) && parseFloat(amount) > 0 && cryptoCoin === 'BTC' && (
                          <div className="text-xs text-green-400 font-medium">Estimated payout: {(parseFloat(amount) / 64300).toFixed(6)} BTC</div>
                        )}
@@ -326,7 +372,6 @@ export default function WithdrawTab({ setActiveTab }: WithdrawTabProps) {
                            placeholder="Enter your receiving wallet address"
                          />
                        </div>
-                       {cryptoCoin === 'BTC' && <div className="text-[10px] text-gray-500">Current BTC rate: $64,300.00</div>}
                      </div>
                    )}
                  </div>
@@ -349,7 +394,7 @@ export default function WithdrawTab({ setActiveTab }: WithdrawTabProps) {
                       </div>
                    </div>
                    {payoutMethod === 'ach' && (
-                     <div className="mt-4 pt-4 border-t border-border-subtle space-y-4 animate-in fade-in slide-in-from-top-2">
+                     <div className="mt-4 pt-4 border-t border-border-subtle space-y-4 animate-in fade-in slide-in-from-top-2" onClick={(e) => e.stopPropagation()}>
                        <div className="space-y-1.5">
                          <label className="text-xs text-gray-text">Bank Name</label>
                          <input 
@@ -457,7 +502,7 @@ export default function WithdrawTab({ setActiveTab }: WithdrawTabProps) {
               <div className="text-center space-y-4">
                  <button className="text-sm text-gold hover:underline">Forgot PIN?</button>
                  <div className="text-xs text-gray-text">
-                    Alternative: <button className="text-white hover:text-gold transition-colors">Use OTP sent to +1 800 *** 0000</button>
+                    Alternative: <button className="text-white hover:text-gold transition-colors">Use OTP verification on file</button>
                  </div>
               </div>
 
@@ -496,13 +541,13 @@ export default function WithdrawTab({ setActiveTab }: WithdrawTabProps) {
                        <span className="text-white text-sm font-medium">
                          {payoutMethod === 'cashapp' ? 'Cash App' : 
                           payoutMethod === 'zelle' ? 'Zelle' : 
-                          payoutMethod === 'crypto' ? 'Crypto (' + cryptoCoin + ')' : 
+                          payoutMethod === 'crypto' ? `Crypto (${cryptoCoin})` : 
                           'Bank Transfer (ACH)'}
                        </span>
                     </div>
                     <div className="flex justify-between items-center pb-4 border-b border-border-subtle bg">
                        <span className="text-gray-text text-sm">Destination</span>
-                       <span className="text-white text-sm font-medium truncate max-w-[200px] text-right">
+                       <span className="text-white text-sm font-medium truncate max-w-[200px] text-right font-mono text-xs">
                          {payoutMethod === 'cashapp' ? cashappTag :
                           payoutMethod === 'zelle' ? zelleInfo :
                           payoutMethod === 'crypto' ? cryptoAddress :
@@ -531,14 +576,25 @@ export default function WithdrawTab({ setActiveTab }: WithdrawTabProps) {
 
               <div className="pt-4 flex flex-col gap-3">
                 <button 
-                  onClick={handleNext}
-                  className="w-full py-4 bg-gold text-navy rounded-xl font-bold text-lg hover:bg-white transition-colors flex items-center justify-center gap-2 shadow-lg shadow-gold/20"
+                  onClick={handleSubmitWithdrawal}
+                  disabled={isSubmitting}
+                  className="w-full py-4 bg-gold text-navy rounded-xl font-bold text-lg hover:bg-white transition-colors flex items-center justify-center gap-2 shadow-lg shadow-gold/20 disabled:opacity-50"
                 >
-                  Confirm Withdrawal <ArrowUpRight size={20} />
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={20} className="animate-spin" />
+                      Submitting request...
+                    </>
+                  ) : (
+                    <>
+                      Confirm Withdrawal <ArrowUpRight size={20} />
+                    </>
+                  )}
                 </button>
                 <button 
                   onClick={() => setActiveTab('wallet')}
-                  className="w-full py-4 bg-navy border border-border-subtle text-white rounded-xl font-bold hover:border-white transition-colors"
+                  disabled={isSubmitting}
+                  className="w-full py-4 bg-navy border border-border-subtle text-white rounded-xl font-bold hover:border-white transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>

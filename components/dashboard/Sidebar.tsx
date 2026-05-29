@@ -16,9 +16,10 @@ interface SidebarProps {
   setActiveTab: (tab: string) => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
+  profile?: any;
 }
 
-export default function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen }: SidebarProps) {
+export default function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen, profile }: SidebarProps) {
   const links = [
     { id: 'overview', label: 'Overview', icon: <BarChart3 size={20} /> },
     { id: 'investments', label: 'My Investments', icon: <Briefcase size={20} /> },
@@ -71,8 +72,13 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen }: 
             {bottomLinks.map((link) => (
                <button
                key={link.id}
-               onClick={() => { 
+               onClick={async () => { 
                   if(link.id === 'logout') {
+                    try {
+                      await fetch('/api/auth/logout', { method: 'POST' });
+                    } catch (e) {
+                      console.error('Logout error:', e);
+                    }
                     window.location.href = '/';
                   } else {
                     setActiveTab(link.id); 
@@ -97,12 +103,17 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen }: 
         {/* User Card */}
         <div className="p-4 border-t border-border-subtle bg-[rgba(4,9,26,0.97)] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gold flex items-center justify-center text-navy font-bold shrink-0">
-              EA
+            <div className="w-10 h-10 rounded-full bg-gold flex items-center justify-center text-navy font-bold shrink-0 overflow-hidden text-xs">
+              {profile?.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                profile?.full_name ? profile.full_name.split(' ').map((n: string) => n[0]).join('').toUpperCase().substring(0, 2) : 'US'
+              )}
             </div>
             <div className="overflow-hidden">
-              <div className="text-sm font-medium text-white truncate">Emeka Ani</div>
-              <div className="text-xs text-gold truncate">Prosperity Member</div>
+              <div className="text-sm font-medium text-white truncate">{profile?.full_name || 'Guest User'}</div>
+              <div className="text-xs text-gold truncate capitalize">{profile?.investor_level || 'Starter'} Member</div>
             </div>
           </div>
         </div>

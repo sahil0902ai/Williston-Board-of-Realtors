@@ -1,29 +1,52 @@
 "use client";
-import { useState } from 'react';
-import { ArrowDownRight, ArrowUpRight, Upload, History, Anchor } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowDownRight, ArrowUpRight, History, Loader2 } from 'lucide-react';
 
 interface WalletTabProps {
   setActiveTab: (tab: string) => void;
+  profile: any;
+  fetchProfile: () => void;
 }
 
-export default function WalletTab({ setActiveTab }: WalletTabProps) {
+export default function WalletTab({ setActiveTab, profile, fetchProfile }: WalletTabProps) {
   const [filter, setFilter] = useState('All');
-  
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const filters = ['All', 'Deposits', 'Withdrawals', 'Returns', 'Referral Bonus'];
 
-  const transactions = [
-    { id: 'TRX-93820', type: 'Return Payout', amount: '+$10,000', date: 'May 15, 2026', status: 'Completed', category: 'Returns' },
-    { id: 'TRX-58291', type: 'Referral Bonus', amount: '+$2,500', date: 'May 12, 2026', status: 'Completed', category: 'Referral Bonus' },
-    { id: 'TRX-10394', type: 'Deposit', amount: '+$150,000', date: 'May 01, 2026', status: 'Completed', category: 'Deposits' },
-    { id: 'TRX-10395', type: 'New Investment', amount: '-$150,000', date: 'May 01, 2026', status: 'Completed', category: 'Withdrawals' },
-    { id: 'TRX-83921', type: 'Return Payout', amount: '+$10,000', date: 'Apr 15, 2026', status: 'Completed', category: 'Returns' },
-    { id: 'TRX-42910', type: 'Withdrawal', amount: '-$500', date: 'Mar 22, 2026', status: 'Processing', category: 'Withdrawals' },
-  ];
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const res = await fetch('/api/user/transactions');
+        if (res.ok) {
+          const data = await res.json();
+          setTransactions(data || []);
+        }
+      } catch (err) {
+        console.error('Error fetching transactions:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const filteredTx = transactions.filter(tx => filter === 'All' ? true : tx.category === filter);
+    fetchTransactions();
+  }, []);
+
+  const filteredTx = transactions.filter(tx => {
+    if (filter === 'All') return true;
+    const type = tx.type.toLowerCase();
+    if (filter === 'Deposits') return type === 'deposit';
+    if (filter === 'Withdrawals') return type === 'withdrawal' || type === 'investment';
+    if (filter === 'Returns') return type === 'return' || type.includes('payout');
+    if (filter === 'Referral Bonus') return type === 'referral';
+    return true;
+  });
+
+  const availableBalance = parseFloat(profile?.wallet_balance || '0');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in duration-500">
       <h2 className="text-2xl font-serif">Wallet</h2>
       
       <div className="bg-gradient-to-br from-navy-mid to-navy border border-border-gold rounded-2xl p-8 relative overflow-hidden">
@@ -34,7 +57,9 @@ export default function WalletTab({ setActiveTab }: WalletTabProps) {
             <div className="text-gold uppercase tracking-widest text-xs font-semibold mb-2 flex items-center gap-2">
                <span className="w-2 h-2 rounded-full bg-gold animate-pulse"></span> Available Balance
             </div>
-            <div className="text-5xl md:text-6xl font-serif text-white mb-2 tracking-tight">$125,000<span className="text-2xl text-gray-text">.00</span></div>
+            <div className="text-5xl md:text-6xl font-serif text-white mb-2 tracking-tight">
+              ${availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
             <div className="text-sm text-gray-text">Ready for withdrawal or reinvestment</div>
           </div>
           
@@ -66,37 +91,46 @@ export default function WalletTab({ setActiveTab }: WalletTabProps) {
         </div>
         
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[700px]">
-            <thead>
-              <tr className="bg-navy-light/50 text-xs text-gray-text uppercase tracking-wider">
-                <th className="p-4 font-medium rounded-tl-lg">Reference</th>
-                <th className="p-4 font-medium">Date</th>
-                <th className="p-4 font-medium">Type</th>
-                <th className="p-4 font-medium">Amount</th>
-                <th className="p-4 font-medium rounded-tr-lg">Status</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm divide-y divide-border-subtle">
-              {filteredTx.map(tx => (
-                <tr key={tx.id} className="hover:bg-navy-light/30 transition-colors">
-                  <td className="p-4 font-mono text-xs text-gray-text">{tx.id}</td>
-                  <td className="p-4 text-gray-text">{tx.date}</td>
-                  <td className="p-4">
-                     <span className="font-medium text-white">{tx.type}</span>
-                  </td>
-                  <td className={`p-4 font-medium ${tx.amount.startsWith('+') ? 'text-green-400' : 'text-white'}`}>
-                    {tx.amount}
-                  </td>
-                  <td className="p-4">
-                     <span className={`px-2 py-1 rounded text-xs font-medium ${tx.status === 'Completed' ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-500'}`}>
-                        {tx.status}
-                     </span>
-                  </td>
+          {loading ? (
+            <div className="p-12 flex items-center justify-center">
+              <Loader2 size={32} className="animate-spin text-gold" />
+            </div>
+          ) : (
+            <table className="w-full text-left border-collapse min-w-[700px]">
+              <thead>
+                <tr className="bg-navy-light/50 text-xs text-gray-text uppercase tracking-wider">
+                  <th className="p-4 font-medium rounded-tl-lg">Reference</th>
+                  <th className="p-4 font-medium">Date</th>
+                  <th className="p-4 font-medium">Type</th>
+                  <th className="p-4 font-medium">Amount</th>
+                  <th className="p-4 font-medium rounded-tr-lg">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {filteredTx.length === 0 && (
+              </thead>
+              <tbody className="text-sm divide-y divide-border-subtle">
+                {filteredTx.map(tx => {
+                  const isPositive = parseFloat(tx.amount) > 0 || tx.type === 'deposit' || tx.type === 'referral';
+                  return (
+                    <tr key={tx.id} className="hover:bg-navy-light/30 transition-colors">
+                      <td className="p-4 font-mono text-xs text-gray-text">{tx.reference || tx.id.substring(0, 13)}</td>
+                      <td className="p-4 text-gray-text">{new Date(tx.created_at).toLocaleDateString()}</td>
+                      <td className="p-4">
+                         <span className="font-medium text-white capitalize">{tx.type}</span>
+                      </td>
+                      <td className={`p-4 font-medium ${isPositive ? 'text-green-400' : 'text-white'}`}>
+                        {isPositive ? '+' : ''}${parseFloat(tx.amount).toLocaleString()}
+                      </td>
+                      <td className="p-4">
+                         <span className={`px-2 py-1 rounded text-xs font-medium ${tx.status === 'completed' ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-500'}`}>
+                            {tx.status}
+                         </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+          {!loading && filteredTx.length === 0 && (
              <div className="p-8 text-center text-gray-text">
                 No transactions found for this filter.
              </div>

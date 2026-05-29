@@ -38,12 +38,44 @@ export default function Rentals() {
     setBookingStatus('idle');
   };
 
-  const handleBook = (e: React.FormEvent) => {
+  const handleBook = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setBookingStatus('success');
-    setTimeout(() => {
-      setIsModalOpen(false);
-    }, 3000);
+    const formData = new FormData(e.currentTarget);
+    const guestName = formData.get('guestName') as string;
+    const guestPhone = formData.get('guestPhone') as string;
+    const guestEmail = formData.get('guestEmail') as string;
+
+    try {
+      const res = await fetch('/api/rentals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          apartmentType: selectedApt.includes('2 Bed') || selectedApt.includes('2 Bedroom') ? '2bed' : '3bed',
+          guestName,
+          guestEmail,
+          guestPhone,
+          checkinDate: checkIn,
+          checkoutDate: checkOut,
+          durationType: duration.toLowerCase(),
+          totalPrice: selectedApt.includes('2 Bed') || selectedApt.includes('2 Bedroom')
+            ? (duration === 'Daily' ? 300 : duration === 'Weekly' ? 700 : duration === 'Monthly' ? 2000 : 24000)
+            : (duration === 'Daily' ? 500 : duration === 'Weekly' ? 900 : duration === 'Monthly' ? 3000 : 36000)
+        })
+      });
+
+      if (res.ok) {
+        setBookingStatus('success');
+        setTimeout(() => {
+          setIsModalOpen(false);
+        }, 3000);
+      } else {
+        const errorData = await res.json();
+        alert(errorData.error || 'Failed to submit booking request');
+      }
+    } catch (err) {
+      console.error('Error booking rental:', err);
+      alert('Network error. Please try again.');
+    }
   };
 
   return (
@@ -375,17 +407,17 @@ export default function Rentals() {
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <label className="text-xs text-gray-text uppercase tracking-widest font-semibold">Full Name</label>
-                        <input type="text" required placeholder="John Doe" className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:border-gold focus:outline-none placeholder-gray-text/50" />
+                        <input type="text" name="guestName" required placeholder="John Doe" className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:border-gold focus:outline-none placeholder-gray-text/50" />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs text-gray-text uppercase tracking-widest font-semibold">WhatsApp Number</label>
-                        <input type="tel" required placeholder="+1..." className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:border-gold focus:outline-none placeholder-gray-text/50" />
+                        <input type="tel" name="guestPhone" required placeholder="+1..." className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:border-gold focus:outline-none placeholder-gray-text/50" />
                       </div>
                     </div>
                     
                     <div className="space-y-1.5">
                       <label className="text-xs text-gray-text uppercase tracking-widest font-semibold">Email Address</label>
-                      <input type="email" required placeholder="john@example.com" className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:border-gold focus:outline-none placeholder-gray-text/50" />
+                      <input type="email" name="guestEmail" required placeholder="john@example.com" className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:border-gold focus:outline-none placeholder-gray-text/50" />
                     </div>
 
                     <div className="grid sm:grid-cols-2 gap-4">

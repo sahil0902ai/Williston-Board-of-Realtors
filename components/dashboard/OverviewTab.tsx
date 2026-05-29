@@ -1,23 +1,126 @@
-import { TrendingUp, Plus, ArrowUpRight, ArrowDownRight, Wallet, ArrowRight, Share2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { TrendingUp, Plus, ArrowUpRight, ArrowDownRight, Wallet, ArrowRight, Share2, Loader2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
-const barData = [
-  { name: 'Jan', value: 18000 },
-  { name: 'Feb', value: 25000 },
-  { name: 'Mar', value: 31000 },
-  { name: 'Apr', value: 28000 },
-  { name: 'May', value: 42000 },
-  { name: 'Jun', value: 60000 },
-];
+const COLORS = ['#1E3A8A', '#C9A84C', '#10B981', '#6366F1']; // Navy blue, Gold, Green, Indigo
 
-const pieData = [
-  { name: 'Foundation', value: 30 },
-  { name: 'Prosperity', value: 70 },
-];
+interface OverviewTabProps {
+  setActiveTab: (tab: string) => void;
+  profile: any;
+  fetchProfile: () => void;
+}
 
-const COLORS = ['#1E3A8A', '#C9A84C']; // Navy blue and Gold
+export default function OverviewTab({ setActiveTab, profile, fetchProfile }: OverviewTabProps) {
+  const [investments, setInvestments] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [referralStats, setReferralStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-export default function OverviewTab({ setActiveTab }: { setActiveTab: (tab: string) => void }) {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [invRes, txRes, refRes] = await Promise.all([
+          fetch('/api/investments/list?status=active'),
+          fetch('/api/user/transactions'),
+          fetch('/api/referrals/stats')
+        ]);
+
+        if (invRes.ok) {
+          const invData = await invRes.json();
+          setInvestments(invData || []);
+        }
+        if (txRes.ok) {
+          const txData = await txRes.json();
+          setTransactions(txData || []);
+        }
+        if (refRes.ok) {
+          const refData = await refRes.json();
+          setReferralStats(refData.stats || null);
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard statistics:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="h-64 flex items-center justify-center">
+        <Loader2 size={32} className="animate-spin text-gold" />
+      </div>
+    );
+  }
+
+  // Helper to construct dynamic monthly returns chart data
+  const getBarData = () => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const currentMonth = new Date().getMonth();
+    const dataMap: { [key: string]: number } = {};
+
+    // Initialize last 6 months with 0
+    for (let i = 5; i >= 0; i--) {
+      let m = currentMonth - i;
+      if (m < 0) m += 12;
+      dataMap[months[m]] = 0;
+    }
+
+    transactions.forEach((tx) => {
+      const type = tx.type.toLowerCase();
+      if (type.includes('return') || type.includes('payout')) {
+        const date = new Date(tx.created_at);
+        const mName = months[date.getMonth()];
+        if (dataMap[mName] !== undefined) {
+          dataMap[mName] += Math.abs(parseFloat(tx.amount));
+        }
+      }
+    });
+
+    const chartData = Object.keys(dataMap).map((name) => ({
+      name,
+      value: dataMap[name]
+    }));
+
+    // If no returns are logged yet, provide a friendly demo curve
+    const hasData = chartData.some(d => d.value > 0);
+    if (!hasData) {
+      return [
+        { name: 'Jan', value: 0 },
+        { name: 'Feb', value: 0 },
+        { name: 'Mar', value: 0 },
+        { name: 'Apr', value: 0 },
+        { name: 'May', value: 0 },
+        { name: 'Jun', value: 0 },
+      ];
+    }
+    return chartData;
+  };
+
+  // Helper to construct pie chart plan breakdown
+  const getPieData = () => {
+    if (investments.length === 0) {
+      return [{ name: 'No Active Plans', value: 100 }];
+    }
+    const map: { [key: string]: number } = {};
+    investments.forEach((inv) => {
+      map[inv.plan_name] = (map[inv.plan_name] || 0) + parseFloat(inv.amount);
+    });
+    return Object.keys(map).map((name) => ({
+      name,
+      value: map[name]
+    }));
+  };
+
+  const barData = getBarData();
+  const pieData = getPieData();
+  const totalInvested = parseFloat(profile?.total_invested || '0');
+  const totalReturns = parseFloat(profile?.total_returns || '0');
+  const referralEarnings = referralStats ? referralStats.totalEarned : 0;
+  const activePlansCount = investments.length;
+
   return (
     <div className="space-y-6">
       
@@ -25,33 +128,33 @@ export default function OverviewTab({ setActiveTab }: { setActiveTab: (tab: stri
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <div className="bg-navy-mid border border-border-subtle rounded-xl p-6">
           <div className="text-sm text-gray-text mb-2">Total Invested</div>
-          <div className="text-2xl font-serif text-white mb-2">$850,000</div>
-          <div className="flex items-center text-xs text-green-400">
-            <ArrowUpRight size={14} className="mr-1" /> 12% this month
+          <div className="text-2xl font-serif text-white mb-2">${totalInvested.toLocaleString()}</div>
+          <div className="flex items-center text-xs text-gold">
+            Active capital earning daily returns
           </div>
         </div>
         
         <div className="bg-navy-mid border border-border-subtle rounded-xl p-6">
           <div className="text-sm text-gray-text mb-2">Total Returns Earned</div>
-          <div className="text-2xl font-serif text-white mb-2">$204,000</div>
+          <div className="text-2xl font-serif text-white mb-2">${totalReturns.toLocaleString()}</div>
           <div className="flex items-center text-xs text-green-400">
-            <ArrowUpRight size={14} className="mr-1" /> 8% overall
+            <ArrowUpRight size={14} className="mr-1" /> Credited to wallet
           </div>
         </div>
 
         <div className="bg-navy-mid border border-border-subtle rounded-xl p-6">
           <div className="text-sm text-gray-text mb-2">Active Plans</div>
-          <div className="text-2xl font-serif text-white mb-2">2</div>
+          <div className="text-2xl font-serif text-white mb-2">{activePlansCount}</div>
           <div className="flex items-center text-xs text-gold">
-            Next maturity in 14 days
+            {activePlansCount > 0 ? 'Plans actively maturing' : 'No plans running'}
           </div>
         </div>
 
         <div className="bg-navy-mid border border-border-subtle rounded-xl p-6">
           <div className="text-sm text-gray-text mb-2">Referral Earnings</div>
-          <div className="text-2xl font-serif text-white mb-2">$42,500</div>
+          <div className="text-2xl font-serif text-white mb-2">${referralEarnings.toLocaleString()}</div>
           <div className="flex items-center text-xs text-gray-text">
-            From 28 active referrals
+            From {referralStats?.totalReferrals || 0} registered invitees
           </div>
         </div>
       </div>
@@ -66,7 +169,7 @@ export default function OverviewTab({ setActiveTab }: { setActiveTab: (tab: stri
               <BarChart data={barData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
                 <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val/1000}k`} />
+                <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
                 <Tooltip cursor={{ fill: '#ffffff05' }} contentStyle={{ backgroundColor: '#04091A', borderColor: '#ffffff20', borderRadius: '8px' }} />
                 <Bar dataKey="value" fill="#C9A84C" radius={[4, 4, 0, 0]} maxBarSize={40} isAnimationActive={false} />
               </BarChart>
@@ -108,15 +211,17 @@ export default function OverviewTab({ setActiveTab }: { setActiveTab: (tab: stri
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-2xl font-serif">100%</span>
+              <span className="text-2xl font-serif">
+                {investments.length > 0 ? '100%' : '0%'}
+              </span>
               <span className="text-xs text-gray-text">Portfolio</span>
             </div>
           </div>
-          <div className="flex justify-center gap-6 mt-4">
+          <div className="flex justify-center flex-wrap gap-x-6 gap-y-2 mt-4">
             {pieData.map((entry, index) => (
                <div key={entry.name} className="flex items-center gap-2">
-                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index] }}></div>
-                 <span className="text-xs text-gray-text">{entry.name} ({entry.value}%)</span>
+                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                 <span className="text-xs text-gray-text">{entry.name} ({investments.length > 0 ? `$${entry.value.toLocaleString()}` : '0'})</span>
                </div>
             ))}
           </div>
@@ -154,29 +259,32 @@ export default function OverviewTab({ setActiveTab }: { setActiveTab: (tab: stri
                 <th className="p-4 font-medium">Start Date</th>
                 <th className="p-4 font-medium">Maturity Date</th>
                 <th className="p-4 font-medium">ROI</th>
-                <th className="p-4 font-medium">Monthly Return</th>
+                <th className="p-4 font-medium">Daily Profit</th>
                 <th className="p-4 font-medium">Status</th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-border-subtle">
-              <tr className="hover:bg-navy-light/30 transition-colors">
-                <td className="p-4 font-medium">Prosperity Plan</td>
-                <td className="p-4">$5,000</td>
-                <td className="p-4 text-gray-text">Jan 2025</td>
-                <td className="p-4 text-gray-text">Jan 2026</td>
-                <td className="p-4 text-green-400">24%</td>
-                <td className="p-4">$10,000</td>
-                <td className="p-4"><span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-500/10 text-green-400 text-xs font-medium"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div> Active</span></td>
-              </tr>
-              <tr className="hover:bg-navy-light/30 transition-colors">
-                <td className="p-4 font-medium">Foundation Plan</td>
-                <td className="p-4">$350,000</td>
-                <td className="p-4 text-gray-text">Mar 2025</td>
-                <td className="p-4 text-gray-text">Mar 2026</td>
-                <td className="p-4 text-green-400">18%</td>
-                <td className="p-4">$5,250</td>
-                <td className="p-4"><span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-500/10 text-green-400 text-xs font-medium"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div> Active</span></td>
-              </tr>
+              {investments.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-gray-text">No active investments found. Click "New Investment" to start earning.</td>
+                </tr>
+              ) : (
+                investments.slice(0, 5).map((inv) => (
+                  <tr key={inv.id} className="hover:bg-navy-light/30 transition-colors">
+                    <td className="p-4 font-medium">{inv.plan_name}</td>
+                    <td className="p-4">${parseFloat(inv.amount).toLocaleString()}</td>
+                    <td className="p-4 text-gray-text">{new Date(inv.start_date).toLocaleDateString()}</td>
+                    <td className="p-4 text-gray-text">{inv.end_date ? new Date(inv.end_date).toLocaleDateString() : 'N/A'}</td>
+                    <td className="p-4 text-green-400">{inv.roi_percent}%</td>
+                    <td className="p-4">${parseFloat(inv.daily_profit || '0').toLocaleString()}</td>
+                    <td className="p-4">
+                      <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-500/10 text-green-400 text-xs font-medium">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div> Active
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -195,55 +303,44 @@ export default function OverviewTab({ setActiveTab }: { setActiveTab: (tab: stri
                 <th className="p-4 font-medium">Type</th>
                 <th className="p-4 font-medium">Amount</th>
                 <th className="p-4 font-medium">Date</th>
+                <th className="p-4 font-medium">Reference</th>
                 <th className="p-4 font-medium">Status</th>
               </tr>
             </thead>
             <tbody className="text-sm divide-y divide-border-subtle">
-              <tr className="hover:bg-navy-light/30 transition-colors">
-                <td className="p-4 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center text-green-400"><ArrowDownRight size={14} /></div>
-                  <span className="font-medium">Return Payout</span>
-                </td>
-                <td className="p-4 text-green-400">+$10,000</td>
-                <td className="p-4 text-gray-text">May 15, 2026</td>
-                <td className="p-4"><span className="px-2 py-1 rounded text-xs font-medium bg-green-500/10 text-green-400">Completed</span></td>
-              </tr>
-              <tr className="hover:bg-navy-light/30 transition-colors">
-                <td className="p-4 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center text-gold"><Share2 size={14} /></div>
-                  <span className="font-medium">Referral Bonus</span>
-                </td>
-                <td className="p-4 text-green-400">+$2,500</td>
-                <td className="p-4 text-gray-text">May 12, 2026</td>
-                <td className="p-4"><span className="px-2 py-1 rounded text-xs font-medium bg-green-500/10 text-green-400">Completed</span></td>
-              </tr>
-              <tr className="hover:bg-navy-light/30 transition-colors">
-                <td className="p-4 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center text-green-400"><ArrowDownRight size={14} /></div>
-                  <span className="font-medium">Deposit</span>
-                </td>
-                <td className="p-4 text-green-400">+$150,000</td>
-                <td className="p-4 text-gray-text">May 01, 2026</td>
-                <td className="p-4"><span className="px-2 py-1 rounded text-xs font-medium bg-green-500/10 text-green-400">Completed</span></td>
-              </tr>
-              <tr className="hover:bg-navy-light/30 transition-colors">
-                <td className="p-4 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center text-red-400"><ArrowUpRight size={14} /></div>
-                  <span className="font-medium">New Investment</span>
-                </td>
-                <td className="p-4 text-red-400">-$150,000</td>
-                <td className="p-4 text-gray-text">May 01, 2026</td>
-                <td className="p-4"><span className="px-2 py-1 rounded text-xs font-medium bg-green-500/10 text-green-400">Completed</span></td>
-              </tr>
-              <tr className="hover:bg-navy-light/30 transition-colors">
-                <td className="p-4 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center text-green-400"><ArrowDownRight size={14} /></div>
-                  <span className="font-medium">Return Payout</span>
-                </td>
-                <td className="p-4 text-green-400">+$10,000</td>
-                <td className="p-4 text-gray-text">Apr 15, 2026</td>
-                <td className="p-4"><span className="px-2 py-1 rounded text-xs font-medium bg-green-500/10 text-green-400">Completed</span></td>
-              </tr>
+              {transactions.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-8 text-center text-gray-text">No transactions logged yet.</td>
+                </tr>
+              ) : (
+                transactions.slice(0, 5).map((tx) => {
+                  const isPositive = parseFloat(tx.amount) > 0 || tx.type === 'deposit' || tx.type === 'referral';
+                  return (
+                    <tr key={tx.id} className="hover:bg-navy-light/30 transition-colors">
+                      <td className="p-4 flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          isPositive ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
+                        }`}>
+                          {isPositive ? <ArrowDownRight size={14} /> : <ArrowUpRight size={14} />}
+                        </div>
+                        <span className="font-medium capitalize">{tx.type}</span>
+                      </td>
+                      <td className={`p-4 font-medium ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+                        {isPositive ? '+' : ''}${Math.abs(parseFloat(tx.amount)).toLocaleString()}
+                      </td>
+                      <td className="p-4 text-gray-text">{new Date(tx.created_at).toLocaleDateString()}</td>
+                      <td className="p-4 text-xs font-mono text-gray-text">{tx.reference || 'N/A'}</td>
+                      <td className="p-4">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          tx.status === 'completed' ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-500'
+                        }`}>
+                          {tx.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

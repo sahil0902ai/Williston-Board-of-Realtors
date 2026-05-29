@@ -166,7 +166,7 @@ export default function Register() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const stepErrors: {[key: string]: string} = {};
 
@@ -196,10 +196,39 @@ export default function Register() {
 
     if (Object.keys(stepErrors).length === 0) {
       setIsSubmitting(true);
-      setTimeout(() => {
+      
+      const phone = `${phonePrefix} ${phoneNumber}`;
+      
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fullName,
+            email,
+            password,
+            phone,
+            country,
+            referralCode,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          setErrors({ submit: data.error || 'Registration failed' });
+          setIsSubmitting(false);
+          return;
+        }
+
         setIsSubmitting(false);
         setIsSuccess(true);
-      }, 2000);
+
+      } catch (err: any) {
+        console.error('Registration submit error:', err);
+        setErrors({ submit: 'A network error occurred. Please try again.' });
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -577,6 +606,12 @@ export default function Register() {
                      <h1 className="text-xl font-serif font-bold text-white">Verify Your Identity</h1>
                      <p className="text-gray-text text-xs mt-0.5">Please provide details to complete registration.</p>
                   </div>
+
+                  {errors.submit && (
+                    <div className="p-3 bg-red-950/20 border border-red-500/20 rounded-xl text-red-400 text-xs font-semibold">
+                      ⚠️ {errors.submit}
+                    </div>
+                  )}
 
                   {/* Verification Type Toggle */}
                   <div className="grid grid-cols-3 gap-2 bg-[#04091A] p-1.5 rounded-xl border border-white/5">

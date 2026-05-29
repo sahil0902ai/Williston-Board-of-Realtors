@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Building, Map as MapIcon, List, Bell, Download, ChevronDown, ChevronUp, MapPin, CheckCircle2, Phone, X
 } from 'lucide-react';
@@ -540,6 +540,27 @@ function PropertyMapCard({ property }: { property: Property }) {
 
 export default function MyPropertiesTab() {
   const [view, setView] = useState<'list' | 'map'>('list');
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        const res = await fetch('/api/properties');
+        if (res.ok) {
+          const data = await res.json();
+          setProperties(data || []);
+        }
+      } catch (err) {
+        console.error('Error fetching properties:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProperties();
+  }, []);
+
+  const displayedProperties = properties.length > 0 ? properties : mockProperties;
   const [propertiesReminders, setPropertiesReminders] = useState<{
      [id: string]: {
         active: boolean;
@@ -656,7 +677,7 @@ export default function MyPropertiesTab() {
 
          {view === 'list' ? (
             <div className="space-y-2">
-               {mockProperties.map(prop => (
+               {displayedProperties.map(prop => (
                   <PropertyCard 
                      key={prop.id} 
                      property={prop} 
@@ -664,7 +685,7 @@ export default function MyPropertiesTab() {
                      onSetReminderClick={() => handleOpenReminderModal(prop)}
                   />
                ))}
-               {mockProperties.length === 0 && (
+               {displayedProperties.length === 0 && (
                   <div className="text-center py-20 bg-navy-mid border border-border-subtle rounded-2xl shadow-md">
                      <Building size={48} className="mx-auto text-gray-text mb-4 opacity-50" />
                      <h3 className="text-xl text-white font-semibold mb-2">No Properties Yet</h3>
@@ -674,7 +695,7 @@ export default function MyPropertiesTab() {
             </div>
          ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-               {mockProperties.map(prop => (
+               {displayedProperties.map(prop => (
                   <PropertyMapCard key={prop.id} property={prop} />
                ))}
             </div>

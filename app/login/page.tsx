@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, Eye, EyeOff, ArrowLeft, Loader2 } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowLeft, Loader2, ShieldCheck } from 'lucide-react';
 
 export default function Login() {
   const router = useRouter();
@@ -14,9 +14,14 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   
+  // 2FA state
+  const [totpToken, setTotpToken] = useState('');
+  const [twoFaRequired, setTwoFaRequired] = useState(false);
+  
   // Validation & Loading states
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [loginError, setLoginError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const validateEmail = (val: string) => {
@@ -40,8 +45,9 @@ export default function Login() {
     return '';
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError('');
     
     const eErr = validateEmail(email);
     const pErr = validatePassword(password);
@@ -53,12 +59,43 @@ export default function Login() {
       return;
     }
     
-    // Simulate submission loading
     setIsSubmitting(true);
-    setTimeout(() => {
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          totpToken: twoFaRequired ? totpToken : undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setLoginError(data.error || 'Invalid credentials or login failed');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (data.two_fa_required) {
+        setTwoFaRequired(true);
+        setLoginError('');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Login success
       setIsSubmitting(false);
       router.push('/dashboard');
-    }, 1500);
+
+    } catch (err: any) {
+      console.error('Login submit error:', err);
+      setLoginError('A connection error occurred. Please check your internet and try again.');
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -141,6 +178,12 @@ export default function Login() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {loginError && (
+              <div className="p-3 bg-red-950/20 border border-red-500/20 rounded-xl text-red-400 text-xs font-semibold">
+                ⚠️ {loginError}
+              </div>
+            )}
+
             {/* Email Address */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-gray-text uppercase tracking-wider block">Email Address</label>
@@ -151,11 +194,12 @@ export default function Login() {
                 <input 
                   type="text" 
                   value={email}
+                  disabled={twoFaRequired}
                   onChange={(e) => {
                     setEmail(e.target.value);
                     if (emailError) setEmailError('');
                   }}
-                  className={`w-full pl-10 pr-4 py-3 bg-[#04091A] rounded-xl border text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gold transition-all ${
+                  className={`w-full pl-10 pr-4 py-3 bg-[#04091A] rounded-xl border text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gold transition-all disabled:opacity-50 ${
                     emailError ? 'border-red-500' : 'border-white/5'
                   }`}
                   placeholder="name@example.com"
@@ -174,19 +218,21 @@ export default function Login() {
                 <input 
                   type={showPassword ? 'text' : 'password'}
                   value={password}
+                  disabled={twoFaRequired}
                   onChange={(e) => {
                     setPassword(e.target.value);
                     if (passwordError) setPasswordError('');
                   }}
-                  className={`w-full pl-10 pr-10 py-3 bg-[#04091A] rounded-xl border text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gold transition-all ${
+                  className={`w-full pl-10 pr-10 py-3 bg-[#04091A] rounded-xl border text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gold transition-all disabled:opacity-50 ${
                     passwordError ? 'border-red-500' : 'border-white/5'
                   }`}
                   placeholder="Enter your password"
                 />
                 <button 
                   type="button"
+                  disabled={twoFaRequired}
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-white"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-white disabled:opacity-50"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -194,14 +240,35 @@ export default function Login() {
               {passwordError && <p className="text-xs text-red-500 mt-1 font-medium">⚠️ {passwordError}</p>}
             </div>
 
+            {/* 2FA Token Prompt */}
+            {twoFaRequired && (
+              <div className="space-y-1.5 animate-in fade-in duration-300">
+                <label className="text-xs font-semibold text-gold uppercase tracking-wider block flex items-center gap-1.5">
+                  <ShieldCheck size={16} className="text-gold" />
+                  Google Authenticator 2FA Code
+                </label>
+                <input 
+                  type="text" 
+                  maxLength={6}
+                  value={totpToken}
+                  onChange={(e) => setTotpToken(e.target.value.replace(/\D/g, ''))}
+                  className="w-full px-4 py-3 bg-[#04091A] rounded-xl border border-gold/40 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gold transition-all"
+                  placeholder="Enter 6-digit 2FA code"
+                  required
+                />
+                <p className="text-[10px] text-gray-text">A 2FA authentication token is required to secure your session.</p>
+              </div>
+            )}
+
             {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between text-xs pt-1">
               <label className="flex items-center gap-2 cursor-pointer select-none text-gray-text hover:text-white transition-colors">
                 <input 
                   type="checkbox" 
                   checked={rememberMe}
+                  disabled={twoFaRequired}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded text-gold bg-[#04091A] border-white/10 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                  className="w-4 h-4 rounded text-gold bg-[#04091A] border-white/10 focus:ring-0 focus:ring-offset-0 cursor-pointer disabled:opacity-50"
                 />
                 <span>Remember me</span>
               </label>
@@ -219,10 +286,10 @@ export default function Login() {
               {isSubmitting ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  Signing In...
+                  Verifying...
                 </>
               ) : (
-                'Sign In'
+                twoFaRequired ? 'Verify & Access' : 'Sign In'
               )}
             </button>
           </form>

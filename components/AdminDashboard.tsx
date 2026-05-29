@@ -118,11 +118,104 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
 
   // Core Data States
-  const [investors, setInvestors] = useState(initialInvestors);
-  const [plans, setPlans] = useState(initialPlans);
-  const [withdrawals, setWithdrawals] = useState(initialWithdrawals);
-  const [deposits, setDeposits] = useState(initialDeposits);
-  const [transactions, setTransactions] = useState(initialTransactions);
+  const [investors, setInvestors] = useState<any[]>([]);
+  const [plans, setPlans] = useState<any[]>([]);
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  const [deposits, setDeposits] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
+
+  // API Integration States
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [barChartData, setBarChartData] = useState<any[]>([]);
+  const [pieChartData, setPieChartData] = useState<any[]>([]);
+  const [adminLoading, setAdminLoading] = useState(false);
+
+  const fetchAdminData = async () => {
+    setAdminLoading(true);
+    try {
+      // 1. Fetch Analytics
+      const analyticsRes = await fetch('/api/admin/analytics');
+      if (analyticsRes.ok) {
+        const data = await analyticsRes.json();
+        if (data.success) {
+          setAnalytics(data.analytics);
+          setTransactions(data.analytics.recentTransactions || []);
+          if (data.analytics.monthlySignups && data.analytics.monthlySignups.length > 0) {
+            setBarChartData(data.analytics.monthlySignups);
+          }
+          if (data.analytics.planDistribution && data.analytics.planDistribution.length > 0) {
+            setPieChartData(data.analytics.planDistribution);
+          }
+        }
+      }
+
+      // 2. Fetch Investors
+      const usersRes = await fetch('/api/admin/users?limit=100');
+      if (usersRes.ok) {
+        const data = await usersRes.json();
+        if (data.success) {
+          const mapped = data.users.map((u: any) => ({
+            id: u.id,
+            name: u.full_name,
+            email: u.email,
+            phone: u.phone || 'N/A',
+            plan: u.investor_level || 'starter',
+            amountInvested: parseFloat(u.total_invested || 0),
+            returnsPaid: parseFloat(u.total_returns || 0),
+            dateJoined: new Date(u.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+            status: u.account_status === 'active' ? 'Active' : 'Suspended',
+            referralsCount: 0,
+            address: u.country || 'N/A',
+            docUploaded: u.kyc_id_url ? 'Verification Docs' : '',
+            kycStatus: u.kyc_status,
+            kycIdUrl: u.kyc_id_url,
+            kycSelfieUrl: u.kyc_selfie_url,
+            walletBalance: parseFloat(u.wallet_balance || 0)
+          }));
+          setInvestors(mapped);
+        }
+      }
+
+      // 3. Fetch Deposits
+      const depRes = await fetch('/api/admin/deposits/list');
+      if (depRes.ok) {
+        const data = await depRes.json();
+        if (data.success) {
+          setDeposits(data.deposits);
+        }
+      }
+
+      // 4. Fetch Withdrawals
+      const wdRes = await fetch('/api/admin/withdrawals/list');
+      if (wdRes.ok) {
+        const data = await wdRes.json();
+        if (data.success) {
+          setWithdrawals(data.withdrawals);
+        }
+      }
+
+      // 5. Fetch Plans
+      const planRes = await fetch('/api/admin/plans');
+      if (planRes.ok) {
+        const data = await planRes.json();
+        if (Array.isArray(data)) {
+          setPlans(data);
+        } else if (data.success && Array.isArray(data.plans)) {
+          setPlans(data.plans);
+        }
+      }
+    } catch (e) {
+      console.error('Error fetching admin data:', e);
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (loggedIn) {
+      fetchAdminData();
+    }
+  }, [loggedIn]);
 
   // Modals & Panels State
   const [selectedInvestor, setSelectedInvestor] = useState<any>(null);
@@ -274,38 +367,28 @@ export default function AdminDashboard() {
   };
 
   // Withdrawals Approval
-  const handleApproveWithdrawal = () => {
+  const handleApproveWithdrawal = async () => {
     if (!confirmApproveWD) return;
-    
-    // Update local state
-    setWithdrawals(prev => 
-      prev.map(w => w.id === confirmApproveWD.id ? { ...w, status: 'Approved' } : w)
-    );
-
-    // Add to transaction ledger
-    const newTx = {
-      date: new Date().toISOString().split('T')[0],
-      type: 'Withdrawal',
-      investor: confirmApproveWD.investorName,
-      amount: confirmApproveWD.amount,
-      balance: 2449815000,
-      reference: `${confirmApproveWD.id}-PAID`,
-      status: 'Completed'
-    };
-    setTransactions(prev => [newTx, ...prev]);
-
-    // Log in recent activity
-    const newAct = {
-      id: Date.now(),
-      time: 'Just now',
-      investor: confirmApproveWD.investorName,
-      action: 'Withdrawal Approved',
-      amount: `₦${confirmApproveWD.amount.toLocaleString()}`,
-      status: 'Completed'
-    };
-    setRecentActivities(prev => [newAct, ...prev.slice(0, 9)]);
-
-    setConfirmApproveWD(null);
+    try {
+      const res = await fetch('/api/admin/withdrawals/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          withdrawalId: confirmApproveWD.id,
+          action: 'approve'
+        })
+      });
+      if (res.ok) {
+        fetchAdminData();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to approve withdrawal');
+      }
+    } catch (e) {
+      console.error('Approve withdrawal error:', e);
+    } finally {
+      setConfirmApproveWD(null);
+    }
   };
 
   // Bulk Actions
@@ -346,55 +429,81 @@ export default function AdminDashboard() {
   };
 
   // Deposits Confirm/Reject
-  const handleConfirmDeposit = (dep: any) => {
-    setDeposits(prev => 
-      prev.map(d => d.id === dep.id ? { ...d, status: 'Confirmed' } : d)
-    );
-
-    // Add to transaction ledger
-    const newTx = {
-      date: new Date().toISOString().split('T')[0],
-      type: 'Deposit',
-      investor: dep.investorName,
-      amount: dep.amount,
-      balance: 2450385000,
-      reference: dep.reference,
-      status: 'Completed'
-    };
-    setTransactions(prev => [newTx, ...prev]);
-
-    // Update investor balance inside initial list
-    setInvestors(prev => 
-      prev.map(inv => inv.name === dep.investorName ? { ...inv, amountInvested: inv.amountInvested + dep.amount } : inv)
-    );
-
-    // Log in recent activity
-    const newAct = {
-      id: Date.now(),
-      time: 'Just now',
-      investor: dep.investorName,
-      action: 'Deposit Confirmed',
-      amount: `₦${dep.amount.toLocaleString()}`,
-      status: 'Completed'
-    };
-    setRecentActivities(prev => [newAct, ...prev.slice(0, 9)]);
+  const handleConfirmDeposit = async (dep: any) => {
+    try {
+      const res = await fetch('/api/admin/deposits/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          depositId: dep.id,
+          action: 'confirm'
+        })
+      });
+      if (res.ok) {
+        fetchAdminData();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to confirm deposit');
+      }
+    } catch (e) {
+      console.error('Confirm deposit error:', e);
+    }
   };
 
-  const handleRejectDeposit = (dep: any) => {
-    setDeposits(prev => 
-      prev.map(d => d.id === dep.id ? { ...d, status: 'Failed' } : d)
-    );
+  const handleRejectDeposit = async (dep: any) => {
+    const reason = prompt('Enter rejection reason:') || 'Invalid receipt or details mismatched';
+    try {
+      const res = await fetch('/api/admin/deposits/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          depositId: dep.id,
+          action: 'reject',
+          rejectionReason: reason
+        })
+      });
+      if (res.ok) {
+        fetchAdminData();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to reject deposit');
+      }
+    } catch (e) {
+      console.error('Reject deposit error:', e);
+    }
   };
 
   // Plans update
-  const handleSavePlanSettings = (e: React.FormEvent) => {
+  const handleSavePlanSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingPlan) return;
 
-    setPlans(prev => 
-      prev.map(p => p.id === editingPlan.id ? { ...editingPlan } : p)
-    );
-    setEditingPlan(null);
+    try {
+      const res = await fetch('/api/admin/plans', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planId: editingPlan.id,
+          name: editingPlan.name,
+          roi_percent: editingPlan.roi_percent || editingPlan.roi,
+          duration_days: editingPlan.duration_days,
+          min_deposit: editingPlan.min_deposit || editingPlan.minAmount,
+          max_deposit: editingPlan.max_deposit,
+          is_active: editingPlan.is_active !== undefined ? editingPlan.is_active : editingPlan.enabled
+        })
+      });
+
+      if (res.ok) {
+        fetchAdminData();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to save plan settings');
+      }
+    } catch (err) {
+      console.error('Edit plan error:', err);
+    } finally {
+      setEditingPlan(null);
+    }
   };
 
   // Delete Investor
@@ -408,19 +517,63 @@ export default function AdminDashboard() {
   };
 
   // Edit Investor
-  const handleSaveInvestorEdit = (e: React.FormEvent) => {
+  const handleSaveInvestorEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingInvestor) return;
-    
-    setInvestors(prev => 
-      prev.map(inv => inv.id === editingInvestor.id ? { ...editingInvestor } : inv)
-    );
 
-    if (selectedInvestor?.id === editingInvestor.id) {
-      setSelectedInvestor(editingInvestor);
+    try {
+      const prevInv = investors.find(inv => inv.id === editingInvestor.id);
+      if (prevInv && prevInv.status !== editingInvestor.status) {
+        const statusMap: any = {
+          'Active': 'active',
+          'Suspended': 'suspended',
+          'Pending': 'pending'
+        };
+        const dbStatus = statusMap[editingInvestor.status] || 'active';
+
+        // 1. Update status
+        if (dbStatus === 'active' || dbStatus === 'suspended') {
+          const res = await fetch('/api/admin/users/update-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: editingInvestor.id,
+              status: dbStatus
+            })
+          });
+          if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error || 'Failed to update user status');
+          }
+        }
+
+        // 2. KYC Decision review
+        if (editingInvestor.status === 'Active' && prevInv.kycStatus !== 'approved') {
+          const res = await fetch('/api/admin/users/kyc-review', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: editingInvestor.id,
+              decision: 'approved'
+            })
+          });
+          if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error || 'Failed to approve KYC verification');
+          }
+        }
+      }
+
+      fetchAdminData();
+      if (selectedInvestor?.id === editingInvestor.id) {
+        setSelectedInvestor(editingInvestor);
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to update investor account');
+      console.error(err);
+    } finally {
+      setEditingInvestor(null);
     }
-
-    setEditingInvestor(null);
   };
 
   // Export CSV simulation
@@ -565,6 +718,10 @@ export default function AdminDashboard() {
   // ==========================================
   // VIEW: MAIN ADMIN DASHBOARD
   // ==========================================
+
+  const barChartToRender = barChartData && barChartData.length > 0 ? barChartData : barData;
+  const pieChartToRender = pieChartData && pieChartData.length > 0 ? pieChartData : pieData;
+  const totalPieValue = pieChartToRender.reduce((sum, item) => sum + item.value, 0) || 1;
 
   return (
     <div className="min-h-screen bg-navy text-white flex">
@@ -766,41 +923,55 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
                 <div className="bg-navy-mid border border-border-subtle rounded-xl p-5">
                   <div className="text-[10px] text-gray-text uppercase tracking-wider font-bold mb-1">Total Investors</div>
-                  <div className="text-xl font-bold font-serif text-white">4,847</div>
-                  <div className="text-[9px] text-green-400 mt-2 flex items-center"><ArrowUpRight size={10} className="mr-0.5" /> +28 this week</div>
+                  <div className="text-xl font-bold font-serif text-white">
+                    {analytics ? analytics.totalUsers.toLocaleString() : '...'}
+                  </div>
+                  <div className="text-[9px] text-green-400 mt-2 flex items-center">
+                    <ArrowUpRight size={10} className="mr-0.5" /> +{analytics ? analytics.newUsersToday : 0} today
+                  </div>
                 </div>
 
                 <div className="bg-navy-mid border border-border-subtle rounded-xl p-5">
                   <div className="text-[10px] text-gray-text uppercase tracking-wider font-bold mb-1">Funds Invested</div>
-                  <div className="text-xl font-bold font-serif text-white">₦2.4B</div>
-                  <div className="text-[9px] text-green-400 mt-2 flex items-center"><ArrowUpRight size={10} className="mr-0.5" /> +₦45M monthly</div>
+                  <div className="text-xl font-bold font-serif text-white">
+                    {analytics ? `$${analytics.totalDeposited.toLocaleString()}` : '...'}
+                  </div>
+                  <div className="text-[9px] text-green-400 mt-2 flex items-center">
+                    Active plans: {analytics ? analytics.activeInvestments : 0}
+                  </div>
                 </div>
 
                 <div className="bg-navy-mid border border-border-subtle rounded-xl p-5">
                   <div className="text-[10px] text-gray-text uppercase tracking-wider font-bold mb-1">Returns Paid</div>
-                  <div className="text-xl font-bold font-serif text-white">₦485M</div>
+                  <div className="text-xl font-bold font-serif text-white">
+                    {analytics ? `$${analytics.totalReturnsPaid.toLocaleString()}` : '...'}
+                  </div>
                   <div className="text-[9px] text-gray-500 mt-2">Paid on maturity</div>
                 </div>
 
                 <div className="bg-navy-mid border border-border-subtle rounded-xl p-5 relative">
                   <div className="text-[10px] text-gray-text uppercase tracking-wider font-bold mb-1">Pending WD</div>
                   <div className="text-xl font-bold font-serif text-white flex items-center gap-2">
-                    {pendingWithdrawalsCount}
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping absolute top-5 right-5"></span>
+                    {analytics ? analytics.pendingWithdrawals.count : pendingWithdrawalsCount}
+                    {(analytics ? analytics.pendingWithdrawals.count : pendingWithdrawalsCount) > 0 && (
+                      <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping absolute top-5 right-5"></span>
+                    )}
                   </div>
                   <div className="text-[9px] text-red-400 mt-2 font-bold cursor-pointer hover:underline" onClick={() => { setActiveTab('withdrawals'); setWithdrawalFilter('Pending'); }}>Needs Approval</div>
                 </div>
 
                 <div className="bg-navy-mid border border-border-subtle rounded-xl p-5">
                   <div className="text-[10px] text-gray-text uppercase tracking-wider font-bold mb-1">Active Properties</div>
-                  <div className="text-xl font-bold font-serif text-white">8</div>
-                  <div className="text-[9px] text-gold mt-2">3 Under Dev</div>
+                  <div className="text-xl font-bold font-serif text-white">{plans.length || 8}</div>
+                  <div className="text-[9px] text-gold mt-2">{plans.filter(p => p.enabled).length || 4} Tiers Active</div>
                 </div>
 
                 <div className="bg-navy-mid border border-border-subtle rounded-xl p-5">
-                  <div className="text-[10px] text-gray-text uppercase tracking-wider font-bold mb-1">Monthly Rev</div>
-                  <div className="text-xl font-bold font-serif text-gold">₦48M</div>
-                  <div className="text-[9px] text-green-400 mt-2 flex items-center"><ArrowUpRight size={10} className="mr-0.5" /> +5% vs April</div>
+                  <div className="text-[10px] text-gray-text uppercase tracking-wider font-bold mb-1">Platform Balance</div>
+                  <div className="text-xl font-bold font-serif text-gold">
+                    {analytics ? `$${analytics.platformBalance.toLocaleString()}` : '...'}
+                  </div>
+                  <div className="text-[9px] text-green-400 mt-2 flex items-center">Net liquid funds</div>
                 </div>
               </div>
 
@@ -812,7 +983,7 @@ export default function AdminDashboard() {
                   <h3 className="text-md font-serif text-gold mb-6 font-semibold">New Investors per Month (Jan - Jun)</h3>
                   <div className="h-[240px] w-full mt-auto">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={barData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
+                      <BarChart data={barChartToRender} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
                         <XAxis dataKey="name" stroke="#9ca3af" fontSize={11} tickLine={false} axisLine={false} />
                         <YAxis stroke="#9ca3af" fontSize={11} tickLine={false} axisLine={false} />
@@ -830,7 +1001,7 @@ export default function AdminDashboard() {
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={pieData}
+                          data={pieChartToRender}
                           cx="50%"
                           cy="50%"
                           innerRadius={50}
@@ -840,7 +1011,7 @@ export default function AdminDashboard() {
                           stroke="none"
                           isAnimationActive={false}
                         >
-                          {pieData.map((entry, index) => (
+                          {pieChartToRender.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                           ))}
                         </Pie>
@@ -853,12 +1024,15 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="flex flex-wrap justify-center gap-4 mt-4">
-                    {pieData.map((entry, index) => (
-                      <div key={entry.name} className="flex items-center gap-1.5">
-                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: CHART_COLORS[index] }}></div>
-                        <span className="text-[11px] text-gray-text">{entry.name} ({entry.value}%)</span>
-                      </div>
-                    ))}
+                    {pieChartToRender.map((entry, index) => {
+                      const pct = Math.round((entry.value / totalPieValue) * 100);
+                      return (
+                        <div key={entry.name} className="flex items-center gap-1.5">
+                          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}></div>
+                          <span className="text-[11px] text-gray-text">{entry.name} ({pct}%)</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -880,21 +1054,28 @@ export default function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border-subtle">
-                      {recentActivities.map((act) => (
-                        <tr key={act.id} className="hover:bg-navy-light/20 transition-colors">
-                          <td className="p-4 text-gray-text text-xs">{act.time}</td>
-                          <td className="p-4 font-medium text-white">{act.investor}</td>
-                          <td className="p-4 text-gray-300">{act.action}</td>
-                          <td className="p-4 font-mono text-gold">{act.amount}</td>
-                          <td className="p-4">
-                            <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${
-                              act.status === 'Completed' || act.status === 'Sent' || act.status === 'Replied'
-                                ? 'bg-green-500/10 text-green-400' 
-                                : 'bg-amber-500/10 text-amber-400'
-                            }`}>{act.status}</span>
-                          </td>
-                        </tr>
-                      ))}
+                      {(transactions.length > 0 ? transactions : recentActivities.slice(0, 5)).map((act: any) => {
+                        const formattedTime = act.date ? new Date(act.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : act.time;
+                        return (
+                          <tr key={act.id || act.reference} className="hover:bg-navy-light/20 transition-colors">
+                            <td className="p-4 text-gray-text text-xs">{formattedTime}</td>
+                            <td className="p-4 font-medium text-white">{act.investor}</td>
+                            <td className="p-4 text-gray-300">{act.type || act.action}</td>
+                            <td className="p-4 font-mono text-gold">
+                              {typeof act.amount === 'number' ? `$${act.amount.toLocaleString()}` : act.amount}
+                            </td>
+                            <td className="p-4">
+                              <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${
+                                act.status === 'completed' || act.status === 'Confirmed' || act.status === 'Approved' || act.status === 'Sent' || act.status === 'Replied' || act.status === 'Completed'
+                                  ? 'bg-green-500/10 text-green-400' 
+                                  : act.status === 'pending' || act.status === 'Pending'
+                                  ? 'bg-amber-500/10 text-amber-400'
+                                  : 'bg-red-500/10 text-red-400'
+                              }`}>{act.status}</span>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
