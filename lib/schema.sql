@@ -6,6 +6,7 @@ create table users (
   phone text,
   country text default 'United States',
   password_hash text,
+  avatar_url text,
   referral_code text unique,
   referred_by uuid,
   kyc_status text default 'pending',
