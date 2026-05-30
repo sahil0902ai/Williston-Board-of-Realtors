@@ -17,7 +17,7 @@ export default function About() {
             
             <FadeUpItem>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif leading-tight mb-6">
-                the United States&apos;s Premier <br /> Wealth Investment Platform
+                America&apos;s Premier <br /> Wealth Investment Platform
               </h2>
             </FadeUpItem>
             
@@ -39,7 +39,7 @@ export default function About() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-white mb-1">Legally Registered</h4>
-                  <p className="text-sm text-gray-text">Fully CAC and SEC compliant operations.</p>
+                  <p className="text-sm text-gray-text">Fully LLC and SEC Registered.</p>
                 </div>
               </div>
               

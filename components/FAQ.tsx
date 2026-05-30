@@ -44,8 +44,8 @@ const faqs = [
     answer: "For our higher-tier plans like Legacy and Dynasty, physical land allocations are processed precisely at maturity. You will receive an official offer letter and survey plan indicating your exclusively allocated plot(s) in our specified estates."
   },
   {
-    question: "Is Williston registered with the SEC and CAC?",
-    answer: "Yes, Williston Properties is fully incorporated with the Corporate Affairs Commission (CAC) and complies with all relevant financial and real estate regulations stipulated by the Special Control Unit Against Money Laundering (SCUML) and other appropriate regulatory bodies in the United States."
+    question: "Is Williston registered with the SEC?",
+    answer: "Yes, Williston is a fully registered LLC and complies with all relevant financial and real estate regulations stipulated by the SEC and other appropriate regulatory bodies in the United States."
   }
 ];
 

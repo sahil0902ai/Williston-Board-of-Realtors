@@ -6,6 +6,7 @@ import CookieConsent from '@/components/CookieConsent';
 import MobileBottomBar from '@/components/MobileBottomBar';
 import Chatbot from '@/components/Chatbot';
 import SplashScreenController from '@/components/SplashScreenController';
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -23,70 +24,79 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://williston.vercel.app'),
-  title: 'Williston Board of Realtors & Investments | Real Estate Investment the United States',
-  description: "Invest in verified real estate and earn 18–35% annual returns. America's trusted wealth investment platform based in Houston. Join 4,800+ investors.",
+  metadataBase: new URL('https://willistonboard.com'),
+  title: {
+    default: 'Williston Board of Realtors & Investments | Houston, TX',
+    template: '%s | Williston Investments'
+  },
+  description: 'Premium real estate investment platform based in Houston, Texas. Earn 18-35% annual returns. Invest in commercial, standard and luxury properties. Cash App, Zelle, and Crypto accepted.',
   keywords: [
-    'real estate investment the United States',
-    'property investment Houston',
-    'wealth investment platform the United States',
-    'diaspora investment the United States',
-    'passive income the United States'
+    'real estate investment Houston Texas',
+    'property investment platform USA',
+    'passive income real estate',
+    'wealth investment platform',
+    'commercial real estate investment',
+    'luxury property investment',
+    'Cash App investment',
+    'crypto real estate investment',
+    'Williston Board of Realtors',
   ],
+  openGraph: {
+    title: 'Williston Board of Realtors & Investments',
+    description: 'Build wealth through premium real estate investment. 18-35% annual returns.',
+    url: 'https://willistonboard.com',
+    siteName: 'Williston Investments',
+    type: 'website',
+    locale: 'en_US',
+    images: [{
+      url: '/og-image.png',
+      width: 1200,
+      height: 630,
+      alt: 'Williston Board of Realtors and Investments',
+    }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Williston Board of Realtors & Investments',
+    description: 'Premium real estate investment | Houston, TX | 18-35% returns',
+    images: ['/og-image.png'],
+  },
   robots: {
     index: true,
     follow: true,
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
       'max-image-preview': 'large',
-      'max-snippet': -1,
     },
   },
-  alternates: {
-    canonical: '/',
-  },
-  openGraph: {
-    title: 'Williston Board of Realtors & Investments | Real Estate Investment the United States',
-    description: "Invest in verified real estate and earn 18–35% annual returns. America's trusted wealth investment platform based in Houston. Join 4,800+ investors.",
-    url: '/',
-    type: 'website',
-    images: [
-      {
-        url: 'https://picsum.photos/seed/luxury/1200/630',
-        width: 1200,
-        height: 630,
-        alt: 'Williston Board of Realtors & Investments',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Williston Board of Realtors & Investments | Real Estate Investment the United States',
-    description: "Invest in verified real estate and earn 18–35% annual returns. America's trusted wealth investment platform based in Houston. Join 4,800+ investors.",
-    images: ['https://picsum.photos/seed/luxury/1200/630'],
+  verification: {
+    google: 'your-google-verification-code',
   },
   icons: {
-    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">💰</text></svg>',
+    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">💼</text></svg>',
+  },
+  alternates: {
+    canonical: 'https://willistonboard.com',
   },
 };
 
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@type': 'LocalBusiness',
+  '@type': 'RealEstateAgent',
   name: 'Williston Board of Realtors & Investments',
-  image: 'https://picsum.photos/seed/luxury/1200/630',
+  image: 'https://williston-board-of-realtors.vercel.app/og-image.png',
   description: "Invest in verified real estate and earn 18–35% annual returns. America's trusted wealth investment platform based in Houston. Join 4,800+ investors.",
   address: {
     '@type': 'PostalAddress',
-    streetAddress: 'Houston Business District',
+    streetAddress: '1847 Westheimer Road, Suite 300',
     addressLocality: 'Houston',
-    addressRegion: 'Texas',
+    addressRegion: 'TX',
+    postalCode: '77098',
     addressCountry: 'US',
   },
-  telephone: '+17130000000',
-  url: 'https://williston.vercel.app',
+  email: 'willistonboardofrealtors@gmail.com',
+  url: 'https://williston-board-of-realtors.vercel.app',
 };
 
 export default function RootLayout({children}: {children: React.ReactNode}) {
@@ -246,6 +256,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         <Chatbot />
         <CookieConsent />
         <MobileBottomBar />
+        <GoogleAnalytics gaId="G-XXXXXXXXXX" />
       </body>
     </html>
   );

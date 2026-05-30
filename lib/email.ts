@@ -135,31 +135,102 @@ const getHtmlTemplate = (title: string, bodyContent: string) => {
 };
 
 // 1. Welcome Email
-export async function sendWelcomeEmail(name: string, email: string, referralCode: string) {
-  const bodyContent = `
-    <h1 class="h1">Welcome, ${name}!</h1>
-    <p class="p">Thank you for opening an account with Williston Board of Realtors & Investments. We are thrilled to partner with you on your wealth-building journey.</p>
-    <p class="p">Your unique referral code is ready. Share it with friends and family to earn a 5% commission on their active investment cycles.</p>
-    <div class="highlight-box">
-      <div class="highlight-value">${referralCode}</div>
-      <div class="highlight-label">Your Referral Code</div>
-    </div>
-    <div class="button-container">
-      <a href="${APP_URL}/login" class="button">Go to Dashboard</a>
-    </div>
-  `;
-  
+export async function sendWelcomeEmail({ name, email, referralCode }: { name: string; email: string; referralCode: string }) {
   try {
     await resend.emails.send({
       from: FROM_EMAIL,
       to: email,
-      subject: 'Welcome to Williston Investments',
-      html: getHtmlTemplate('Welcome to Williston Investments', bodyContent),
+      subject: 'Welcome to Williston Board of Realtors & Investments',
+      html: `
+        <div style="background:#04091A;padding:40px;font-family:sans-serif;color:#ffffff">
+          <h1 style="color:#C9A84C;font-size:28px">Welcome, ${name}!</h1>
+          <p style="color:#8A9BB5">Your investor account has been created successfully.</p>
+          <div style="background:#0A1628;border:1px solid rgba(201,168,76,0.2);padding:20px;margin:20px 0">
+            <p style="color:#8A9BB5;font-size:12px;margin:0">YOUR REFERRAL CODE</p>
+            <p style="color:#C9A84C;font-size:24px;font-weight:700;margin:8px 0">${referralCode}</p>
+            <p style="color:#8A9BB5;font-size:13px">Share this code and earn 5-10% commission</p>
+          </div>
+          <a href="https://willistonboard.com/dashboard"
+             style="display:inline-block;background:#C9A84C;color:#04091A;padding:14px 28px;font-weight:700;text-decoration:none">
+            Go to Dashboard →
+          </a>
+          <p style="color:#8A9BB5;font-size:12px;margin-top:32px">
+            Questions? Email us: willistonboardofrealtors@gmail.com
+          </p>
+        </div>
+      `
     });
   } catch (error) {
     console.error('Failed to send welcome email:', error);
   }
 }
+
+// 1.2 Deposit Confirmed (New version requested by user)
+export async function sendDepositEmail({ name, email, amount, method, reference }: { name: string; email: string; amount: number | string; method: string; reference: string }) {
+  try {
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      subject: `Deposit of $${amount} Received — Williston`,
+      html: `
+        <div style="background:#04091A;padding:40px;font-family:sans-serif;color:#ffffff">
+          <h1 style="color:#C9A84C">Deposit Confirmed ✓</h1>
+          <p style="color:#8A9BB5">Hi ${name}, your deposit has been received.</p>
+          <table style="width:100%;border-collapse:collapse;margin:20px 0">
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.07)">
+              <td style="color:#8A9BB5;padding:12px 0">Amount</td>
+              <td style="color:#C9A84C;font-weight:700;text-align:right">$${amount}</td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.07)">
+              <td style="color:#8A9BB5;padding:12px 0">Method</td>
+              <td style="color:#ffffff;text-align:right">${method}</td>
+            </tr>
+            <tr>
+              <td style="color:#8A9BB5;padding:12px 0">Reference</td>
+              <td style="color:#ffffff;text-align:right">${reference}</td>
+            </tr>
+          </table>
+          <a href="https://willistonboard.com/dashboard"
+             style="display:inline-block;background:#C9A84C;color:#04091A;padding:14px 28px;font-weight:700;text-decoration:none">
+            View Dashboard →
+          </a>
+        </div>
+      `
+    });
+  } catch (error) {
+    console.error('Failed to send deposit email:', error);
+  }
+}
+
+// 1.3 Monthly Return Credited (Requested by user)
+export async function sendReturnEmail({ name, email, amount, plan, balance }: { name: string; email: string; amount: number | string; plan: string; balance: number | string }) {
+  try {
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      subject: `💰 Your Monthly Return of $${amount} Has Been Credited`,
+      html: `
+        <div style="background:#04091A;padding:40px;font-family:sans-serif;color:#ffffff">
+          <h1 style="color:#C9A84C">Monthly Return Credited 💰</h1>
+          <p style="color:#8A9BB5">Hi ${name}, great news! Your return has been credited.</p>
+          <div style="background:#0A1628;border:1px solid rgba(201,168,76,0.2);padding:24px;margin:20px 0;text-align:center">
+            <p style="color:#8A9BB5;font-size:12px;letter-spacing:2px;text-transform:uppercase">AMOUNT CREDITED</p>
+            <p style="color:#C9A84C;font-size:40px;font-weight:700;margin:8px 0">$${amount}</p>
+            <p style="color:#8A9BB5;font-size:13px">From your ${plan}</p>
+          </div>
+          <p style="color:#8A9BB5">New wallet balance: <strong style="color:#ffffff">$${balance}</strong></p>
+          <a href="https://willistonboard.com/dashboard"
+             style="display:inline-block;background:#C9A84C;color:#04091A;padding:14px 28px;font-weight:700;text-decoration:none;margin-top:16px">
+            View Wallet →
+          </a>
+        </div>
+      `
+    });
+  } catch (error) {
+    console.error('Failed to send return email:', error);
+  }
+}
+
 
 // 2. Deposit Pending
 export async function sendDepositPendingEmail(name: string, email: string, amount: number, method: string) {

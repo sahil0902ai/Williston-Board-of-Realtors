@@ -22,7 +22,7 @@ export default function Footer() {
             <address className="not-italic text-sm text-gray-300 space-y-2">
               <p>1847 Westheimer Road, Suite 300, Houston</p>
               <p>Texas, United States</p>
-              <p className="pt-2 flex items-center gap-2 hover:text-gold transition-colors"><a href="tel:+17130000000">📞 +1 (713) 000-0000</a></p>
+              <p className="pt-2 text-sm text-gray-text">💬 Contact via WhatsApp or Telegram</p>
               <p className="flex items-center gap-2 hover:text-gold transition-colors"><a href="mailto:willistonboardofrealtors@gmail.com">✉️ willistonboardofrealtors@gmail.com</a></p>
               <p className="flex items-center gap-2 hover:text-gold transition-colors"><a href="https://t.me/willistonboardofrealtors" target="_blank" rel="noopener">✈️ t.me/willistonboardofrealtors</a></p>
             </address>
@@ -60,8 +60,8 @@ export default function Footer() {
               <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-white transition-colors">Investment Agreement</Link></li>
               <li><Link href="/risk" className="hover:text-white transition-colors">Risk Disclosure</Link></li>
-              <li><Link href="/terms" className="hover:text-white transition-colors">AML / KYC Policy</Link></li>
-              <li><Link href="#" className="hover:text-white transition-colors text-gold">Investor Protection</Link></li>
+              <li><Link href="/aml" className="hover:text-white transition-colors">AML / KYC Policy</Link></li>
+              <li><Link href="/terms#investor-protection" className="hover:text-white transition-colors text-gold">Investor Protection</Link></li>
             </ul>
           </FadeUpItem>
         </FadeUp>
@@ -74,21 +74,6 @@ export default function Footer() {
           
           {/* Social Icons */}
           <div className="flex gap-4 order-1 md:order-2 flex-wrap justify-center">
-            <a href="#" aria-label="Facebook" className="w-10 h-10 rounded-full bg-navy border border-border-subtle flex items-center justify-center text-gray-text hover:border-gold hover:text-gold transition-colors">
-              <Facebook size={18} />
-            </a>
-            <a href="#" aria-label="Instagram" className="w-10 h-10 rounded-full bg-navy border border-border-subtle flex items-center justify-center text-gray-text hover:border-gold hover:text-gold transition-colors">
-              <Instagram size={18} />
-            </a>
-            <a href="#" aria-label="Twitter" className="w-10 h-10 rounded-full bg-navy border border-border-subtle flex items-center justify-center text-gray-text hover:border-gold hover:text-gold transition-colors">
-              <Twitter size={18} />
-            </a>
-            <a href="#" aria-label="LinkedIn" className="w-10 h-10 rounded-full bg-navy border border-border-subtle flex items-center justify-center text-gray-text hover:border-gold hover:text-gold transition-colors">
-              <Linkedin size={18} />
-            </a>
-            <a href="#" aria-label="WhatsApp" className="w-10 h-10 rounded-full bg-navy border border-border-subtle flex items-center justify-center text-gray-text hover:border-green-500 hover:text-green-500 transition-colors">
-              <MessageCircle size={18} />
-            </a>
             <a href="https://t.me/willistonboardofrealtors" target="_blank" rel="noopener" aria-label="Telegram" className="w-10 h-10 rounded-full bg-navy border border-border-subtle flex items-center justify-center text-gray-text hover:border-[#0088cc] hover:text-[#0088cc] transition-colors">
               <Send size={18} className="-ml-1" />
             </a>

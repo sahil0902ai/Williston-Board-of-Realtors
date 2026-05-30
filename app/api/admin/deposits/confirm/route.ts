@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { isAdminRequest, getAuthenticatedUser } from '@/lib/auth-helper';
-import { sendDepositConfirmedEmail } from '@/lib/email';
+import { sendDepositEmail } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -99,7 +99,13 @@ export async function POST(request: Request) {
       });
 
       // Send confirmation email
-      await sendDepositConfirmedEmail(profile.full_name, profile.email, amount, newBalance);
+      await sendDepositEmail({
+        name: profile.full_name,
+        email: profile.email,
+        amount: amount,
+        method: deposit.method,
+        reference: deposit.bank_reference || deposit.transaction_hash || `DEP-${depositId.substring(0, 8).toUpperCase()}`,
+      });
 
     } else if (action === 'reject') {
       // Reject deposit Flow

@@ -69,7 +69,7 @@ export default function Chatbot() {
       } else if (userQuery.includes('referral') || userQuery.includes('commission') || userQuery.includes('partner')) {
         replyText = 'Our Partner Program pays a 5% to 10% instant commission deposited directly into your withdrawable wallet on your invitee\'s first investment cycle.';
       } else if (userQuery.includes('contact') || userQuery.includes('email') || userQuery.includes('telegram') || userQuery.includes('support')) {
-        replyText = 'You can reach us at:\n• Email: willistonboardofrealtors@gmail.com\n• Telegram: @willistonboardofrealtors\n• Phone: +1 (713) 000-0000';
+        replyText = 'You can reach us at:\n• Email: willistonboardofrealtors@gmail.com\n• Telegram: @willistonboardofrealtors\n• Support available via WhatsApp or Telegram';
       } else if (userQuery.includes('roi') || userQuery.includes('returns') || userQuery.includes('interest')) {
         replyText = 'Our property tiers deliver high returns:\n• Commercial House: 22–28% per annum\n• Standard House: 18–24% per annum\n• Luxury House: 30–40% per annum. Returns are paid at maturity.';
       } else {

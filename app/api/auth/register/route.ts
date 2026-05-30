@@ -118,7 +118,7 @@ export async function POST(request: Request) {
     });
 
     // 7. Send Welcome Email
-    await sendWelcomeEmail(fullName, email, referralCode);
+    await sendWelcomeEmail({ name: fullName, email, referralCode });
 
     return NextResponse.json({
       success: true,

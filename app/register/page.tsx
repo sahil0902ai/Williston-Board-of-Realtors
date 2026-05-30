@@ -13,10 +13,10 @@ export default function Register() {
   // STEP 1 FIELDS
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [phonePrefix, setPhonePrefix] = useState('+234');
+  const [phonePrefix, setPhonePrefix] = useState('+1');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [dob, setDob] = useState('');
-  const [country, setCountry] = useState('Nigeria');
+  const [country, setCountry] = useState('United States');
 
   // STEP 2 FIELDS
   const [password, setPassword] = useState('');

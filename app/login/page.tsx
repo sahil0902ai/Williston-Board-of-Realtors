@@ -139,7 +139,7 @@ export default function Login() {
             <div className="text-[10px] text-gray-text uppercase tracking-widest mt-1">Investors</div>
           </div>
           <div>
-            <div className="text-xl font-bold font-sans text-gold">₦2.4B+</div>
+            <div className="text-xl font-bold font-sans text-gold">$2.4M+</div>
             <div className="text-[10px] text-gray-text uppercase tracking-widest mt-1">Paid Out</div>
           </div>
           <div>

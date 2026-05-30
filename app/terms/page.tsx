@@ -44,7 +44,7 @@ export default function TermsPage() {
             <section className="space-y-3">
               <h2 className="text-xl font-serif text-white">4. Withdrawal and Payouts</h2>
               <p>
-                Withdrawal requests are processed according to the maturity dates of active plans. Early withdrawal is subject to review and may incur penalties. Payouts are made through secure channels such as Cash App, Zelle, Crypto, or ACH transfers.
+                Withdrawal requests are processed according to the maturity dates of active plans. Early withdrawal is subject to review and may incur penalties. Payouts are made through secure channels such as ACH transfers, wire transfers, or other approved payment methods.
               </p>
             </section>
 
@@ -52,6 +52,13 @@ export default function TermsPage() {
               <h2 className="text-xl font-serif text-white">5. Governing Law</h2>
               <p>
                 These Terms are governed by and construed in accordance with the laws of the State of Texas, United States, without regard to conflict of law principles.
+              </p>
+            </section>
+
+            <section id="investor-protection" className="space-y-3 scroll-mt-24">
+              <h2 className="text-xl font-serif text-white">6. Investor Protection Policy</h2>
+              <p>
+                All investor funds are strictly protected. Each investment tier is collateralized by physical, fully verified real estate assets located in high-growth metropolitan areas across the United States. We maintain comprehensive insurance policies, legal deed registration, and conservative loan-to-value ratios to safeguard our investors&rsquo; principal capital.
               </p>
             </section>
           </div>
