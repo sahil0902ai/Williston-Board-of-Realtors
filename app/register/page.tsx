@@ -28,9 +28,9 @@ export default function Register() {
   const [referralCode, setReferralCode] = useState('');
 
   // STEP 3 FIELDS
-  const [verificationType, setVerificationType] = useState<'bvn' | 'nin' | 'passport'>('bvn');
-  const [bvnValue, setBvnValue] = useState('');
-  const [ninValue, setNinValue] = useState('');
+  const [verificationType, setVerificationType] = useState<'ssn' | 'dl' | 'passport'>('ssn');
+  const [ssnValue, setSsnValue] = useState('');
+  const [dlValue, setDlValue] = useState('');
   const [passportFile, setPassportFile] = useState<File | null>(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
 
@@ -171,17 +171,17 @@ export default function Register() {
     e.preventDefault();
     const stepErrors: {[key: string]: string} = {};
 
-    if (verificationType === 'bvn') {
-      if (!bvnValue) {
-        stepErrors.verification = 'BVN is required';
-      } else if (!/^\d{11}$/.test(bvnValue)) {
-        stepErrors.verification = 'BVN must be exactly 11 digits';
+    if (verificationType === 'ssn') {
+      if (!ssnValue) {
+        stepErrors.verification = 'SSN is required';
+      } else if (!/^\d{4}$/.test(ssnValue)) {
+        stepErrors.verification = 'SSN must be the last 4 digits (numeric)';
       }
-    } else if (verificationType === 'nin') {
-      if (!ninValue) {
-        stepErrors.verification = 'NIN is required';
-      } else if (!/^\d{11}$/.test(ninValue)) {
-        stepErrors.verification = 'NIN must be exactly 11 digits';
+    } else if (verificationType === 'dl') {
+      if (!dlValue) {
+        stepErrors.verification = 'Driver\'s License / State ID is required';
+      } else if (dlValue.trim().length < 5) {
+        stepErrors.verification = 'Driver\'s License / State ID must be at least 5 characters';
       }
     } else if (verificationType === 'passport') {
       if (!passportFile) {
@@ -607,7 +607,7 @@ export default function Register() {
 
                   {/* Verification Type Toggle */}
                   <div className="grid grid-cols-3 gap-2 bg-[#04091A] p-1.5 rounded-xl border border-white/5">
-                    {(['bvn', 'nin', 'passport'] as const).map((type) => (
+                    {(['ssn', 'dl', 'passport'] as const).map((type) => (
                       <button
                         key={type}
                         type="button"
@@ -619,40 +619,39 @@ export default function Register() {
                           verificationType === type ? 'bg-gold text-navy' : 'text-gray-text hover:text-white'
                         }`}
                       >
-                        {type === 'bvn' ? 'BVN' : type === 'nin' ? 'NIN' : 'Passport'}
+                        {type === 'ssn' ? 'SSN' : type === 'dl' ? 'State ID / DL' : 'Passport'}
                       </button>
                     ))}
                   </div>
 
                   {/* Verification inputs based on type */}
-                  {verificationType === 'bvn' && (
+                  {verificationType === 'ssn' && (
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-text uppercase tracking-wider block">Bank Verification Number (BVN)</label>
+                      <label className="text-[10px] font-bold text-gray-text uppercase tracking-wider block">Social Security Number (SSN - Last 4 Digits)</label>
                       <input 
                         type="text" 
-                        maxLength={11}
-                        value={bvnValue}
-                        onChange={(e) => setBvnValue(e.target.value.replace(/\D/g, ''))}
+                        maxLength={4}
+                        value={ssnValue}
+                        onChange={(e) => setSsnValue(e.target.value.replace(/\D/g, ''))}
                         className={`w-full px-4 py-2.5 bg-[#04091A] rounded-xl border text-sm text-white focus:outline-none focus:border-gold transition-all ${
                           errors.verification ? 'border-red-500' : 'border-white/5'
                         }`}
-                        placeholder="11-digit BVN"
+                        placeholder="1234"
                       />
                     </div>
                   )}
 
-                  {verificationType === 'nin' && (
+                  {verificationType === 'dl' && (
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-text uppercase tracking-wider block">National Identity Number (NIN)</label>
+                      <label className="text-[10px] font-bold text-gray-text uppercase tracking-wider block">Driver's License / State ID Number</label>
                       <input 
                         type="text" 
-                        maxLength={11}
-                        value={ninValue}
-                        onChange={(e) => setNinValue(e.target.value.replace(/\D/g, ''))}
+                        value={dlValue}
+                        onChange={(e) => setDlValue(e.target.value)}
                         className={`w-full px-4 py-2.5 bg-[#04091A] rounded-xl border text-sm text-white focus:outline-none focus:border-gold transition-all ${
                           errors.verification ? 'border-red-500' : 'border-white/5'
                         }`}
-                        placeholder="11-digit NIN"
+                        placeholder="A1234567"
                       />
                     </div>
                   )}
