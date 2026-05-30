@@ -68,7 +68,7 @@ export default function Education() {
                   <div className="flex gap-4 text-xs text-gray-text font-medium mt-auto pt-4">
                     <span>5 Min Read</span>
                     <span>·</span>
-                    <span>Oct 2023</span>
+                    <span>March 2026</span>
                   </div>
                 </div>
               </Link>
@@ -82,7 +82,7 @@ export default function Education() {
                   <div className="flex gap-4 text-xs text-gray-text font-medium mt-auto pt-4">
                     <span>8 Min Read</span>
                     <span>·</span>
-                    <span>Sep 2023</span>
+                    <span>February 2026</span>
                   </div>
                 </div>
               </Link>

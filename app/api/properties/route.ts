@@ -1,20 +1,16 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { getAuthenticatedUser } from '@/lib/auth-helper';
+import { isAdminRequest } from '@/lib/auth-helper';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: Request) {
+// GET all properties from the catalog
+export async function GET() {
   try {
-    const user = await getAuthenticatedUser(request);
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { data: properties, error } = await supabaseAdmin
-      .from('properties')
+      .from('property_catalog')
       .select('*')
-      .eq('user_id', user.id);
+      .order('created_at', { ascending: false });
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -26,34 +22,32 @@ export async function GET(request: Request) {
   }
 }
 
+// POST: Add new property to catalog (Admin only)
 export async function POST(request: Request) {
   try {
-    const user = await getAuthenticatedUser(request);
-    if (!user) {
+    const isAdmin = await isAdminRequest(request);
+    if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
-    const { propertyName, address, city, state, type, priceUsd, purchaseDate, status, progressPercent, estimatedCompletion } = body;
+    const { name, location, type, type_display, price, roi, status, image_url } = body;
 
-    if (!propertyName || !address) {
-      return NextResponse.json({ error: 'Property name and address are required' }, { status: 400 });
+    if (!name || !location || !type || !price || !roi || !status) {
+      return NextResponse.json({ error: 'Missing required property catalog fields' }, { status: 400 });
     }
 
     const { data: property, error } = await supabaseAdmin
-      .from('properties')
+      .from('property_catalog')
       .insert({
-        user_id: user.id,
-        property_name: propertyName,
-        address,
-        city: city || null,
-        state: state || null,
-        type: type || 'standard',
-        price_usd: priceUsd || 0,
-        purchase_date: purchaseDate || new Date().toISOString().split('T')[0],
-        status: status || 'payment_confirmed',
-        progress_percent: progressPercent || 0,
-        estimated_completion: estimatedCompletion || null
+        name,
+        location,
+        type,
+        type_display: type_display || type,
+        price,
+        roi,
+        status,
+        image_url: image_url || null
       })
       .select('*')
       .single();
@@ -63,6 +57,46 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: true, property }, { status: 201 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+// DELETE: Remove property from catalog (Admin only)
+export async function DELETE(request: Request) {
+  try {
+    const isAdmin = await isAdminRequest(request);
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    let id = searchParams.get('id');
+
+    if (!id) {
+      // Check body as fallback
+      try {
+        const body = await request.json();
+        id = body.id;
+      } catch (e) {
+        // Body was empty or invalid JSON
+      }
+    }
+
+    if (!id) {
+      return NextResponse.json({ error: 'Missing property id' }, { status: 400 });
+    }
+
+    const { error } = await supabaseAdmin
+      .from('property_catalog')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, message: 'Property deleted successfully' });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }

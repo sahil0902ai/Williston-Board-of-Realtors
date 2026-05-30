@@ -1,8 +1,8 @@
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_123456789');
-const FROM_EMAIL = 'Williston Investments <noreply@willistonboard.com>';
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://willistonboard.com';
+const FROM_EMAIL = 'Williston Investments <noreply@williston-board-of-realtors.vercel.app>';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://williston-board-of-realtors.vercel.app';
 
 const getHtmlTemplate = (title: string, bodyContent: string) => {
   return `
@@ -126,7 +126,7 @@ const getHtmlTemplate = (title: string, bodyContent: string) => {
           </div>
           <div class="footer">
             &copy; 2026 Williston Board of Realtors & Investments. All rights reserved.<br>
-            Secure, asset-backed investments. Visit <a href="https://willistonboard.com">willistonboard.com</a>
+             Secure, asset-backed investments. Visit <a href="https://williston-board-of-realtors.vercel.app">williston-board-of-realtors.vercel.app</a>
           </div>
         </div>
       </body>
@@ -150,7 +150,7 @@ export async function sendWelcomeEmail({ name, email, referralCode }: { name: st
             <p style="color:#C9A84C;font-size:24px;font-weight:700;margin:8px 0">${referralCode}</p>
             <p style="color:#8A9BB5;font-size:13px">Share this code and earn 5-10% commission</p>
           </div>
-          <a href="https://willistonboard.com/dashboard"
+           <a href="${APP_URL}/dashboard"
              style="display:inline-block;background:#C9A84C;color:#04091A;padding:14px 28px;font-weight:700;text-decoration:none">
             Go to Dashboard →
           </a>
@@ -190,7 +190,7 @@ export async function sendDepositEmail({ name, email, amount, method, reference 
               <td style="color:#ffffff;text-align:right">${reference}</td>
             </tr>
           </table>
-          <a href="https://willistonboard.com/dashboard"
+           <a href="${APP_URL}/dashboard"
              style="display:inline-block;background:#C9A84C;color:#04091A;padding:14px 28px;font-weight:700;text-decoration:none">
             View Dashboard →
           </a>
@@ -219,7 +219,7 @@ export async function sendReturnEmail({ name, email, amount, plan, balance }: { 
             <p style="color:#8A9BB5;font-size:13px">From your ${plan}</p>
           </div>
           <p style="color:#8A9BB5">New wallet balance: <strong style="color:#ffffff">$${balance}</strong></p>
-          <a href="https://willistonboard.com/dashboard"
+           <a href="${APP_URL}/dashboard"
              style="display:inline-block;background:#C9A84C;color:#04091A;padding:14px 28px;font-weight:700;text-decoration:none;margin-top:16px">
             View Wallet →
           </a>

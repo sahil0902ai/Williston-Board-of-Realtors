@@ -3,9 +3,15 @@
 import Link from "next/link";
 import { MessageCircle, Send } from "lucide-react";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 export default function WhatsAppButton() {
   const [isTgHovered, setIsTgHovered] = useState(false);
+  const pathname = usePathname();
+
+  if (pathname === "/login" || pathname === "/register") {
+    return null;
+  }
 
   return (
     <div className="fixed bottom-20 md:bottom-6 left-6 z-[997] flex flex-col items-start gap-4">

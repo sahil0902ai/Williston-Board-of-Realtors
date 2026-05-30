@@ -6,7 +6,7 @@ import { FadeUp, FadeUpItem } from '@/components/FadeUp';
 type selectedDuration = 'Daily' | 'Weekly' | 'Monthly' | 'Yearly';
 
 const amenities2Bed = ['WiFi', 'AC', 'Generator', 'Water', 'Security', 'Parking', 'Kitchen', 'TV', 'Washing Machine'];
-const amenities3Bed = ['WiFi', '3 AC Units', '24/7 Power', 'Water', 'Security', '2 Parking', 'Full Kitchen', '3 Smart TVs', 'Washing Machine', 'Balcony', 'DSTV'];
+const amenities3Bed = ['WiFi', '3 AC Units', '24/7 Power', 'Water', 'Security', '2 Parking', 'Full Kitchen', '3 Smart TVs', 'Washing Machine', 'Balcony', 'Cable TV'];
 
 const pricing2Bed = {
   Daily: { price: '$300 / night', save: '—' },
@@ -95,7 +95,7 @@ export default function Rentals() {
           <div className="bg-navy-mid border border-border-gold p-2 rounded-2xl max-w-4xl mx-auto flex flex-col md:flex-row gap-2 shadow-2xl shadow-gold/5">
             <div className="flex-1 relative">
               <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gold" />
-              <input type="text" placeholder="Location (e.g. GRA, Houston)" className="w-full bg-navy border border-border-subtle rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-gold transition-colors placeholder-gray-text" />
+              <input type="text" placeholder="Location (e.g. Midtown, Houston)" className="w-full bg-navy border border-border-subtle rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-gold transition-colors placeholder-gray-text" />
             </div>
             <div className="flex-1 relative">
               <select className="w-full bg-navy border border-border-subtle rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-gold appearance-none">
@@ -121,7 +121,7 @@ export default function Rentals() {
       </section>
 
       {/* Main Content */}
-      <section className="py-16 md:py-24 max-w-7xl mx-auto px-6 md:px-12">
+      <section id="apartments" className="py-16 md:py-24 max-w-7xl mx-auto px-6 md:px-12">
         
         {/* Controls */}
         <div className="flex flex-col items-center mb-16">
@@ -223,7 +223,7 @@ export default function Rentals() {
                 Williston Executive Suites
               </h3>
               <div className="flex items-center text-gray-text text-sm mb-4 gap-1">
-                <MapPin size={16} className="text-gold" /> GRA, Houston
+                <MapPin size={16} className="text-gold" /> Midtown, Houston, TX
               </div>
               <p className="text-gray-text text-sm mb-6 leading-relaxed">
                 Spacious fully furnished 3-bedroom executive apartment perfect for families, corporate clients, and extended stays. Features a large living area, modern chef&apos;s kitchen, 3 en-suite bathrooms, and a private balcony.
@@ -292,7 +292,7 @@ export default function Rentals() {
                 <Zap size={24} />
               </div>
               <h4 className="text-white font-medium mb-2">24/7 Power</h4>
-              <p className="text-gray-text text-sm">Solar + diesel generator backup. Never worry about NEPA interruptions again.</p>
+              <p className="text-gray-text text-sm">Solar + diesel generator backup. Reliable power guaranteed — never worry about outages.</p>
             </div>
             <div className="bg-navy-mid border border-border-subtle rounded-2xl p-6 text-center">
               <div className="w-12 h-12 rounded-full bg-gold/10 text-gold flex items-center justify-center mx-auto mb-4 border border-gold/20">
@@ -311,7 +311,8 @@ export default function Rentals() {
                  <h3 className="text-2xl font-serif text-white flex items-center gap-2">
                    <CalendarIcon className="text-gold" /> Check Availability
                  </h3>
-                 <p className="text-sm text-gray-text">Current month overview</p>
+                  <p className="text-sm text-gray-text">Current month overview</p>
+                  <p className="text-[11px] text-gold mt-1 italic">* Availability shown is indicative. Contact us to confirm exact dates.</p>
               </div>
               <div className="flex items-center gap-4 text-xs font-medium">
                  <span className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-green-500/20 border border-green-500"></div> Available</span>
@@ -359,6 +360,18 @@ export default function Rentals() {
                  </div>
               </div>
            </div>
+          {/* WhatsApp / Telegram inquiry link below calendar */}
+          <div className="mt-8 pt-6 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <span className="text-xs text-gray-text text-center sm:text-left">Have questions about stay dates? Contact our team to confirm.</span>
+            <a 
+              href="https://t.me/willistonboardofrealtors" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0088cc] hover:bg-[#0088cc]/90 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-colors"
+            >
+              Inquiry via Telegram &rarr;
+            </a>
+          </div>
         </div>
 
       </section>

@@ -369,11 +369,13 @@ export default function Register() {
                           onChange={(e) => setPhonePrefix(e.target.value)}
                           className="pl-3.5 pr-8 py-2.5 bg-[#04091A] rounded-xl border border-white/5 text-sm text-white focus:outline-none focus:border-gold appearance-none"
                         >
-                          <option value="+234">🇳🇬 +234</option>
                           <option value="+1">🇺🇸 +1</option>
                           <option value="+44">🇬🇧 +44</option>
-                          <option value="+27">🇿🇦 +27</option>
-                          <option value="+254">🇰🇪 +254</option>
+                          <option value="+1 CA">🇨🇦 +1 CA</option>
+                          <option value="+61">🇦🇺 +61</option>
+                          <option value="+971">🇦🇪 +971</option>
+                          <option value="+49">🇩🇪 +49</option>
+                          <option value="Other">Other</option>
                         </select>
                         <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                       </div>
@@ -426,12 +428,13 @@ export default function Register() {
                         onChange={(e) => setCountry(e.target.value)}
                         className="w-full pl-10 pr-10 py-2.5 bg-[#04091A] rounded-xl border border-white/5 text-sm text-white focus:outline-none focus:border-gold appearance-none"
                       >
-                        <option value="Nigeria">Nigeria</option>
                         <option value="United States">United States</option>
-                        <option value="United Kingdom">United Kingdom</option>
-                        <option value="South Africa">South Africa</option>
-                        <option value="Kenya">Kenya</option>
                         <option value="Canada">Canada</option>
+                        <option value="United Kingdom">United Kingdom</option>
+                        <option value="Australia">Australia</option>
+                        <option value="UAE">UAE</option>
+                        <option value="Germany">Germany</option>
+                        <option value="Other">Other</option>
                       </select>
                       <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                     </div>

@@ -7,45 +7,35 @@ export default function Stats() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    function animateCounter(el: HTMLElement, target: number, prefix: string, suffix: string) {
-      const start = performance.now();
-      const duration = 1800;
-      requestAnimationFrame(function tick(now) {
-        const progress = Math.min((now - start) / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        
-        let current: string | number;
-        if (target % 1 !== 0) {
-          current = (eased * target).toFixed(1);
-        } else {
-          current = Math.floor(eased * target);
-        }
-        
-        el.textContent = (prefix || '') + Number(current).toLocaleString('en-US') + (suffix || '');
-        if (progress < 1) requestAnimationFrame(tick);
-      });
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
+    if (typeof window !== 'undefined') {
+      const counters = document.querySelectorAll('[data-count]');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
           const el = entry.target as HTMLElement;
-          const target = parseFloat(el.getAttribute('data-target') || '0');
-          const prefix = el.getAttribute('data-prefix') || '';
-          const suffix = el.getAttribute('data-suffix') || '';
-          
-          animateCounter(el, target, prefix, suffix);
+          const target = parseFloat(el.dataset.count || '0');
+          const prefix = el.dataset.prefix || '';
+          const suffix = el.dataset.suffix || '';
+          const isDecimal = target % 1 !== 0;
+          const start = performance.now();
+          const duration = 2000;
+          function tick(now: number) {
+            const progress = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = eased * target;
+            el.textContent = prefix + (isDecimal ? current.toFixed(1) : Math.floor(current)) + suffix;
+            if (progress < 1) requestAnimationFrame(tick);
+          }
+          requestAnimationFrame(tick);
           observer.unobserve(el);
-        }
-      });
-    }, { threshold: 0.1 });
+        });
+      }, { threshold: 0.3, rootMargin: '0px 0px -50px 0px' });
+      counters.forEach(el => observer.observe(el));
 
-    const elements = document.querySelectorAll('.stat-counter');
-    elements.forEach((el) => observer.observe(el));
-
-    return () => {
-      elements.forEach((el) => observer.unobserve(el));
-    };
+      return () => {
+        counters.forEach(el => observer.unobserve(el));
+      };
+    }
   }, []);
 
   return (
@@ -56,8 +46,8 @@ export default function Stats() {
           {/* Active Investors */}
           <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
             <span 
-              className="stat-counter font-serif text-3xl md:text-4xl text-white normal-case tracking-normal"
-              data-target="4800"
+              className="font-serif text-3xl md:text-4xl text-white normal-case tracking-normal"
+              data-count="4800"
               data-suffix="+"
             >
               0+
@@ -70,8 +60,8 @@ export default function Stats() {
           {/* Returns Distributed */}
           <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
             <span 
-              className="stat-counter font-serif text-3xl md:text-4xl text-white normal-case tracking-normal"
-              data-target="2.4"
+              className="font-serif text-3xl md:text-4xl text-white normal-case tracking-normal"
+              data-count="2.4"
               data-prefix="$"
               data-suffix="M+"
             >
@@ -85,8 +75,8 @@ export default function Stats() {
           {/* Completed Projects */}
           <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
             <span 
-              className="stat-counter font-serif text-3xl md:text-4xl text-white normal-case tracking-normal"
-              data-target="120"
+              className="font-serif text-3xl md:text-4xl text-white normal-case tracking-normal"
+              data-count="120"
               data-suffix="+"
             >
               0+
@@ -99,8 +89,8 @@ export default function Stats() {
           {/* Max Annual ROI */}
           <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
             <span 
-              className="stat-counter font-serif text-3xl md:text-4xl text-gold normal-case tracking-normal"
-              data-target="35"
+              className="font-serif text-3xl md:text-4xl text-gold normal-case tracking-normal"
+              data-count="35"
               data-suffix="%"
             >
               0%
@@ -113,8 +103,9 @@ export default function Stats() {
           {/* Years Experience */}
           <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
             <span 
-              className="stat-counter font-serif text-3xl md:text-4xl text-white normal-case tracking-normal"
-              data-target="8"
+              className="font-serif text-3xl md:text-4xl text-white normal-case tracking-normal"
+              data-count="8"
+              data-suffix=""
             >
               0
             </span>

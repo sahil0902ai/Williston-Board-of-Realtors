@@ -24,7 +24,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://willistonboard.com'),
+  metadataBase: new URL('https://williston-board-of-realtors.vercel.app'),
   title: {
     default: 'Williston Board of Realtors & Investments | Houston, TX',
     template: '%s | Williston Investments'
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Williston Board of Realtors & Investments',
     description: 'Build wealth through premium real estate investment. 18-35% annual returns.',
-    url: 'https://willistonboard.com',
+    url: 'https://williston-board-of-realtors.vercel.app',
     siteName: 'Williston Investments',
     type: 'website',
     locale: 'en_US',
@@ -71,13 +71,13 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: 'your-google-verification-code',
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || 'your-google-verification-code',
   },
   icons: {
     icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">💼</text></svg>',
   },
   alternates: {
-    canonical: 'https://willistonboard.com',
+    canonical: 'https://williston-board-of-realtors.vercel.app',
   },
 };
 

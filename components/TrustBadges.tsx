@@ -8,7 +8,7 @@ export default function TrustBadges() {
     { icon: <Lock size={14} />, text: 'Escrow Protected' },
     { icon: <Server size={14} />, text: 'SSL Secured' },
     { icon: <Key size={14} />, text: '256-bit Encryption' },
-    { icon: <CheckCircle2 size={14} />, text: 'NCC Verified' },
+    { icon: <ShieldCheck size={14} />, text: 'AML Compliant' },
   ];
 
   return (

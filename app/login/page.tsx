@@ -140,7 +140,7 @@ export default function Login() {
           </div>
           <div>
             <div className="text-xl font-bold font-sans text-gold">$2.4M+</div>
-            <div className="text-[10px] text-gray-text uppercase tracking-widest mt-1">Paid Out</div>
+            <div className="text-[10px] text-gray-text uppercase tracking-widest mt-1">Paid</div>
           </div>
           <div>
             <div className="text-xl font-bold font-sans text-gold">8 Years</div>

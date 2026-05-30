@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { MapPin, Building2, Eye, Search } from 'lucide-react';
+import { MapPin, Building2, Eye, Search, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import { FadeUp, FadeUpItem } from './FadeUp';
 import SectionLabel from './SectionLabel';
+import { supabase } from '@/lib/supabase';
 
 interface RealEstateListingsProps {
   isPropertiesPage?: boolean;
@@ -25,7 +26,7 @@ const allProperties = [
     name: "Williston Sunrise — Sugar Land",
     location: "Sugar Land, Houston, TX",
     type: "Land",
-    typeDisplay: "Land Plots with C of O",
+    typeDisplay: "Land Plots — Clear Title",
     price: "$220,000 / Plot",
     roi: "35%",
     status: "Hot Deal",
@@ -112,6 +113,67 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
   const [dropdownType, setDropdownType] = useState('All');
   const [selectedPill, setSelectedPill] = useState('All');
 
+  // Dynamic properties & user session states
+  const [properties, setProperties] = useState<any[]>(allProperties);
+  const [user, setUser] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  
+  // Investment modal states
+  const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  const [purchaseAmount, setPurchaseAmount] = useState('');
+  const [purchaseStatus, setPurchaseStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Fetch properties and user session
+  useEffect(() => {
+    async function loadProperties() {
+      try {
+        const res = await fetch('/api/properties');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const mapped = data.map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              location: p.location,
+              type: p.type,
+              typeDisplay: p.type_display || p.type,
+              price: p.price,
+              roi: p.roi,
+              status: p.status,
+              imageUrl: p.image_url
+            }));
+            setProperties(mapped);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch properties catalog, using fallbacks:', err);
+      }
+    }
+
+    async function checkUserSession() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setUser(user);
+          const { data: profile } = await supabase
+            .from('users')
+            .select('wallet_balance, full_name')
+            .eq('id', user.id)
+            .single();
+          if (profile) {
+            setUserProfile(profile);
+          }
+        }
+      } catch (err) {
+        console.error('Session check failed:', err);
+      }
+    }
+
+    loadProperties();
+    checkUserSession();
+  }, []);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setLocationSearch(locationInput);
@@ -122,8 +184,56 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
     setSelectedPill(pill);
   };
 
+  const handlePurchaseSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProperty) return;
+
+    const amount = parseFloat(purchaseAmount);
+    if (isNaN(amount) || amount <= 0) {
+      setErrorMessage('Please enter a valid investment amount');
+      return;
+    }
+
+    const userBalance = parseFloat(userProfile?.wallet_balance || '0');
+    if (amount > userBalance) {
+      setErrorMessage('Insufficient wallet balance. Please fund your wallet.');
+      return;
+    }
+
+    setPurchaseStatus('loading');
+    try {
+      const res = await fetch('/api/properties/purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          propertyId: selectedProperty.id || selectedProperty.name,
+          amount
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setPurchaseStatus('success');
+        setUserProfile((prev: any) => ({
+          ...prev,
+          wallet_balance: userBalance - amount
+        }));
+        setTimeout(() => {
+          setSelectedProperty(null);
+        }, 3000);
+      } else {
+        setPurchaseStatus('error');
+        setErrorMessage(data.error || 'Failed to complete co-ownership purchase');
+      }
+    } catch (err: any) {
+      console.error(err);
+      setPurchaseStatus('error');
+      setErrorMessage('Network error. Please try again.');
+    }
+  };
+
   // Filter properties
-  const propertiesToFilter = isPropertiesPage ? allProperties : allProperties.slice(0, 3);
+  const propertiesToFilter = isPropertiesPage ? properties : properties.slice(0, 3);
 
   const filteredProperties = propertiesToFilter.filter((prop) => {
     // 1. Search text (location/name)
@@ -247,10 +357,20 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
             {filteredProperties.map((prop, idx) => (
               <FadeUpItem key={idx} className="group cursor-pointer">
                 <div className="relative aspect-[4/3] rounded-t-xl overflow-hidden group/image bg-gradient-to-br from-navy-mid to-navy flex flex-col items-center justify-center">
-                  <div className="absolute inset-0 opacity-20 pointer-events-none mix-blend-overlay" style={{ backgroundImage: "url('https://picsum.photos/seed/noise/400/400?grayscale')" }}></div>
+                  {prop.imageUrl || prop.image_url ? (
+                    <img 
+                      src={prop.imageUrl || prop.image_url} 
+                      alt={prop.name} 
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-750" 
+                    />
+                  ) : (
+                    <>
+                      <div className="absolute inset-0 opacity-20 pointer-events-none mix-blend-overlay" style={{ backgroundImage: "url('https://picsum.photos/seed/noise/400/400?grayscale')" }}></div>
+                      <Building2 size={72} className="text-white/5 opacity-50 group-hover:scale-110 transition-transform duration-700" strokeWidth={1} />
+                    </>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-navy via-transparent to-transparent z-10 pointer-events-none"></div>
 
-                  <Building2 size={72} className="text-white/5 opacity-50 group-hover:scale-110 transition-transform duration-700" strokeWidth={1} />
                   <span className="text-gold/50 uppercase tracking-widest text-[10px] font-semibold mt-4 z-10">{prop.typeDisplay}</span>
 
                   {/* Hover overlay with Quick View */}
@@ -302,12 +422,21 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
                   </div>
 
                   {isPropertiesPage && (
-                    <Link 
-                      href="/register" 
+                    <button 
+                      onClick={() => {
+                        if (!user) {
+                          window.location.href = '/login';
+                        } else {
+                          setSelectedProperty(prop);
+                          setPurchaseStatus('idle');
+                          setPurchaseAmount('');
+                          setErrorMessage('');
+                        }
+                      }}
                       className="mt-6 w-full py-2.5 bg-gold hover:bg-gold-light text-navy text-center font-bold rounded-xl text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-gold/10"
                     >
                       Invest Now
-                    </Link>
+                    </button>
                   )}
                 </div>
               </FadeUpItem>
@@ -322,6 +451,90 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
         )}
 
       </div>
+
+      {/* Dynamic Investment Purchase Modal */}
+      {selectedProperty && (
+        <div className="fixed inset-0 bg-[rgba(4,9,26,0.97)] z-50 flex items-center justify-center p-4">
+          <div className="bg-navy-mid border border-border-gold rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto relative animate-in fade-in zoom-in-95 duration-200">
+            <button 
+              onClick={() => setSelectedProperty(null)}
+              className="absolute top-4 right-4 text-gray-text hover:text-white bg-navy border border-border-subtle rounded-full p-1"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="p-8">
+              {purchaseStatus === 'success' ? (
+                <div className="text-center py-10 space-y-4">
+                  <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center text-green-400 mx-auto mb-6">
+                    <CheckCircle2 size={40} />
+                  </div>
+                  <h3 className="text-2xl font-serif text-white">Investment Confirmed!</h3>
+                  <p className="text-gray-text">
+                    You have successfully co-purchased fraction shares of <strong className="text-white">{selectedProperty.name}</strong>.
+                    <br /><br />
+                    Daily yields calculations are now active in your dashboard ledger.
+                  </p>
+                  <button 
+                    onClick={() => {
+                      setSelectedProperty(null);
+                      window.location.href = '/dashboard';
+                    }}
+                    className="w-full mt-6 py-4 bg-gold text-navy font-bold rounded-xl hover:bg-white transition-colors"
+                  >
+                    Go to Dashboard
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <h3 className="text-2xl font-serif text-white mb-2">Invest in Property Co-ownership</h3>
+                  <p className="text-sm text-gray-text mb-6">Purchase fraction shares in {selectedProperty.name} to yield consistent ROI.</p>
+
+                  <div className="bg-navy p-4 border border-border-subtle rounded-xl mb-6 space-y-2 text-xs">
+                    <div className="flex justify-between"><span className="text-gray-text">Location</span><span className="text-white font-medium">{selectedProperty.location}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-text">Expected ROI</span><span className="text-gold font-bold">{selectedProperty.roi}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-text">Target Price</span><span className="text-white font-medium">{selectedProperty.price}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-text">Wallet Balance</span><span className="text-white font-mono font-bold">${parseFloat(userProfile?.wallet_balance || '0').toLocaleString()}</span></div>
+                  </div>
+
+                  <form onSubmit={handlePurchaseSubmit} className="space-y-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-gray-text uppercase tracking-widest font-semibold">Investment Amount ($)</label>
+                      <input 
+                        type="number"
+                        required
+                        min="1"
+                        placeholder="Enter investment amount in USD..."
+                        value={purchaseAmount}
+                        onChange={(e) => setPurchaseAmount(e.target.value)}
+                        className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:border-gold focus:outline-none placeholder-gray-text/50"
+                      />
+                    </div>
+
+                    {errorMessage && (
+                      <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs text-red-400 flex items-center gap-2">
+                        <AlertCircle size={14} className="shrink-0" />
+                        <span>{errorMessage}</span>
+                      </div>
+                    )}
+
+                    <div className="pt-4">
+                      <button 
+                        type="submit" 
+                        disabled={purchaseStatus === 'loading'}
+                        className="w-full py-4 bg-gold text-navy font-bold rounded-xl hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {purchaseStatus === 'loading' ? 'Processing Purchase...' : 'Confirm Purchase'}
+                      </button>
+                      <p className="text-center text-xs text-gray-400 mt-4">Funds will be immediately deducted from your primary wallet balance.</p>
+                    </div>
+                  </form>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

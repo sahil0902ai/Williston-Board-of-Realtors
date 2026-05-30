@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/dashboard', '/admin', '/deposit', '/withdraw'],
     },
-    sitemap: 'https://willistonboard.com/sitemap.xml',
+    sitemap: 'https://williston-board-of-realtors.vercel.app/sitemap.xml',
   };
 }

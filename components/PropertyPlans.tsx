@@ -44,7 +44,7 @@ export default function PropertyPlans() {
                 'Pre-leased to anchor tenants',
                 '5-year minimum lease agreements secured',
                 'Monthly rental income to investor',
-                'Full property title (C of O) transferred',
+                'Full warranty deed and title transferred',
                 'Professional property management included',
                 'Capital appreciation 15–20% yearly',
                 'Legal documentation & deed of assignment',
@@ -82,7 +82,7 @@ export default function PropertyPlans() {
               {[
                 '3-4 bedroom detached/semi-detached house',
                 'Gated estate with 24/7 security',
-                'Full title documentation (C of O)',
+                'Full title deed documentation included',
                 'Ready to move-in or rent out immediately',
                 'Rental management service available',
                 '12-month defect liability warranty',

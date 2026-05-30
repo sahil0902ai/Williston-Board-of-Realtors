@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { Home, ArrowRight } from 'lucide-react';
 import { FadeUp } from '@/components/FadeUp';
 
-export default function RentalPromo() {
+export default function RentalPromo({ isRentPage = false }: { isRentPage?: boolean }) {
   return (
     <section className="py-24 bg-[#020510] relative border-b border-border-subtle">
       <div className="absolute inset-0 opacity-5 mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('https://picsum.photos/seed/interior1/1920/1080?grayscale')" }}></div>
@@ -33,13 +33,19 @@ export default function RentalPromo() {
                   <span className="w-1.5 h-1.5 rounded-full bg-gold"></span> 2 & 3 Bedroom fully furnished options
                 </li>
                 <li className="flex items-center gap-2 text-sm text-gray-300">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gold"></span> All utilities included (Solar/Gen + Fast WiFi)
+                  <span className="w-1.5 h-1.5 rounded-full bg-gold"></span> All utilities included (Solar + Generator Backup + Fast WiFi)
                 </li>
               </ul>
 
-              <Link href="/rent" className="inline-flex items-center gap-2 bg-gold text-navy font-bold px-8 py-4 rounded-xl hover:bg-white transition-colors">
-                View Available Apartments <ArrowRight size={20} />
-              </Link>
+              {isRentPage ? (
+                <a href="#apartments" className="inline-flex items-center gap-2 bg-gold text-navy font-bold px-8 py-4 rounded-xl hover:bg-white transition-colors">
+                  View Available Apartments <ArrowRight size={20} />
+                </a>
+              ) : (
+                <Link href="/rent" className="inline-flex items-center gap-2 bg-gold text-navy font-bold px-8 py-4 rounded-xl hover:bg-white transition-colors">
+                  View Available Apartments <ArrowRight size={20} />
+                </Link>
+              )}
             </div>
             
             <div className="grid grid-cols-2 gap-4">

@@ -8,7 +8,7 @@ import {
   Settings, LogOut, Search, Shield, Eye, Check, X, ShieldAlert, 
   ArrowUpRight, ArrowDownRight, Edit, Trash2, Mail, Phone, 
   Calendar, User, FileUp, CheckCircle, RefreshCw, ChevronRight, 
-  Download, Plus, AlertCircle, Lock
+  Download, Plus, AlertCircle, Lock, MapPin
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
@@ -124,6 +124,8 @@ export default function AdminDashboard() {
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [deposits, setDeposits] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [rentals, setRentals] = useState<any[]>([]);
+  const [properties, setProperties] = useState<any[]>([]);
 
   // API Integration States
   const [analytics, setAnalytics] = useState<any>(null);
@@ -203,6 +205,24 @@ export default function AdminDashboard() {
           setPlans(data);
         } else if (data.success && Array.isArray(data.plans)) {
           setPlans(data.plans);
+        }
+      }
+
+      // 6. Fetch Rentals
+      const rentalsRes = await fetch('/api/rentals');
+      if (rentalsRes.ok) {
+        const data = await rentalsRes.json();
+        if (Array.isArray(data)) {
+          setRentals(data);
+        }
+      }
+
+      // 7. Fetch Properties Catalog
+      const propertiesRes = await fetch('/api/properties');
+      if (propertiesRes.ok) {
+        const data = await propertiesRes.json();
+        if (Array.isArray(data)) {
+          setProperties(data);
         }
       }
     } catch (e) {
@@ -583,6 +603,134 @@ export default function AdminDashboard() {
     a.click();
   };
 
+  // Rentals & Properties States & Actions
+  const [showAddPropertyModal, setShowAddPropertyModal] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [newProperty, setNewProperty] = useState({
+    name: '',
+    location: '',
+    type: 'Residential',
+    type_display: '',
+    price: '',
+    roi: '',
+    status: 'Open',
+    image_url: ''
+  });
+
+  const handleUpdateRentalStatus = async (id: string, newStatus: string) => {
+    try {
+      const res = await fetch('/api/rentals', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: newStatus })
+      });
+      if (res.ok) {
+        fetchAdminData();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to update status');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error updating rental status');
+    }
+  };
+
+  const handleRejectRental = async (id: string) => {
+    if (!confirm('Are you sure you want to reject and remove this booking?')) return;
+    try {
+      const res = await fetch(`/api/rentals?id=${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        fetchAdminData();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to reject booking');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error rejecting booking');
+    }
+  };
+
+  const handleAddProperty = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/properties', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newProperty)
+      });
+      if (res.ok) {
+        setShowAddPropertyModal(false);
+        setNewProperty({
+          name: '',
+          location: '',
+          type: 'Residential',
+          type_display: '',
+          price: '',
+          roi: '',
+          status: 'Open',
+          image_url: ''
+        });
+        fetchAdminData();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to add property');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error adding property');
+    }
+  };
+
+  const handleDeleteProperty = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this property listing?')) return;
+    try {
+      const res = await fetch(`/api/properties?id=${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        fetchAdminData();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to delete property');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error deleting property');
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    setUploadingImage(true);
+    try {
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setNewProperty(prev => ({ ...prev, image_url: data.imageUrl }));
+      } else {
+        alert(data.error || 'Failed to upload image');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to upload image');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+
   // Calculate pending counts
   const pendingWithdrawalsCount = withdrawals.filter(w => w.status === 'Pending').length;
   const pendingDepositsCount = deposits.filter(d => d.status === 'Pending').length;
@@ -705,19 +853,21 @@ export default function AdminDashboard() {
           </button>
 
           <button 
-            onClick={() => {}} 
-            disabled
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 cursor-not-allowed opacity-50"
+            onClick={() => setActiveTab('properties')} 
+            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
+              activeTab === 'properties' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
+            }`}
           >
-            <Building size={18} /> Properties <span className="text-[9px] bg-gray-700 text-gray-300 px-1 rounded ml-auto">Hold</span>
+            <Building size={18} /> Properties
           </button>
 
           <button 
-            onClick={() => {}} 
-            disabled
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 cursor-not-allowed opacity-50"
+            onClick={() => setActiveTab('rentals')} 
+            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
+              activeTab === 'rentals' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
+            }`}
           >
-            <Bed size={18} /> Rentals <span className="text-[9px] bg-gray-700 text-gray-300 px-1 rounded ml-auto">Hold</span>
+            <Bed size={18} /> Rentals
           </button>
 
           <button 
@@ -1210,6 +1360,346 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
+            </div>
+          )}
+
+          {/* ==========================================
+              TAB VIEW: PROPERTIES CATALOG
+              ========================================== */}
+          {activeTab === 'properties' && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              {/* Header */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-3xl font-serif font-bold text-white mb-2">Properties Catalog</h1>
+                  <p className="text-gray-text text-sm">Add, remove, and manage properties listed in the investments catalog.</p>
+                </div>
+                <button
+                  onClick={() => setShowAddPropertyModal(true)}
+                  className="px-4 py-2.5 bg-gold hover:bg-gold-light text-navy font-bold rounded-xl text-xs flex items-center gap-2 self-start md:self-auto transition shadow-lg"
+                >
+                  <Plus size={16} /> Add Property
+                </button>
+              </div>
+
+              {/* Property Grid */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {properties.map((prop) => (
+                  <div key={prop.id} className="bg-navy-mid border border-border-subtle rounded-xl overflow-hidden flex flex-col group hover:border-gold/30 transition duration-300">
+                    <div className="relative aspect-[4/3] bg-navy flex flex-col items-center justify-center border-b border-border-subtle">
+                      {prop.image_url ? (
+                        <img src={prop.image_url} alt={prop.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      ) : (
+                        <>
+                          <Building size={48} className="text-gray-600 mb-2" />
+                          <span className="text-[10px] text-gray-500 uppercase tracking-widest font-mono">No Image</span>
+                        </>
+                      )}
+                      
+                      <div className="absolute top-3 left-3 bg-[rgba(4,9,26,0.9)] border border-white/10 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded text-white flex items-center gap-1.5 shadow-lg">
+                        <div className={`w-1.5 h-1.5 rounded-full ${prop.status === 'Hot Deal' ? 'bg-gold' : prop.status === 'Coming Soon' ? 'bg-amber-500' : 'bg-green-500'}`}></div>
+                        {prop.status}
+                      </div>
+
+                      <button
+                        onClick={() => handleDeleteProperty(prop.id)}
+                        className="absolute bottom-3 right-3 p-2 bg-red-950/80 border border-red-500/30 rounded-lg text-red-400 hover:text-white hover:bg-red-600 transition"
+                        title="Delete Property"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+
+                    <div className="p-5 flex-1 flex flex-col justify-between">
+                      <div>
+                        <span className="text-[10px] text-gold uppercase tracking-widest font-bold">{prop.type_display || prop.type}</span>
+                        <h3 className="font-serif text-lg text-white font-bold mt-1 line-clamp-1">{prop.name}</h3>
+                        <p className="text-gray-text text-xs mt-2 flex items-center gap-1">
+                          <MapPin size={12} className="shrink-0 text-gold" /> <span className="line-clamp-1">{prop.location}</span>
+                        </p>
+                      </div>
+
+                      <div className="border-t border-border-subtle/55 my-4"></div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <div className="text-gray-text uppercase tracking-widest text-[9px]">Price</div>
+                          <div className="font-bold text-white mt-0.5">{prop.price}</div>
+                        </div>
+                        <div>
+                          <div className="text-gray-text uppercase tracking-widest text-[9px]">ROI</div>
+                          <div className="font-bold text-gold mt-0.5">{prop.roi}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {properties.length === 0 && (
+                  <div className="col-span-full py-16 text-center bg-navy-mid border border-dashed border-white/5 rounded-xl">
+                    <Building size={48} className="text-gray-600 mx-auto mb-4" />
+                    <h3 className="text-lg font-serif text-white font-bold">No Catalog Listings</h3>
+                    <p className="text-gray-text text-xs mt-1">Add your first property above to display co-ownership investments on properties catalog.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Add Property Modal */}
+              {showAddPropertyModal && (
+                <div className="fixed inset-0 bg-navy/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
+                  <div className="w-full max-w-lg bg-navy-light border border-border-gold rounded-2xl p-6 shadow-2xl overflow-y-auto max-h-[90vh] animate-in zoom-in-95 duration-200">
+                    <div className="flex justify-between items-center mb-6">
+                      <h3 className="text-lg font-serif font-bold text-gold">Add Property Listing</h3>
+                      <button onClick={() => setShowAddPropertyModal(false)} className="text-gray-text hover:text-white"><X size={20} /></button>
+                    </div>
+
+                    <form onSubmit={handleAddProperty} className="space-y-4">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs uppercase tracking-wider text-gray-text font-bold mb-2">Property Name</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Williston Plaza"
+                            value={newProperty.name}
+                            onChange={(e) => setNewProperty({ ...newProperty, name: e.target.value })}
+                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs uppercase tracking-wider text-gray-text font-bold mb-2">Location</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Houston, TX"
+                            value={newProperty.location}
+                            onChange={(e) => setNewProperty({ ...newProperty, location: e.target.value })}
+                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs uppercase tracking-wider text-gray-text font-bold mb-2">Property Type</label>
+                          <select
+                            value={newProperty.type}
+                            onChange={(e) => setNewProperty({ ...newProperty, type: e.target.value })}
+                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2.5 text-xs text-white focus:outline-none"
+                          >
+                            <option value="Residential">Residential</option>
+                            <option value="Commercial">Commercial</option>
+                            <option value="Land">Land</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs uppercase tracking-wider text-gray-text font-bold mb-2">Type Display label</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Mixed-Use Commercial"
+                            value={newProperty.type_display}
+                            onChange={(e) => setNewProperty({ ...newProperty, type_display: e.target.value })}
+                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-xs uppercase tracking-wider text-gray-text font-bold mb-2">Price Target</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. $850,000 / Unit"
+                            value={newProperty.price}
+                            onChange={(e) => setNewProperty({ ...newProperty, price: e.target.value })}
+                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs uppercase tracking-wider text-gray-text font-bold mb-2">ROI Percent</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. 28%"
+                            value={newProperty.roi}
+                            onChange={(e) => setNewProperty({ ...newProperty, roi: e.target.value })}
+                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs uppercase tracking-wider text-gray-text font-bold mb-2">Status badge</label>
+                          <select
+                            value={newProperty.status}
+                            onChange={(e) => setNewProperty({ ...newProperty, status: e.target.value })}
+                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2.5 text-xs text-white focus:outline-none"
+                          >
+                            <option value="Open">Open</option>
+                            <option value="Hot Deal">Hot Deal</option>
+                            <option value="Coming Soon">Coming Soon</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Image Upload Input */}
+                      <div>
+                        <label className="block text-xs uppercase tracking-wider text-gray-text font-bold mb-2">Custom Image Upload</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder="Or enter image URL manually..."
+                            value={newProperty.image_url}
+                            onChange={(e) => setNewProperty({ ...newProperty, image_url: e.target.value })}
+                            className="flex-1 bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold"
+                          />
+                          <div className="relative">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageUpload}
+                              className="hidden"
+                              id="property-image-upload"
+                              disabled={uploadingImage}
+                            />
+                            <label
+                              htmlFor="property-image-upload"
+                              className={`px-4 py-2.5 bg-navy border border-border-gold text-gold font-bold rounded-lg text-xs flex items-center gap-1.5 cursor-pointer hover:bg-gold hover:text-navy transition ${uploadingImage ? 'opacity-50 cursor-wait' : ''}`}
+                            >
+                              <FileUp size={14} /> {uploadingImage ? 'Uploading...' : 'Upload'}
+                            </label>
+                          </div>
+                        </div>
+                        {newProperty.image_url && (
+                          <div className="mt-3 relative aspect-video w-32 rounded-lg border border-border-subtle overflow-hidden bg-navy/40">
+                            <img src={newProperty.image_url} alt="Uploaded Property Preview" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex gap-3 justify-end pt-4 border-t border-border-subtle">
+                        <button
+                          type="button"
+                          onClick={() => setShowAddPropertyModal(false)}
+                          className="px-4 py-2 bg-navy border border-border-subtle rounded-lg text-xs text-gray-text hover:text-white"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={uploadingImage}
+                          className="px-4 py-2 bg-gold hover:bg-gold-light text-navy text-xs font-bold rounded-lg transition disabled:opacity-50"
+                        >
+                          Add Listing
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ==========================================
+              TAB VIEW: RENTALS MANAGEMENT
+              ========================================== */}
+          {activeTab === 'rentals' && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              {/* Header */}
+              <div>
+                <h1 className="text-3xl font-serif font-bold text-white mb-2">Rentals Booking Flow</h1>
+                <p className="text-gray-text text-sm">Review, approve, and manage guest check-ins/check-outs for furnished apartments.</p>
+              </div>
+
+              {/* Table */}
+              <div className="bg-navy-mid border border-border-subtle rounded-xl overflow-hidden shadow-xl">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm border-collapse">
+                    <thead>
+                      <tr className="bg-navy-light/40 text-gray-text text-xs uppercase tracking-wider">
+                        <th className="p-4 font-semibold">Guest</th>
+                        <th className="p-4 font-semibold">Apartment</th>
+                        <th className="p-4 font-semibold font-mono">Check-in / Check-out</th>
+                        <th className="p-4 font-semibold font-mono">Duration</th>
+                        <th className="p-4 font-semibold">Price</th>
+                        <th className="p-4 font-semibold">Status</th>
+                        <th className="p-4 font-semibold text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border-subtle">
+                      {rentals.map((r) => (
+                        <tr key={r.id} className="hover:bg-navy-light/20 transition-colors">
+                          <td className="p-4">
+                            <div className="font-semibold text-white">{r.guest_name}</div>
+                            <div className="text-[10px] text-gray-text/75">{r.guest_email} &bull; {r.guest_phone || 'No phone'}</div>
+                          </td>
+                          <td className="p-4 text-xs font-bold text-gold uppercase">{r.apartment_type === '2bed' ? '2 Bedroom Apartment' : '3 Bedroom Apartment'}</td>
+                          <td className="p-4 text-xs font-mono text-gray-300">
+                            {new Date(r.checkin_date).toLocaleDateString()} &mdash; {new Date(r.checkout_date).toLocaleDateString()}
+                          </td>
+                          <td className="p-4 text-xs text-gray-300 uppercase tracking-widest">{r.duration_type}</td>
+                          <td className="p-4 font-mono font-bold text-white">${parseFloat(r.total_price || 0).toLocaleString()}</td>
+                          <td className="p-4">
+                            <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider ${
+                              r.status === 'confirmed' ? 'bg-green-500/10 text-green-400' :
+                              r.status === 'pending' ? 'bg-amber-500/10 text-amber-400' :
+                              r.status === 'checked_in' ? 'bg-blue-500/10 text-blue-400' :
+                              'bg-gray-500/10 text-gray-400'
+                            }`}>{r.status.replace('_', ' ')}</span>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center justify-center gap-2">
+                              {r.status === 'pending' && (
+                                <>
+                                  <button
+                                    onClick={() => handleUpdateRentalStatus(r.id, 'confirmed')}
+                                    className="px-2.5 py-1 bg-green-600 hover:bg-green-500 text-white rounded text-[10px] font-bold transition flex items-center gap-1"
+                                  >
+                                    <Check size={10} /> Approve
+                                  </button>
+                                  <button
+                                    onClick={() => handleRejectRental(r.id)}
+                                    className="px-2.5 py-1 bg-red-600 hover:bg-red-500 text-white rounded text-[10px] font-bold transition flex items-center gap-1"
+                                  >
+                                    <X size={10} /> Reject
+                                  </button>
+                                </>
+                              )}
+                              
+                              {r.status === 'confirmed' && (
+                                <button
+                                  onClick={() => handleUpdateRentalStatus(r.id, 'checked_in')}
+                                  className="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded text-[10px] font-bold transition flex items-center gap-1"
+                                >
+                                  Check-In
+                                </button>
+                              )}
+
+                              {r.status === 'checked_in' && (
+                                <button
+                                  onClick={() => handleUpdateRentalStatus(r.id, 'checked_out')}
+                                  className="px-2.5 py-1 bg-gray-600 hover:bg-gray-500 text-white rounded text-[10px] font-bold transition flex items-center gap-1"
+                                >
+                                  Check-Out
+                                </button>
+                              )}
+
+                              {r.status === 'checked_out' && (
+                                <span className="text-[10px] text-gray-text/50 font-mono italic">Audit Log Sealed</span>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      
+                      {rentals.length === 0 && (
+                        <tr>
+                          <td colSpan={7} className="p-8 text-center text-gray-text text-sm">No rental bookings registered yet.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           )}
 

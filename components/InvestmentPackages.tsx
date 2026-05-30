@@ -2,7 +2,7 @@ import { Check } from "lucide-react";
 import { FadeUp, FadeUpItem } from './FadeUp';
 import SectionLabel from './SectionLabel';
 
-export default function InvestmentPackages() {
+export default function InvestmentPackages({ hideHeader = false }: { hideHeader?: boolean }) {
   const plans = [
     {
       name: "Foundation",
@@ -64,13 +64,15 @@ export default function InvestmentPackages() {
   return (
     <section id="invest" className="py-16 md:py-24 bg-navy">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
-        <FadeUp className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
-          <SectionLabel>Investment Plans</SectionLabel>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif mb-4">Select Your Plan</h2>
-          <p className="text-gray-text text-lg">
-            Choose an investment package that aligns with your financial goals. All capital is secured against verified real estate assets.
-          </p>
-        </FadeUp>
+        {!hideHeader && (
+          <FadeUp className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
+            <SectionLabel>Investment Plans</SectionLabel>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif mb-4">Select Your Plan</h2>
+            <p className="text-gray-text text-lg">
+              Choose an investment package that aligns with your financial goals. All capital is secured against verified real estate assets.
+            </p>
+          </FadeUp>
+        )}
 
         <FadeUp stagger className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {plans.map((plan, index) => (

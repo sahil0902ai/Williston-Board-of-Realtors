@@ -14,7 +14,7 @@ export default function ReferralTab({ profile }: ReferralTabProps) {
 
   const referralLink = typeof window !== 'undefined' 
     ? `${window.location.origin}/register?ref=${profile?.referral_code || ''}`
-    : `https://willistonboard.com/register?ref=${profile?.referral_code || ''}`;
+    : `https://williston-board-of-realtors.vercel.app/register?ref=${profile?.referral_code || ''}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);
