@@ -128,7 +128,7 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
           <h2 className="text-2xl font-serif text-white">Dashboard Overview</h2>
           <p className="text-sm text-gray-text">Welcome back, {profile?.full_name || 'Investor'}</p>
         </div>
-        <div>
+        <div className="flex flex-wrap gap-3">
           <a
             href="/deposit"
             style={{
@@ -146,6 +146,24 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
             }}
           >
             💳 Deposit Funds
+          </a>
+          <a
+            href="/withdraw"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '14px 32px',
+              background: 'transparent',
+              color: '#C9A84C',
+              fontWeight: 700,
+              fontSize: '15px',
+              textDecoration: 'none',
+              border: '1px solid rgba(201,168,76,0.4)',
+              cursor: 'pointer',
+            }}
+          >
+            💸 Withdraw Funds
           </a>
         </div>
       </div>
@@ -259,9 +277,9 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
         <a href="/deposit" className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-gold rounded-xl hover:bg-gold/10 transition-colors text-sm font-medium text-gold">
           <ArrowDownRight size={16} /> Deposit Funds
         </a>
-        <button className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-subtle rounded-xl hover:border-gold/30 hover:text-white transition-colors text-sm font-medium text-gray-text" onClick={() => setActiveTab('withdraw')}>
+        <a href="/withdraw" className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-subtle rounded-xl hover:border-gold/30 hover:text-white transition-colors text-sm font-medium text-gray-text">
           <ArrowUpRight size={16} /> Withdraw
-        </button>
+        </a>
         <button className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-subtle rounded-xl hover:border-gold/30 hover:text-white transition-colors text-sm font-medium text-gray-text" onClick={() => setActiveTab('investments')}>
           <Plus size={16} /> New Investment
         </button>
