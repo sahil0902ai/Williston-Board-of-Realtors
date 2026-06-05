@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { TrendingUp, Plus, ArrowUpRight, ArrowDownRight, Wallet, ArrowRight, Share2, Loader2 } from 'lucide-react';
+import { TrendingUp, Plus, ArrowUpRight, ArrowDownRight, Wallet, ArrowRight, Share2, Loader2, CheckCircle2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const COLORS = ['#1E3A8A', '#C9A84C', '#10B981', '#6366F1']; // Navy blue, Gold, Green, Indigo
@@ -15,6 +15,17 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
   const [transactions, setTransactions] = useState<any[]>([]);
   const [referralStats, setReferralStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [toastMessage, setToastMessage] = useState('');
+
+  const handleReferFriend = () => {
+    const referralLink = typeof window !== 'undefined' 
+      ? `${window.location.origin}/register?ref=${profile?.referral_code || ''}`
+      : `https://williston-board-of-realtors.vercel.app/register?ref=${profile?.referral_code || ''}`;
+    
+    navigator.clipboard.writeText(referralLink);
+    setToastMessage("Referral link copied!");
+    setTimeout(() => setToastMessage(''), 2000);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -280,10 +291,10 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
         <a href="/withdraw" className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-subtle rounded-xl hover:border-gold/30 hover:text-white transition-colors text-sm font-medium text-gray-text">
           <ArrowUpRight size={16} /> Withdraw
         </a>
-        <button className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-subtle rounded-xl hover:border-gold/30 hover:text-white transition-colors text-sm font-medium text-gray-text" onClick={() => setActiveTab('investments')}>
+        <a href="/#invest" className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-subtle rounded-xl hover:border-gold/30 hover:text-white transition-colors text-sm font-medium text-gray-text">
           <Plus size={16} /> New Investment
-        </button>
-        <button className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-subtle rounded-xl hover:border-gold/30 hover:text-white transition-colors text-sm font-medium text-gray-text" onClick={() => setActiveTab('referrals')}>
+        </a>
+        <button className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-subtle rounded-xl hover:border-gold/30 hover:text-white transition-colors text-sm font-medium text-gray-text cursor-pointer" onClick={handleReferFriend}>
           <Share2 size={16} /> Refer a Friend
         </button>
       </div>
@@ -389,6 +400,12 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
           </table>
         </div>
       </div>
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-green-500 text-white font-semibold px-4 py-3 rounded-lg shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <CheckCircle2 size={16} />
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </div>
   );
 }

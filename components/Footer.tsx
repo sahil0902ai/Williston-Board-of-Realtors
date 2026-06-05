@@ -45,8 +45,8 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-6 uppercase tracking-widest text-sm">Account</h4>
             <ul className="space-y-4 text-sm text-gray-text">
               <li><Link href="/dashboard" className="hover:text-gold transition-colors">Dashboard</Link></li>
-              <li><Link href="/dashboard" className="hover:text-gold transition-colors">Deposit Funds</Link></li>
-              <li><Link href="/dashboard" className="hover:text-gold transition-colors">Withdraw Funds</Link></li>
+              <li><Link href="/deposit" className="hover:text-gold transition-colors">Deposit Funds</Link></li>
+              <li><Link href="/withdraw" className="hover:text-gold transition-colors">Withdraw Funds</Link></li>
               <li><Link href="/#referral" className="hover:text-gold transition-colors">Referral Program</Link></li>
               <li><Link href="/#learn" className="hover:text-gold transition-colors">Financial Education</Link></li>
             </ul>

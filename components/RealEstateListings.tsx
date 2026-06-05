@@ -120,6 +120,7 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
   
   // Investment modal states
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  const [quickViewProperty, setQuickViewProperty] = useState<any>(null);
   const [purchaseAmount, setPurchaseAmount] = useState('');
   const [purchaseStatus, setPurchaseStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -375,7 +376,14 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
 
                   {/* Hover overlay with Quick View */}
                   <div className="absolute inset-0 bg-[rgba(4,9,26,0.97)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 flex flex-col items-center justify-center border border-gold/30 rounded-t-xl">
-                    <button className="px-6 py-3 bg-gold/10 border border-gold text-gold hover:bg-gold hover:text-navy font-semibold uppercase tracking-wider text-xs rounded transition duration-300 flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 shadow-[0_0_20px_rgba(201,168,76,0.15)]">
+                    <button 
+                      suppressHydrationWarning
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setQuickViewProperty(prop);
+                      }}
+                      className="px-6 py-3 bg-gold/10 border border-gold text-gold hover:bg-gold hover:text-navy font-semibold uppercase tracking-wider text-xs rounded transition duration-300 flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 shadow-[0_0_20px_rgba(201,168,76,0.15)]"
+                    >
                       <Eye size={16} /> Quick View
                     </button>
                   </div>
@@ -421,23 +429,23 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
                     </div>
                   </div>
 
-                  {isPropertiesPage && (
-                    <button 
-                      onClick={() => {
-                        if (!user) {
-                          window.location.href = '/login';
-                        } else {
-                          setSelectedProperty(prop);
-                          setPurchaseStatus('idle');
-                          setPurchaseAmount('');
-                          setErrorMessage('');
-                        }
-                      }}
-                      className="mt-6 w-full py-2.5 bg-gold hover:bg-gold-light text-navy text-center font-bold rounded-xl text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-gold/10"
-                    >
-                      Invest Now
-                    </button>
-                  )}
+                  <button 
+                    suppressHydrationWarning
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!user) {
+                        window.location.href = '/register';
+                      } else {
+                        setSelectedProperty(prop);
+                        setPurchaseStatus('idle');
+                        setPurchaseAmount('');
+                        setErrorMessage('');
+                      }
+                    }}
+                    className="mt-6 w-full py-2.5 bg-gold hover:bg-gold-light text-navy text-center font-bold rounded-xl text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-gold/10"
+                  >
+                    Invest Now
+                  </button>
                 </div>
               </FadeUpItem>
             ))}
@@ -512,9 +520,16 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
                     </div>
 
                     {errorMessage && (
-                      <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs text-red-400 flex items-center gap-2">
-                        <AlertCircle size={14} className="shrink-0" />
-                        <span>{errorMessage}</span>
+                      <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs text-red-400 flex flex-col gap-2">
+                        <div className="flex items-center gap-2">
+                          <AlertCircle size={14} className="shrink-0" />
+                          <span>{errorMessage}</span>
+                        </div>
+                        {errorMessage.includes('Insufficient wallet balance') && (
+                          <Link href="/deposit" className="text-gold font-bold underline hover:text-gold-light mt-1 self-start">
+                            💳 Deposit Funds Now →
+                          </Link>
+                        )}
                       </div>
                     )}
 
@@ -531,6 +546,80 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
                   </form>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick View Modal */}
+      {quickViewProperty && (
+        <div className="fixed inset-0 bg-[rgba(4,9,26,0.97)] z-50 flex items-center justify-center p-4">
+          <div className="bg-navy-mid border border-border-gold rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto relative animate-in fade-in zoom-in-95 duration-200">
+            <button 
+              suppressHydrationWarning
+              onClick={() => setQuickViewProperty(null)}
+              className="absolute top-4 right-4 text-gray-text hover:text-white bg-navy border border-border-subtle rounded-full p-1"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="p-8">
+              <div className="relative aspect-[16/9] w-full rounded-xl overflow-hidden mb-6 bg-navy flex items-center justify-center">
+                {quickViewProperty.imageUrl || quickViewProperty.image_url ? (
+                  <img 
+                    src={quickViewProperty.imageUrl || quickViewProperty.image_url} 
+                    alt={quickViewProperty.name} 
+                    className="w-full h-full object-cover" 
+                  />
+                ) : (
+                  <Building2 size={64} className="text-white/10" />
+                )}
+                <div className="absolute top-4 left-4 bg-gold text-navy text-xs font-bold uppercase tracking-wider px-3 py-1 rounded">
+                  {quickViewProperty.status}
+                </div>
+              </div>
+
+              <h3 className="text-3xl font-serif text-white mb-2">{quickViewProperty.name}</h3>
+              <p className="text-sm text-gold font-semibold mb-4">{quickViewProperty.typeDisplay}</p>
+              
+              <div className="flex items-center text-sm text-gray-text mb-6">
+                <MapPin size={16} className="mr-1 text-gold" /> {quickViewProperty.location}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 bg-navy p-4 border border-border-subtle rounded-xl mb-6">
+                <div>
+                  <span className="text-[10px] text-gray-text uppercase tracking-widest block mb-1">Buy Price</span>
+                  <span className="text-white font-bold text-lg">{quickViewProperty.price}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-gray-text uppercase tracking-widest block mb-1">Expected ROI</span>
+                  <span className="text-gold font-bold text-lg">{quickViewProperty.roi}</span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <p className="text-sm text-gray-300 leading-relaxed">
+                  Invest in this asset-backed property to earn consistent high-yield monthly returns. Our properties are fully vetted, LLC-held, and SEC-compliant, providing real physical security for your capital.
+                </p>
+
+                <button 
+                  suppressHydrationWarning
+                  onClick={() => {
+                    setQuickViewProperty(null);
+                    if (!user) {
+                      window.location.href = '/register';
+                    } else {
+                      setSelectedProperty(quickViewProperty);
+                      setPurchaseStatus('idle');
+                      setPurchaseAmount('');
+                      setErrorMessage('');
+                    }
+                  }}
+                  className="w-full py-4 bg-gold text-navy font-bold rounded-xl hover:bg-gold-light transition-colors text-center block"
+                >
+                  Invest In This Property Now
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { Link as LinkIcon, Share2, Wallet } from "lucide-react";
 import { FadeUp, FadeUpItem } from './FadeUp';
 import SectionLabel from './SectionLabel';
+import Link from 'next/link';
 
 export default function Referral() {
   return (
@@ -27,17 +28,17 @@ export default function Referral() {
                   Invite friends and family to build wealth with Williston. Earn up to 10% commission on their first investment cycle.
                 </p>
               </FadeUpItem>
-
+ 
               <FadeUpItem className="bg-navy border border-border-gold rounded-lg p-6 mb-8 max-w-sm relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-gold/10 rounded-bl-full"></div>
                 <div className="text-sm text-gray-text uppercase tracking-widest mb-2 relative z-10">Average Partner Earnings</div>
                 <div className="text-3xl font-serif text-gold relative z-10">$500+ /mo</div>
               </FadeUpItem>
-
+ 
               <FadeUpItem>
-                <button suppressHydrationWarning className="bg-gold hover:bg-gold-light text-navy font-semibold px-8 py-4 rounded text-center transition-colors max-w-max">
+                <Link href="/register" className="bg-gold hover:bg-gold-light text-navy font-semibold px-8 py-4 rounded text-center transition-colors max-w-max inline-block">
                   Join Referral Program
-                </button>
+                </Link>
               </FadeUpItem>
             </FadeUp>
 

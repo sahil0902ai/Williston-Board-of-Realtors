@@ -282,7 +282,7 @@ export default function CalculatorPage() {
               {/* Action & Footer */}
               <div className="space-y-4">
                 <Link 
-                  href="/register" 
+                  href={`/register?plan=${activePlan.name.toLowerCase()}`}
                   className="w-full py-4 bg-gold hover:bg-gold-light text-navy font-bold rounded-xl text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-gold/5 uppercase tracking-wider"
                 >
                   Start This Investment Plan <ArrowRight size={16} />

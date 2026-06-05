@@ -8,6 +8,21 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isInvestOpen, setIsInvestOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/user/profile');
+        if (res.ok) {
+          setIsLoggedIn(true);
+        }
+      } catch (err) {
+        // Not logged in
+      }
+    }
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     let ticking = false;
@@ -76,12 +91,20 @@ export default function Header() {
             <Link href="/deposit" className="px-5 py-2 bg-gold/10 border border-gold/30 text-gold text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-gold hover:text-navy transition flex items-center gap-1.5">
               💳 Deposit
             </Link>
-            <Link href="/login" className="px-6 py-2.5 border border-border-subtle text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:border-gold hover:text-gold transition">
-              Login
-            </Link>
-            <Link href="/#invest" className="px-6 py-2.5 bg-gold border border-gold text-navy text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-white hover:border-white hover:text-navy transition">
-              Start Investing
-            </Link>
+            {isLoggedIn ? (
+              <Link href="/dashboard" className="px-6 py-2.5 bg-gold border border-gold text-navy text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-white hover:border-white hover:text-navy transition text-center">
+                Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="px-6 py-2.5 border border-border-subtle text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:border-gold hover:text-gold transition">
+                  Login
+                </Link>
+                <Link href="/register" className="px-6 py-2.5 bg-gold border border-gold text-navy text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-white hover:border-white hover:text-navy transition">
+                  Start Investing
+                </Link>
+              </>
+            )}
           </div>
         </nav>
 
@@ -120,12 +143,20 @@ export default function Header() {
           <Link href="/deposit" className="bg-gold/10 border border-gold/30 text-center text-gold font-bold uppercase tracking-widest text-sm px-6 py-4 rounded-xl transition-colors flex items-center justify-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
             💳 Deposit Funds
           </Link>
-          <Link href="/login" className="bg-transparent border border-border-subtle text-center hover:border-gold hover:text-gold text-white font-bold uppercase tracking-widest text-sm px-6 py-4 rounded-xl transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
-            Login
-          </Link>
-          <Link href="/#invest" className="bg-gold text-center hover:bg-white text-navy font-bold uppercase tracking-widest text-sm px-6 py-4 rounded-xl transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
-            Start Investing
-          </Link>
+          {isLoggedIn ? (
+            <Link href="/dashboard" className="bg-gold text-center hover:bg-white text-navy font-bold uppercase tracking-widest text-sm px-6 py-4 rounded-xl transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+              Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className="bg-transparent border border-border-subtle text-center hover:border-gold hover:text-gold text-white font-bold uppercase tracking-widest text-sm px-6 py-4 rounded-xl transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+                Login
+              </Link>
+              <Link href="/register" className="bg-gold text-center hover:bg-white text-navy font-bold uppercase tracking-widest text-sm px-6 py-4 rounded-xl transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+                Start Investing
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

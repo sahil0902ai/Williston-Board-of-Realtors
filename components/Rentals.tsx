@@ -195,9 +195,14 @@ export default function Rentals() {
                 <button onClick={() => openBooking('2 Bedroom Apartment')} className="flex-1 bg-gold text-navy font-bold py-3 px-4 rounded-xl hover:bg-white transition-colors text-sm text-center">
                   Book This Apartment
                 </button>
-                <button className="flex-1 bg-transparent border border-green-500 text-green-400 font-bold py-3 px-4 rounded-xl hover:bg-green-500/10 transition-colors text-sm text-center">
-                  WhatsApp Inquiry
-                </button>
+                <a 
+                  href="https://t.me/willistonboardofrealtors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 bg-transparent border border-green-500 text-green-400 font-bold py-3 px-4 rounded-xl hover:bg-green-500/10 transition-colors text-sm text-center flex items-center justify-center"
+                >
+                  Telegram Inquiry
+                </a>
               </div>
             </div>
           </div>
@@ -261,9 +266,14 @@ export default function Rentals() {
                 <button onClick={() => openBooking('3 Bedroom Apartment')} className="flex-1 bg-gold text-navy font-bold py-3 px-4 rounded-xl hover:bg-white transition-colors text-sm text-center">
                   Book This Apartment
                 </button>
-                <button className="flex-1 bg-transparent border border-green-500 text-green-400 font-bold py-3 px-4 rounded-xl hover:bg-green-500/10 transition-colors text-sm text-center">
-                  WhatsApp Inquiry
-                </button>
+                <a 
+                  href="https://t.me/willistonboardofrealtors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 bg-transparent border border-green-500 text-green-400 font-bold py-3 px-4 rounded-xl hover:bg-green-500/10 transition-colors text-sm text-center flex items-center justify-center"
+                >
+                  Telegram Inquiry
+                </a>
               </div>
             </div>
           </div>

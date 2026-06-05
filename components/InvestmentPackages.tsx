@@ -1,9 +1,28 @@
+'use client';
+
 import { Check } from "lucide-react";
 import { FadeUp, FadeUpItem } from './FadeUp';
 import SectionLabel from './SectionLabel';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 export default function InvestmentPackages({ hideHeader = false }: { hideHeader?: boolean }) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/user/profile');
+        if (res.ok) {
+          setIsLoggedIn(true);
+        }
+      } catch (err) {
+        // Not logged in
+      }
+    }
+    checkAuth();
+  }, []);
+
   const plans = [
     {
       name: "Foundation",
@@ -121,15 +140,28 @@ export default function InvestmentPackages({ hideHeader = false }: { hideHeader?
               </div>
 
               <div className="p-8 pt-0 mt-auto">
-                <Link 
-                  href="/deposit"
-                  className={`w-full py-3 px-4 rounded font-semibold transition-colors text-center block
-                    ${plan.isPopular 
-                      ? 'bg-gold text-navy hover:bg-gold-light' 
-                      : 'bg-navy-light text-white hover:bg-gold hover:text-navy'}`}
-                >
-                  Invest Now
-                </Link>
+                {plan.name === 'Dynasty' ? (
+                  <a 
+                    suppressHydrationWarning
+                    href="https://t.me/willistonboardofrealtors"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3 px-4 rounded font-semibold transition-colors text-center block bg-navy-light text-white hover:bg-gold hover:text-navy cursor-pointer"
+                  >
+                    Schedule Consultation
+                  </a>
+                ) : (
+                  <Link 
+                    suppressHydrationWarning
+                    href={isLoggedIn ? `/deposit?plan=${plan.name.toLowerCase()}` : '/register'}
+                    className={`w-full py-3 px-4 rounded font-semibold transition-colors text-center block
+                      ${plan.isPopular 
+                        ? 'bg-gold text-navy hover:bg-gold-light' 
+                        : 'bg-navy-light text-white hover:bg-gold hover:text-navy'}`}
+                  >
+                    Invest Now
+                  </Link>
+                )}
               </div>
             </FadeUpItem>
           ))}

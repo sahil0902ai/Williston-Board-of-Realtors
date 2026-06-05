@@ -1,9 +1,24 @@
+'use client';
+
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { FadeUp, FadeUpItem } from './FadeUp';
 import SectionLabel from './SectionLabel';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function CTA() {
+  const [email, setEmail] = useState('');
+  const router = useRouter();
+
+  const handleGetStarted = () => {
+    if (!email.trim()) {
+      alert('Please enter a valid email address');
+      return;
+    }
+    router.push(`/register?email=${encodeURIComponent(email)}`);
+  };
+
   return (
     <section className="relative py-24 md:py-32 bg-navy overflow-hidden">
       {/* Background styling for depth */}
@@ -26,9 +41,15 @@ export default function CTA() {
             <input suppressHydrationWarning
               type="email" 
               placeholder="Enter your email address" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="bg-transparent border-none outline-none text-white px-6 py-4 flex-grow tracking-wide"
             />
-            <button suppressHydrationWarning className="bg-gold hover:bg-gold-light text-navy font-semibold px-8 py-4 rounded-lg flex items-center justify-center gap-2 transition-colors mt-2 md:mt-0 whitespace-nowrap">
+            <button 
+              suppressHydrationWarning 
+              onClick={handleGetStarted}
+              className="bg-gold hover:bg-gold-light text-navy font-semibold px-8 py-4 rounded-lg flex items-center justify-center gap-2 transition-colors mt-2 md:mt-0 whitespace-nowrap cursor-pointer"
+            >
               Get Started Free <ArrowRight size={18} />
             </button>
           </div>
@@ -41,12 +62,18 @@ export default function CTA() {
 
         <FadeUpItem className="flex flex-col gap-6 mb-12 w-full items-center">
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="#invest" className="border border-border-gold hover:border-gold hover:bg-gold/5 px-8 py-3 rounded text-sm font-semibold tracking-wider uppercase transition-colors text-center">
+            <Link href="#invest" className="border border-border-gold hover:border-gold hover:bg-gold/5 px-8 py-3 rounded text-sm font-semibold tracking-wider uppercase transition-colors text-center flex items-center justify-center">
               View Investment Plans
             </Link>
-            <button suppressHydrationWarning className="border border-border-gold hover:border-gold hover:bg-gold/5 px-8 py-3 rounded text-sm font-semibold tracking-wider uppercase transition-colors">
+            <a 
+              suppressHydrationWarning
+              href="https://t.me/willistonboardofrealtors" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="border border-border-gold hover:border-gold hover:bg-gold/5 px-8 py-3 rounded text-sm font-semibold tracking-wider uppercase transition-colors text-center flex items-center justify-center cursor-pointer"
+            >
               Speak to an Advisor
-            </button>
+            </a>
           </div>
           <p className="text-gray-text text-sm">
             Or reach us on Telegram: <a href="https://t.me/willistonboardofrealtors" target="_blank" rel="noopener" className="text-gold hover:underline">@willistonboardofrealtors</a>
