@@ -309,6 +309,7 @@ export default function DepositPage() {
                   fontWeight: 700,
                 }}>$</span>
                 <input
+                  suppressHydrationWarning
                   type="number"
                   value={amount}
                   onChange={e => setAmount(e.target.value)}
@@ -345,6 +346,7 @@ export default function DepositPage() {
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {quickAmounts.map(q => (
                   <button
+                    suppressHydrationWarning
                     key={q}
                     onClick={() => setAmount(q.toString())}
                     style={{
@@ -381,6 +383,7 @@ export default function DepositPage() {
             )}
 
             <button
+              suppressHydrationWarning
               onClick={handleNextStep}
               style={{
                 width: '100%',
@@ -500,6 +503,7 @@ export default function DepositPage() {
 
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
               <button
+                suppressHydrationWarning
                 onClick={() => setStep(1)}
                 style={{
                   flex: 1,
@@ -514,6 +518,7 @@ export default function DepositPage() {
                 ← Back
               </button>
               <button
+                suppressHydrationWarning
                 onClick={handleNextStep}
                 style={{
                   flex: 2,
@@ -583,6 +588,7 @@ export default function DepositPage() {
                   {selectedMethod.detail}
                 </span>
                 <button
+                  suppressHydrationWarning
                   onClick={() => copyDetail(selectedMethod.detail)}
                   style={{
                     background: copied ? '#27C574' : 'rgba(201,168,76,0.15)',
@@ -634,6 +640,7 @@ export default function DepositPage() {
                 Transaction Reference (Optional)
               </label>
               <input
+                suppressHydrationWarning
                 type="text"
                 value={reference}
                 onChange={e => setReference(e.target.value)}
@@ -675,6 +682,7 @@ export default function DepositPage() {
                   : 'transparent',
               }}>
                 <input
+                  suppressHydrationWarning
                   type="file"
                   accept="image/*,.pdf"
                   style={{ display: 'none' }}
@@ -722,6 +730,7 @@ export default function DepositPage() {
 
             <div style={{ display: 'flex', gap: '12px' }}>
               <button
+                suppressHydrationWarning
                 onClick={() => setStep(2)}
                 style={{
                   flex: 1,
@@ -736,6 +745,7 @@ export default function DepositPage() {
                 ← Back
               </button>
               <button
+                suppressHydrationWarning
                 onClick={submitDeposit}
                 disabled={loading}
                 style={{

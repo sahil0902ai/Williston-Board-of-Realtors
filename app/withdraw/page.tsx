@@ -269,6 +269,7 @@ export default function WithdrawPage() {
                   color: '#C9A84C', fontSize: '18px', fontWeight: 700,
                 }}>$</span>
                 <input
+                  suppressHydrationWarning
                   type="number"
                   value={amount}
                   onChange={e => setAmount(e.target.value)}
@@ -285,6 +286,7 @@ export default function WithdrawPage() {
               <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
                 {quickAmounts.filter(q => q <= walletBalance).map(q => (
                   <button
+                    suppressHydrationWarning
                     key={q}
                     onClick={() => setAmount(q.toString())}
                     style={{
@@ -303,6 +305,7 @@ export default function WithdrawPage() {
                   </button>
                 ))}
                 <button
+                  suppressHydrationWarning
                   onClick={() => setAmount(walletBalance.toString())}
                   style={{
                     padding: '7px 14px',
@@ -319,7 +322,7 @@ export default function WithdrawPage() {
               </div>
 
               {error && <p style={{ color: '#ff4444', fontSize: '13px', marginBottom: '12px' }}>{error}</p>}
-              <button onClick={handleNext} style={{
+              <button suppressHydrationWarning onClick={handleNext} style={{
                 width: '100%', padding: '14px',
                 background: '#C9A84C', color: '#04091A',
                 fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: '15px',
@@ -383,12 +386,12 @@ export default function WithdrawPage() {
 
               {error && <p style={{ color: '#ff4444', fontSize: '13px', margin: '12px 0' }}>{error}</p>}
               <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-                <button onClick={() => setStep(1)} style={{
+                <button suppressHydrationWarning onClick={() => setStep(1)} style={{
                   flex: 1, padding: '13px', background: 'transparent',
                   border: '1px solid rgba(255,255,255,0.1)',
                   color: '#8A9BB5', cursor: 'pointer',
                 }}>← Back</button>
-                <button onClick={handleNext} style={{
+                <button suppressHydrationWarning onClick={handleNext} style={{
                   flex: 2, padding: '13px', background: '#C9A84C',
                   color: '#04091A', fontWeight: 700, border: 'none', cursor: 'pointer',
                 }}>Continue →</button>
@@ -410,6 +413,7 @@ export default function WithdrawPage() {
                 <div>
                   <label style={labelStyle}>Your Cash App $Cashtag</label>
                   <input
+                    suppressHydrationWarning
                     type="text"
                     placeholder="$YourCashTag"
                     value={details.cashappTag}
@@ -423,6 +427,7 @@ export default function WithdrawPage() {
                 <div>
                   <label style={labelStyle}>Your Zelle Email or Phone</label>
                   <input
+                    suppressHydrationWarning
                     type="text"
                     placeholder="your@email.com or phone number"
                     value={details.zelleEmail}
@@ -436,6 +441,7 @@ export default function WithdrawPage() {
                 <div>
                   <label style={labelStyle}>Your Bitcoin (BTC) Wallet Address</label>
                   <input
+                    suppressHydrationWarning
                     type="text"
                     placeholder="Your BTC wallet address"
                     value={details.btcAddress}
@@ -449,6 +455,7 @@ export default function WithdrawPage() {
                 <div>
                   <label style={labelStyle}>Your USDT TRC20 Wallet Address</label>
                   <input
+                    suppressHydrationWarning
                     type="text"
                     placeholder="Your USDT TRC20 address"
                     value={details.usdtAddress}
@@ -464,22 +471,22 @@ export default function WithdrawPage() {
               {method === 'bank' && (
                 <div>
                   <label style={labelStyle}>Account Holder Name</label>
-                  <input type="text" placeholder="Full name on account"
+                  <input suppressHydrationWarning type="text" placeholder="Full name on account"
                     value={details.accountName}
                     onChange={e => setDetails({ ...details, accountName: e.target.value })}
                     style={inputStyle} />
                   <label style={labelStyle}>Bank Name</label>
-                  <input type="text" placeholder="e.g. Chase, Bank of America"
+                  <input suppressHydrationWarning type="text" placeholder="e.g. Chase, Bank of America"
                     value={details.bankName}
                     onChange={e => setDetails({ ...details, bankName: e.target.value })}
                     style={inputStyle} />
                   <label style={labelStyle}>Account Number</label>
-                  <input type="text" placeholder="Account number"
+                  <input suppressHydrationWarning type="text" placeholder="Account number"
                     value={details.accountNumber}
                     onChange={e => setDetails({ ...details, accountNumber: e.target.value })}
                     style={inputStyle} />
                   <label style={labelStyle}>Routing Number</label>
-                  <input type="text" placeholder="9-digit routing number"
+                  <input suppressHydrationWarning type="text" placeholder="9-digit routing number"
                     value={details.routingNumber}
                     onChange={e => setDetails({ ...details, routingNumber: e.target.value })}
                     style={inputStyle} />
@@ -522,12 +529,13 @@ export default function WithdrawPage() {
               )}
 
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button onClick={() => setStep(2)} style={{
+                <button suppressHydrationWarning onClick={() => setStep(2)} style={{
                   flex: 1, padding: '13px', background: 'transparent',
                   border: '1px solid rgba(255,255,255,0.1)',
                   color: '#8A9BB5', cursor: 'pointer',
                 }}>← Back</button>
                 <button
+                  suppressHydrationWarning
                   onClick={submitWithdrawal}
                   disabled={loading}
                   style={{
