@@ -1,112 +1,240 @@
-'use client';
-
-import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { FadeUp, FadeUpItem } from './FadeUp';
-import SectionLabel from './SectionLabel';
+"use client"
+import { useState } from 'react'
 
 const faqs = [
   {
-    question: "Is my investment safe with Williston?",
-    answer: "Yes, your investment is strictly protected. All our investment plans are fully backed by prime, verified real estate assets across the United States. We employ rigorous risk management, legal verification of titles, and comprehensive insurance to protect our investors' capital."
+    q: "Is my investment safe with Williston?",
+    a: "Yes. All investments are secured against real physical property assets. We are LLC registered and SEC compliant. Your capital is backed by tangible real estate — not speculation. In our 8+ years of operation we have never defaulted on a single investor payout."
   },
   {
-    question: "How do I receive my returns?",
-    answer: "Returns are paid directly into your registered bank account or digital wallet automatically at the end of your investment cycle (maturity date). You can track your expected returns, payout dates, and history securely via your investor dashboard."
+    q: "What is the minimum amount I can invest?",
+    a: "You can start investing with as little as $500 through our Foundation Plan which offers 18% annual returns. There is no maximum limit. Larger investments qualify for higher return tiers up to 35%+ per annum."
   },
   {
-    question: "Can I invest from outside the United States?",
-    answer: "Absolutely. We have a dedicated portal to support our diaspora investors in the UK, US, and globally. You can fund your account and receive payouts using international bank transfers, creating a seamless cross-border investment experience."
+    q: "How do I receive my returns?",
+    a: "Returns are paid monthly directly to your wallet balance inside your dashboard. You can then withdraw to your Cash App, Zelle, bank account, or crypto wallet at any time. Withdrawals are processed within 24-48 business hours."
   },
   {
-    question: "What is the minimum amount I can invest?",
-    answer: "Our Foundation plan is designed for accessibility, allowing you to start your wealth-building journey with a minimum initial investment of just $500."
+    q: "How do I deposit money into my account?",
+    a: "You can deposit via Cash App ($WillistonInvest), Zelle (willistonboardofrealtors@gmail.com), bank wire transfer, or cryptocurrency (Bitcoin, USDT, Ethereum). Log into your dashboard, click Deposit, choose your method and follow the instructions."
   },
   {
-    question: "How does the referral program work?",
-    answer: "You receive a unique referral link upon registration. When a new user signs up and makes their first investment using your link, you instantly earn a percentage commission based on their initial investment, credited directly to your withdrawable wallet balance."
+    q: "How does withdrawal work?",
+    a: "Go to your Dashboard, click Withdraw, enter the amount and your payout details (Cash App tag, Zelle email, bank account or crypto wallet). Your request is reviewed and funds sent within 24-48 hours. Minimum withdrawal is $100."
   },
   {
-    question: "Can I withdraw my investment before maturity?",
-    answer: "Real estate investments are capital intensive and generally illiquid. We strongly encourage investors to commit for the full duration. However, in extreme emergency situations, an early withdrawal request may be reviewed, but it is subject to a significant penalty fee as outlined in our terms."
+    q: "Can I invest from outside the United States?",
+    a: "Yes. We welcome international investors. You can fund your account via international wire transfer or cryptocurrency from anywhere in the world. Returns are paid in USD."
   },
   {
-    question: "What documents do I need to register?",
-    answer: "To ensure a secure environment and comply with KYC regulations, you'll need to provide a valid government-issued ID (NIN, Driver's License, or International Passport), your SSN (last 4 digits) for rapid identity verification, and a recent proof of address (such as a utility bill) to fully activate your account."
+    q: "How does the referral program work?",
+    a: "Share your unique referral link from your dashboard. When someone signs up and invests using your link you earn 5% to 10% commission instantly credited to your wallet. There is no limit on how many people you can refer."
   },
   {
-    question: "Do you accept cryptocurrency payments?",
-    answer: "Currently, we do not accept cryptocurrency payments or deposits. We process all transactions via secure, traditional bank transfers and approved payment gateways to ensure strict regulatory compliance and safeguard your funds."
+    q: "Can I withdraw my investment before it matures?",
+    a: "Early withdrawals are allowed but subject to a 10% penalty fee on your principal. We recommend holding to maturity to receive your full returns. Contact our team on Telegram before making an early withdrawal."
   },
   {
-    question: "How are properties allocated to investors?",
-    answer: "For our higher-tier plans like Legacy and Dynasty, physical land allocations are processed precisely at maturity. You will receive an official offer letter and survey plan indicating your exclusively allocated plot(s) in our specified estates."
+    q: "What documents do I need to register?",
+    a: "You need a valid email address and a government-issued ID (driver's license or passport) for KYC verification. KYC is required before your first withdrawal to protect all investors on the platform."
   },
   {
-    question: "Is Williston registered with the SEC?",
-    answer: "Yes, Williston is a fully registered LLC and complies with all relevant financial and real estate regulations stipulated by the SEC and other appropriate regulatory bodies in the United States."
+    q: "Do you accept cryptocurrency payments?",
+    a: "Yes. We accept Bitcoin (BTC), USDT (TRC20), and Ethereum (ETH). Crypto deposits are confirmed after blockchain verification which typically takes 15-45 minutes. Your wallet is credited automatically."
+  },
+  {
+    q: "How are properties allocated to investors?",
+    a: "Property allocation depends on your investment tier. Prosperity plan and above investors are eligible for real estate unit allocation. Legacy and Dynasty investors receive guaranteed property allocation with full title documentation."
+  },
+  {
+    q: "Is Williston registered with the SEC?",
+    a: "Yes. Williston Board of Realtors and Investments is a registered LLC operating in full compliance with US investment regulations. All investment activities are transparent and documented. Legal agreements are provided for every investment."
+  },
+]
+
+export default function FAQSection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null)
+
+  function toggle(index: number) {
+    setOpenIndex(openIndex === index ? null : index)
   }
-];
-
-export default function FAQ() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  const toggleFaq = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
 
   return (
-    <section id="faq" className="py-24 bg-navy-mid relative overflow-hidden">
-      <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none z-0" style={{ backgroundImage: "url('https://picsum.photos/seed/noise/400/400?grayscale')" }}></div>
-      <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-gold/5 rounded-full blur-[100px] pointer-events-none"></div>
-      
-      <div className="max-w-4xl mx-auto px-6 md:px-12 relative z-10">
-        <FadeUp className="text-center mb-16 flex flex-col items-center">
-          <SectionLabel>Got Questions?</SectionLabel>
-          <h3 className="text-4xl md:text-5xl font-serif text-white mt-2">Everything You Need to Know</h3>
-        </FadeUp>
+    <section
+      id="faq"
+      style={{
+        padding: '100px 60px',
+        background: '#04091A',
+      }}
+    >
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
 
-        <FadeUp stagger className="space-y-4">
+        {/* Header */}
+        <div style={{ marginBottom: '48px' }}>
+          <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '11px',
+            letterSpacing: '3px',
+            textTransform: 'uppercase',
+            color: '#C9A84C',
+            marginBottom: '16px',
+          }}>
+            <span style={{
+              display: 'block',
+              width: '24px',
+              height: '1px',
+              background: '#C9A84C',
+            }} />
+            Got Questions?
+          </span>
+          <h2 style={{
+            fontFamily: 'Cormorant Garamond, serif',
+            fontSize: '48px',
+            fontWeight: 600,
+            color: '#ffffff',
+            lineHeight: 1.1,
+          }}>
+            Everything You Need <span style={{ color: '#C9A84C' }}>To Know</span>
+          </h2>
+        </div>
+
+        {/* FAQ Items */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+        }}>
           {faqs.map((faq, index) => (
-            <FadeUpItem key={index}>
-              <div 
-                className={`bg-navy border transition-colors duration-300 rounded-xl overflow-hidden ${
-                  openIndex === index ? 'border-border-gold' : 'border-border-subtle hover:border-gold/30'
-                }`}
+            <div
+              key={index}
+              style={{
+                border: `1px solid ${openIndex === index
+                  ? 'rgba(201,168,76,0.4)'
+                  : 'rgba(255,255,255,0.07)'}`,
+                background: openIndex === index
+                  ? 'rgba(201,168,76,0.04)'
+                  : 'rgba(255,255,255,0.02)',
+                transition: 'all 0.3s ease',
+                overflow: 'hidden',
+              }}
+            >
+              {/* Question Button */}
+              <button
+                onClick={() => toggle(index)}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '20px 24px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  gap: '16px',
+                }}
               >
-                <button
-                  suppressHydrationWarning
-                  onClick={() => toggleFaq(index)}
-                  className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
-                  aria-expanded={openIndex === index}
-                >
-                  <span className="font-semibold text-white/90 text-lg pr-8">{faq.question}</span>
-                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-transform duration-300 ${
-                    openIndex === index ? 'bg-gold text-navy rotate-180' : 'bg-navy-light text-gold border border-border-gold shadow-sm'
-                  }`}>
-                    <ChevronDown size={16} />
-                  </div>
-                </button>
-                <AnimatePresence>
-                  {openIndex === index && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: 'easeOut' }}
-                    >
-                      <div className="p-6 pt-0 text-gray-text leading-relaxed">
-                        {faq.answer}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <span style={{
+                  fontSize: '16px',
+                  fontWeight: 500,
+                  color: openIndex === index ? '#C9A84C' : '#ffffff',
+                  lineHeight: 1.4,
+                  transition: 'color 0.3s',
+                }}>
+                  {faq.q}
+                </span>
+                <span style={{
+                  flexShrink: 0,
+                  width: '28px',
+                  height: '28px',
+                  border: `1px solid ${openIndex === index
+                    ? '#C9A84C'
+                    : 'rgba(255,255,255,0.15)'}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: openIndex === index ? '#C9A84C' : '#8A9BB5',
+                  fontSize: '18px',
+                  fontWeight: 300,
+                  transition: 'all 0.3s ease',
+                  transform: openIndex === index
+                    ? 'rotate(45deg)'
+                    : 'rotate(0deg)',
+                }}>
+                  +
+                </span>
+              </button>
+
+              {/* Answer */}
+              <div
+                style={{
+                  maxHeight: openIndex === index ? '300px' : '0px',
+                  overflow: 'hidden',
+                  transition: 'max-height 0.4s ease',
+                }}
+              >
+                <p style={{
+                  padding: '0 24px 20px',
+                  fontSize: '15px',
+                  color: '#8A9BB5',
+                  lineHeight: 1.8,
+                  margin: 0,
+                }}>
+                  {faq.a}
+                </p>
               </div>
-            </FadeUpItem>
+            </div>
           ))}
-        </FadeUp>
+        </div>
+
+        {/* Bottom CTA */}
+        <div style={{
+          marginTop: '40px',
+          padding: '28px',
+          border: '1px solid rgba(201,168,76,0.2)',
+          background: 'rgba(201,168,76,0.04)',
+          textAlign: 'center',
+        }}>
+          <p style={{ color: '#8A9BB5', fontSize: '14px', marginBottom: '16px' }}>
+            Still have questions? Our team is ready to help.
+          </p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <a
+              href="mailto:willistonboardofrealtors@gmail.com"
+              style={{
+                padding: '10px 24px',
+                background: '#C9A84C',
+                color: '#04091A',
+                fontWeight: 600,
+                fontSize: '13px',
+                textDecoration: 'none',
+                display: 'inline-block',
+              }}
+            >
+              ✉️ Email Us
+            </a>
+            <a
+              href="https://t.me/willistonboardofrealtors"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                padding: '10px 24px',
+                border: '1px solid rgba(201,168,76,0.3)',
+                color: '#C9A84C',
+                fontWeight: 600,
+                fontSize: '13px',
+                textDecoration: 'none',
+                display: 'inline-block',
+              }}
+            >
+              ✈️ Telegram
+            </a>
+          </div>
+        </div>
+
       </div>
     </section>
-  );
+  )
 }
