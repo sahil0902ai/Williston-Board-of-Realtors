@@ -1,6 +1,7 @@
 import { Check } from "lucide-react";
 import { FadeUp, FadeUpItem } from './FadeUp';
 import SectionLabel from './SectionLabel';
+import Link from 'next/link';
 
 export default function InvestmentPackages({ hideHeader = false }: { hideHeader?: boolean }) {
   const plans = [
@@ -120,13 +121,15 @@ export default function InvestmentPackages({ hideHeader = false }: { hideHeader?
               </div>
 
               <div className="p-8 pt-0 mt-auto">
-                <button suppressHydrationWarning className={`w-full py-3 px-4 rounded font-semibold transition-colors
-                  ${plan.isPopular 
-                    ? 'bg-gold text-navy hover:bg-gold-light' 
-                    : 'bg-navy-light text-white hover:bg-gold hover:text-navy'}`}
+                <Link 
+                  href="/deposit"
+                  className={`w-full py-3 px-4 rounded font-semibold transition-colors text-center block
+                    ${plan.isPopular 
+                      ? 'bg-gold text-navy hover:bg-gold-light' 
+                      : 'bg-navy-light text-white hover:bg-gold hover:text-navy'}`}
                 >
                   Invest Now
-                </button>
+                </Link>
               </div>
             </FadeUpItem>
           ))}

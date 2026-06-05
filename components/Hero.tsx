@@ -73,7 +73,10 @@ export default function Hero() {
             <Link href="#invest" className="px-8 py-4 bg-gold text-navy font-bold uppercase text-xs tracking-widest shadow-xl shadow-gold/10 hover:bg-gold-light transition-colors text-center">
               Explore Investment Plans
             </Link>
-            <Link href="#how-it-works" className="px-8 py-4 border border-gold text-gold font-bold uppercase text-xs tracking-widest hover:bg-gold/5 transition-colors text-center">
+            <Link href="/deposit" className="px-8 py-4 border border-gold text-gold font-bold uppercase text-xs tracking-widest hover:bg-gold/5 transition-colors text-center flex items-center justify-center gap-2">
+              💳 Deposit Funds
+            </Link>
+            <Link href="#how-it-works" className="px-8 py-4 border border-border-subtle text-gray-text font-bold uppercase text-xs tracking-widest hover:bg-white/5 hover:text-white transition-colors text-center">
               See How It Works
             </Link>
           </motion.div>

@@ -73,6 +73,9 @@ export default function Header() {
           ))}
           
           <div className="flex items-center gap-4 border-l border-border-subtle pl-8 ml-2">
+            <Link href="/deposit" className="px-5 py-2 bg-gold/10 border border-gold/30 text-gold text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-gold hover:text-navy transition flex items-center gap-1.5">
+              💳 Deposit
+            </Link>
             <Link href="/login" className="px-6 py-2.5 border border-border-subtle text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:border-gold hover:text-gold transition">
               Login
             </Link>
@@ -114,6 +117,9 @@ export default function Header() {
         ))}
         
         <div className="mt-12 flex flex-col gap-4">
+          <Link href="/deposit" className="bg-gold/10 border border-gold/30 text-center text-gold font-bold uppercase tracking-widest text-sm px-6 py-4 rounded-xl transition-colors flex items-center justify-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
+            💳 Deposit Funds
+          </Link>
           <Link href="/login" className="bg-transparent border border-border-subtle text-center hover:border-gold hover:text-gold text-white font-bold uppercase tracking-widest text-sm px-6 py-4 rounded-xl transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
             Login
           </Link>

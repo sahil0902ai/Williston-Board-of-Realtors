@@ -123,6 +123,32 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-navy-mid border border-border-subtle rounded-xl p-6">
+        <div>
+          <h2 className="text-2xl font-serif text-white">Dashboard Overview</h2>
+          <p className="text-sm text-gray-text">Welcome back, {profile?.full_name || 'Investor'}</p>
+        </div>
+        <div>
+          <a
+            href="/deposit"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '14px 32px',
+              background: '#C9A84C',
+              color: '#04091A',
+              fontWeight: 700,
+              fontSize: '15px',
+              textDecoration: 'none',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            💳 Deposit Funds
+          </a>
+        </div>
+      </div>
       
       {/* Quick Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
@@ -230,9 +256,9 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
 
       {/* Quick Actions */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <button className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-gold rounded-xl hover:bg-gold/10 transition-colors text-sm font-medium text-gold" onClick={() => setActiveTab('deposit')}>
+        <a href="/deposit" className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-gold rounded-xl hover:bg-gold/10 transition-colors text-sm font-medium text-gold">
           <ArrowDownRight size={16} /> Deposit Funds
-        </button>
+        </a>
         <button className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-subtle rounded-xl hover:border-gold/30 hover:text-white transition-colors text-sm font-medium text-gray-text" onClick={() => setActiveTab('withdraw')}>
           <ArrowUpRight size={16} /> Withdraw
         </button>

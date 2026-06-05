@@ -64,9 +64,9 @@ export default function WalletTab({ setActiveTab, profile, fetchProfile }: Walle
           </div>
           
           <div className="flex flex-col sm:flex-row gap-4">
-            <button onClick={() => setActiveTab('deposit')} className="flex-1 flex items-center justify-center gap-2 p-4 bg-gold text-navy rounded-xl hover:bg-white transition-colors text-base font-semibold shadow-lg shadow-gold/20">
+            <a href="/deposit" className="flex-1 flex items-center justify-center gap-2 p-4 bg-gold text-navy rounded-xl hover:bg-white transition-colors text-base font-semibold shadow-lg shadow-gold/20">
               <ArrowDownRight size={20} /> Deposit
-            </button>
+            </a>
             <button onClick={() => setActiveTab('withdraw')} className="flex-1 flex items-center justify-center gap-2 p-4 bg-navy-light text-white border border-border-subtle rounded-xl hover:border-gold hover:text-gold transition-colors text-base font-medium">
               <ArrowUpRight size={20} /> Withdraw
             </button>
