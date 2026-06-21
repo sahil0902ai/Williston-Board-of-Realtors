@@ -183,7 +183,7 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <div className="bg-navy-mid border border-border-subtle rounded-xl p-6">
           <div className="text-sm text-gray-text mb-2">Total Invested</div>
-          <div className="text-2xl font-serif text-white mb-2">${totalInvested.toLocaleString()}</div>
+          <div className="text-2xl font-serif text-white mb-2">₦{totalInvested.toLocaleString()}</div>
           <div className="flex items-center text-xs text-gold">
             Active capital earning daily returns
           </div>
@@ -191,7 +191,7 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
         
         <div className="bg-navy-mid border border-border-subtle rounded-xl p-6">
           <div className="text-sm text-gray-text mb-2">Total Returns Earned</div>
-          <div className="text-2xl font-serif text-white mb-2">${totalReturns.toLocaleString()}</div>
+          <div className="text-2xl font-serif text-white mb-2">₦{totalReturns.toLocaleString()}</div>
           <div className="flex items-center text-xs text-green-400">
             <ArrowUpRight size={14} className="mr-1" /> Credited to wallet
           </div>
@@ -207,7 +207,7 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
 
         <div className="bg-navy-mid border border-border-subtle rounded-xl p-6">
           <div className="text-sm text-gray-text mb-2">Referral Earnings</div>
-          <div className="text-2xl font-serif text-white mb-2">${referralEarnings.toLocaleString()}</div>
+          <div className="text-2xl font-serif text-white mb-2">₦{referralEarnings.toLocaleString()}</div>
           <div className="flex items-center text-xs text-gray-text">
             From {referralStats?.totalReferrals || 0} registered invitees
           </div>
@@ -224,7 +224,7 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
               <BarChart data={barData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
                 <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
+                <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `₦${val}`} />
                 <Tooltip cursor={{ fill: '#ffffff05' }} contentStyle={{ backgroundColor: '#04091A', borderColor: '#ffffff20', borderRadius: '8px' }} />
                 <Bar dataKey="value" fill="#C9A84C" radius={[4, 4, 0, 0]} maxBarSize={40} isAnimationActive={false} />
               </BarChart>
@@ -276,7 +276,7 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
             {pieData.map((entry, index) => (
                <div key={entry.name} className="flex items-center gap-2">
                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-                 <span className="text-xs text-gray-text">{entry.name} ({investments.length > 0 ? `$${entry.value.toLocaleString()}` : '0'})</span>
+                 <span className="text-xs text-gray-text">{entry.name} ({investments.length > 0 ? `₦${entry.value.toLocaleString()}` : '0'})</span>
                </div>
             ))}
           </div>
@@ -327,11 +327,11 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
                 investments.slice(0, 5).map((inv) => (
                   <tr key={inv.id} className="hover:bg-navy-light/30 transition-colors">
                     <td className="p-4 font-medium">{inv.plan_name}</td>
-                    <td className="p-4">${parseFloat(inv.amount).toLocaleString()}</td>
+                    <td className="p-4">₦{parseFloat(inv.amount).toLocaleString()}</td>
                     <td className="p-4 text-gray-text">{new Date(inv.start_date).toLocaleDateString()}</td>
                     <td className="p-4 text-gray-text">{inv.end_date ? new Date(inv.end_date).toLocaleDateString() : 'N/A'}</td>
                     <td className="p-4 text-green-400">{inv.roi_percent}%</td>
-                    <td className="p-4">${parseFloat(inv.daily_profit || '0').toLocaleString()}</td>
+                    <td className="p-4">₦{parseFloat(inv.daily_profit || '0').toLocaleString()}</td>
                     <td className="p-4">
                       <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-green-500/10 text-green-400 text-xs font-medium">
                         <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div> Active
@@ -381,7 +381,7 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
                         <span className="font-medium capitalize">{tx.type}</span>
                       </td>
                       <td className={`p-4 font-medium ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
-                        {isPositive ? '+' : ''}${Math.abs(parseFloat(tx.amount)).toLocaleString()}
+                        {isPositive ? '+' : ''}₦{Math.abs(parseFloat(tx.amount)).toLocaleString()}
                       </td>
                       <td className="p-4 text-gray-text">{new Date(tx.created_at).toLocaleDateString()}</td>
                       <td className="p-4 text-xs font-mono text-gray-text">{tx.reference || 'N/A'}</td>
@@ -401,7 +401,7 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
         </div>
       </div>
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-green-500 text-white font-semibold px-4 py-3 rounded-lg shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom-5 duration-300">
+        <div className="fixed bottom-20 md:bottom-6 right-6 z-50 bg-green-500 text-white font-semibold px-4 py-3 rounded-lg shadow-2xl flex items-center gap-2 animate-in fade-in slide-in-from-bottom-5 duration-300">
           <CheckCircle2 size={16} />
           <span>{toastMessage}</span>
         </div>

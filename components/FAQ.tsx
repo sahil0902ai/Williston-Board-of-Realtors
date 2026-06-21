@@ -4,27 +4,27 @@ import { useState } from 'react'
 const faqs = [
   {
     q: "Is my investment safe with Williston?",
-    a: "Yes. All investments are secured against real physical property assets. We are LLC registered and SEC compliant. Your capital is backed by tangible real estate — not speculation. In our 8+ years of operation we have never defaulted on a single investor payout."
+    a: "Yes. All investments are secured against real physical property assets. We are CAC registered and SEC Nigeria compliant. Your capital is backed by tangible real estate — not speculation. In our 8+ years of operation we have never defaulted on a single investor payout."
   },
   {
     q: "What is the minimum amount I can invest?",
-    a: "You can start investing with as little as $500 through our Foundation Plan which offers 18% annual returns. There is no maximum limit. Larger investments qualify for higher return tiers up to 35%+ per annum."
+    a: "You can start with as little as ₦20,000 on our 7-Day Quick Plan or ₦50,000 on our Foundation Plan."
   },
   {
     q: "How do I receive my returns?",
-    a: "Returns are paid monthly directly to your wallet balance inside your dashboard. You can then withdraw to your Cash App, Zelle, bank account, or crypto wallet at any time. Withdrawals are processed within 24-48 business hours."
+    a: "Returns are paid directly to your wallet balance inside your dashboard. You can then withdraw to your local bank account, Opay wallet, or crypto wallet at any time. Withdrawals are processed within 24-48 business hours."
   },
   {
-    q: "How do I deposit money into my account?",
-    a: "You can deposit via Cash App ($WillistonInvest), Zelle (willistonboardofrealtors@gmail.com), bank wire transfer, or cryptocurrency (Bitcoin, USDT, Ethereum). Log into your dashboard, click Deposit, choose your method and follow the instructions."
+    q: "How do I deposit money?",
+    a: "Pay via Paystack card payment, bank transfer (GTBank, Access, Zenith, UBA, First Bank), Opay, or cryptocurrency (USDT, Bitcoin)."
   },
   {
     q: "How does withdrawal work?",
-    a: "Go to your Dashboard, click Withdraw, enter the amount and your payout details (Cash App tag, Zelle email, bank account or crypto wallet). Your request is reviewed and funds sent within 24-48 hours. Minimum withdrawal is $100."
+    a: "Go to your Dashboard, click Withdraw, enter the amount and your payout details (bank account number or Opay number). Your request is reviewed and funds sent within 24-48 hours. Minimum withdrawal is ₦5,000."
   },
   {
-    q: "Can I invest from outside the United States?",
-    a: "Yes. We welcome international investors. You can fund your account via international wire transfer or cryptocurrency from anywhere in the world. Returns are paid in USD."
+    q: "Can Nigerians in diaspora invest?",
+    a: "Yes. We accept USD, GBP, EUR via wire transfer and cryptocurrency. Many of our investors are based in the UK, US, Canada, and Europe."
   },
   {
     q: "How does the referral program work?",
@@ -36,7 +36,7 @@ const faqs = [
   },
   {
     q: "What documents do I need to register?",
-    a: "You need a valid email address and a government-issued ID (driver's license or passport) for KYC verification. KYC is required before your first withdrawal to protect all investors on the platform."
+    a: "You need a valid email address and a government-issued ID (NIN, BVN, or international passport) for KYC verification. KYC is required before your first withdrawal to protect all investors on the platform."
   },
   {
     q: "Do you accept cryptocurrency payments?",
@@ -44,11 +44,11 @@ const faqs = [
   },
   {
     q: "How are properties allocated to investors?",
-    a: "Property allocation depends on your investment tier. Prosperity plan and above investors are eligible for real estate unit allocation. Legacy and Dynasty investors receive guaranteed property allocation with full title documentation."
+    a: "Property allocation depends on your investment tier. Growth plan and above investors are eligible for real estate unit allocation. Premium and Elite investors receive guaranteed property allocation with full title documentation."
   },
   {
-    q: "Is Williston registered with the SEC?",
-    a: "Yes. Williston Board of Realtors and Investments is a registered LLC operating in full compliance with US investment regulations. All investment activities are transparent and documented. Legal agreements are provided for every investment."
+    q: "Is Williston registered in Nigeria?",
+    a: "Yes. We are CAC registered and SEC Nigeria compliant. Our RC number is available on request."
   },
 ]
 
@@ -121,19 +121,24 @@ export default function FAQSection() {
               }}
             >
               {/* Question Button */}
-              <button
+              <button suppressHydrationWarning
                 onClick={() => toggle(index)}
                 style={{
                   width: '100%',
+                  minHeight: '56px',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '20px 24px',
+                  padding: '16px 20px',
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
                   textAlign: 'left',
                   gap: '16px',
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation',
+                  position: 'relative',
+                  zIndex: 2,
                 }}
               >
                 <span style={{
@@ -142,6 +147,7 @@ export default function FAQSection() {
                   color: openIndex === index ? '#C9A84C' : '#ffffff',
                   lineHeight: 1.4,
                   transition: 'color 0.3s',
+                  pointerEvents: 'none',
                 }}>
                   {faq.q}
                 </span>
@@ -162,6 +168,7 @@ export default function FAQSection() {
                   transform: openIndex === index
                     ? 'rotate(45deg)'
                     : 'rotate(0deg)',
+                  pointerEvents: 'none',
                 }}>
                   +
                 </span>

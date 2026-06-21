@@ -32,14 +32,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Amount and method are required' }, { status: 400 });
     }
 
-    // 1. Validate limits: $100 min
-    if (amount < 100) {
-      return NextResponse.json({ error: 'Minimum withdrawal amount is $100' }, { status: 400 });
+    // 1. Validate limits: ₦2,000 min
+    if (amount < 2000) {
+      return NextResponse.json({ error: 'Minimum withdrawal amount is ₦2,000' }, { status: 400 });
     }
 
     // Map frontend method to DB allowed methods
     let method = rawMethod;
-    if (method === 'bank') {
+    if (method === 'bank' || method === 'opay') {
       method = 'bank_transfer';
     }
 
@@ -139,7 +139,7 @@ export async function POST(request: Request) {
     await supabaseAdmin.from('notifications').insert({
       user_id: user.id,
       title: 'Withdrawal Request Submitted',
-      message: `Your withdrawal of $${amount.toLocaleString()} has been submitted and the funds placed on hold. Reference: ${refNumber}.`,
+      message: `Your withdrawal of ₦${amount.toLocaleString()} has been submitted and the funds placed on hold. Reference: ${refNumber}.`,
       type: 'info',
       is_read: false,
     });

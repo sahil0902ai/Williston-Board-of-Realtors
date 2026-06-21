@@ -1,10 +1,29 @@
+-- DROP EXISTING TABLES FOR CLEAN SLATE RE-RUN
+drop table if exists property_catalog cascade;
+drop table if exists rentals cascade;
+drop table if exists properties cascade;
+drop table if exists cms_content cascade;
+drop table if exists announcements cascade;
+drop table if exists fraud_logs cascade;
+drop table if exists admin_logs cascade;
+drop table if exists support_tickets cascade;
+drop table if exists notifications cascade;
+drop table if exists wallet_addresses cascade;
+drop table if exists transactions cascade;
+drop table if exists referrals cascade;
+drop table if exists withdrawals cascade;
+drop table if exists deposits cascade;
+drop table if exists investments cascade;
+drop table if exists investment_plans cascade;
+drop table if exists users cascade;
+
 -- USERS TABLE
 create table users (
   id uuid references auth.users primary key,
   full_name text not null,
   email text unique not null,
   phone text,
-  country text default 'United States',
+  country text default 'Nigeria',
   password_hash text,
   avatar_url text,
   referral_code text unique,
@@ -47,7 +66,7 @@ create table investments (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references users(id) not null,
   plan_id uuid references investment_plans(id),
-  plan_name text not null check (plan_name in ('Starter Plan', 'Growth Plan', 'Premium Plan', 'Elite Plan', 'Foundation', 'Prosperity', 'Legacy', 'Dynasty')),
+  plan_name text not null check (plan_name in ('Starter Plan', 'Growth Plan', 'Premium Plan', 'Elite Plan', '7-Day Quick Plan', '30-Day Standard Plan', 'Foundation Plan', 'Growth Plan', 'Premium Plan', 'Elite Plan')),
   amount decimal not null,
   amount_usd decimal,
   roi_percent decimal not null,
@@ -243,14 +262,37 @@ create table rentals (
   created_at timestamp default now()
 );
 
+-- PROPERTY CATALOG TABLE
+create table property_catalog (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  location text not null,
+  type text not null,
+  type_display text,
+  price text,
+  roi text,
+  status text,
+  image_url text,
+  created_at timestamp default now()
+);
+
+-- Enable RLS for property_catalog
+alter table property_catalog enable row level security;
+
+-- Policy for select (public can view catalog)
+create policy "catalog_public_select" on property_catalog
+  for select using (true);
+
 -- DEFAULT INVESTMENT PLANS
 insert into investment_plans
   (name, description, roi_percent, duration_days, min_deposit, max_deposit, is_featured, icon)
 values
-  ('Starter Plan', 'Perfect for beginners. Low risk steady returns.', 10, 7, 500, 5000, false, '🌱'),
-  ('Growth Plan', 'Balanced plan for consistent investors.', 18, 14, 1000, 20000, false, '📈'),
-  ('Premium Plan', 'High returns for serious investors.', 25, 30, 2000, 50000, true, '💎'),
-  ('Elite Plan', 'Maximum returns. Exclusive access.', 35, 60, 5000, 500000, false, '👑');
+  ('7-Day Quick Plan', 'Quick Returns. Perfect for short term needs.', 8, 7, 20000, 200000, false, '⚡'),
+  ('30-Day Standard Plan', 'Perfect standard plan for monthly savings.', 15, 30, 50000, 1000000, false, '📅'),
+  ('Foundation Plan', 'Steady capital growth with annual returns paid monthly.', 15, 90, 50000, 500000, false, '🧱'),
+  ('Growth Plan', 'High yield balanced plan for consistent growth.', 20, 180, 100000, 2000000, false, '📈'),
+  ('Premium Plan', 'Maximum returns for serious wealth generation.', 28, 365, 500000, 10000000, true, '💎'),
+  ('Elite Plan', 'Exclusive plan for high-net-worth investors.', 35, 365, 2000000, 9999999999, false, '👑');
 
 -- DEFAULT WALLET ADDRESSES
 insert into wallet_addresses (currency, network, address, label)
@@ -258,6 +300,16 @@ values
   ('BTC', 'Bitcoin', 'YOUR_BITCOIN_ADDRESS', 'Bitcoin'),
   ('USDT', 'TRC20', 'YOUR_USDT_ADDRESS', 'USDT Tron'),
   ('ETH', 'Ethereum', 'YOUR_ETH_ADDRESS', 'Ethereum');
+
+-- DEFAULT PROPERTIES FOR CATALOG
+insert into property_catalog (name, location, type, type_display, price, roi, status)
+values
+  ('Williston Heights Phase 1', 'Awka Road, Onitsha, Anambra', 'Residential', 'Residential Duplexes', '₦8,500,000 / Unit', '28%', 'Open'),
+  ('Williston Gardens Estate', 'Nnewi Road, Anambra', 'Residential', 'Residential Estates', '₦5,500,000 / Unit', '35%', 'Hot Deal'),
+  ('Williston Commerce Plaza', 'Bridge Head, Onitsha, Anambra', 'Commercial', 'Mixed-Use Commercial', '₦15,000,000 / Unit', '22%', 'Open'),
+  ('Williston Lekki Towers', 'Lekki Phase 1, Lagos', 'Commercial', 'Commercial Towers', '₦25,000,000 / Unit', '26%', 'Open'),
+  ('Williston Abuja Estate', 'Gwarinpa, Abuja FCT', 'Residential', 'Residential Gardens', '₦18,000,000 / Unit', '22%', 'Hot Deal'),
+  ('Williston PH Gardens', 'GRA Phase 2, Port Harcourt, Rivers', 'Residential', 'Residential Gardens', '₦12,000,000 / Unit', '24%', 'Open');
 
 -- ROW LEVEL SECURITY
 alter table users enable row level security;
@@ -310,3 +362,16 @@ create policy "rentals_insert_public" on rentals
   for insert with check (true);
 create policy "rentals_select_public" on rentals
   for select using (true);
+
+-- DEFAULT CMS CONTENT
+insert into cms_content (key, title, content, type)
+values 
+  ('bank_name', 'Bank Name', 'OPay', 'text'),
+  ('bank_account_number', 'Account Number', '9167455410', 'text'),
+  ('bank_account_name', 'Account Name', 'Chukwuebuka Irenaus Onyegere', 'text'),
+  ('bank_whatsapp', 'WhatsApp', '+2349167455410', 'text'),
+  ('bank_ussd', 'USSD Code', '*955#', 'text')
+on conflict (key) do update set
+  content = excluded.content,
+  updated_at = now();
+

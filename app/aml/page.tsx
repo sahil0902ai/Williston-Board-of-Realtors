@@ -23,14 +23,14 @@ export default function AMLPage() {
             <section className="space-y-3">
               <h2 className="text-xl font-serif text-white">1. Know Your Customer (KYC) Requirements</h2>
               <p>
-                To maintain a secure investing environment and comply with federal regulations, all investors are required to complete identity verification. This process includes providing a government-issued ID (such as a Driver&rsquo;s License, State ID, or Passport), verify their residential address, and verify other relevant details.
+                To maintain a secure investing environment and comply with national regulations, all investors are required to complete identity verification. This process includes providing a government-issued ID (such as a Driver&rsquo;s License, NIN, BVN, or Passport), verify their residential address, and verify other relevant details.
               </p>
             </section>
 
             <section className="space-y-3">
               <h2 className="text-xl font-serif text-white">2. Anti-Money Laundering (AML) Compliance</h2>
               <p>
-                Williston is committed to preventing money laundering, terrorist financing, and fraudulent transactions on our platform. We actively monitor all funding sources, deposits, and withdrawal accounts to ensure legitimacy and legal compliance.
+                Williston is committed to preventing money laundering, terrorist financing, and fraudulent transactions on our platform. We operate in compliance with the guidelines of the Securities and Exchange Commission (SEC) Nigeria, the Nigerian Financial Intelligence Unit (NFIU), and the Central Bank of Nigeria (CBN). We actively monitor all funding sources, deposits, and withdrawal accounts to ensure legitimacy and legal compliance.
               </p>
             </section>
 

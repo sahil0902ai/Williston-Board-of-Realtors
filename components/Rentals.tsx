@@ -5,21 +5,21 @@ import { FadeUp, FadeUpItem } from '@/components/FadeUp';
 
 type selectedDuration = 'Daily' | 'Weekly' | 'Monthly' | 'Yearly';
 
-const amenities2Bed = ['WiFi', 'AC', 'Generator', 'Water', 'Security', 'Parking', 'Kitchen', 'TV', 'Washing Machine'];
-const amenities3Bed = ['WiFi', '3 AC Units', '24/7 Power', 'Water', 'Security', '2 Parking', 'Full Kitchen', '3 Smart TVs', 'Washing Machine', 'Balcony', 'Cable TV'];
+const amenities2Bed = ['WiFi', 'AC', 'DSTV', 'Borehole', 'Generator', 'Prepaid meter / EEDC', 'Security post / CCTV', 'Tiled compound', 'Kitchen'];
+const amenities3Bed = ['WiFi', 'AC Units', 'DSTV Premium', 'Borehole', '24/7 Power (Generator)', 'Prepaid meter / EEDC', 'Security post / CCTV', 'Tiled compound', 'Balcony', 'Full Kitchen'];
 
 const pricing2Bed = {
-  Daily: { price: '$300 / night', save: '—' },
-  Weekly: { price: '$700 / week', save: 'Save $1,400' },
-  Monthly: { price: '$2,000 / month', save: 'Save $7,000' },
-  Yearly: { price: '$24,000 / year', save: 'Save $84,000' }
+  Daily: { price: '₦50,000 / night', save: '—' },
+  Weekly: { price: '₦300,000 / week', save: 'Save ₦50,000' },
+  Monthly: { price: '₦800,000 / month', save: 'Save ₦700,000' },
+  Yearly: { price: '₦8,500,000 / year', save: 'Save ₦9,750,000' }
 };
 
 const pricing3Bed = {
-  Daily: { price: '$500 / night', save: '—' },
-  Weekly: { price: '$900 / week', save: 'Save $2,600' },
-  Monthly: { price: '$3,000 / month', save: 'Save $12,000' },
-  Yearly: { price: '$36,000 / year', save: 'Save $144,000' }
+  Daily: { price: '₦80,000 / night', save: '—' },
+  Weekly: { price: '₦450,000 / week', save: 'Save ₦110,000' },
+  Monthly: { price: '₦1,200,000 / month', save: 'Save ₦1,200,000' },
+  Yearly: { price: '₦13,000,000 / year', save: 'Save ₦16,200,000' }
 };
 
 export default function Rentals() {
@@ -58,8 +58,8 @@ export default function Rentals() {
           checkoutDate: checkOut,
           durationType: duration.toLowerCase(),
           totalPrice: selectedApt.includes('2 Bed') || selectedApt.includes('2 Bedroom')
-            ? (duration === 'Daily' ? 300 : duration === 'Weekly' ? 700 : duration === 'Monthly' ? 2000 : 24000)
-            : (duration === 'Daily' ? 500 : duration === 'Weekly' ? 900 : duration === 'Monthly' ? 3000 : 36000)
+            ? (duration === 'Daily' ? 50000 : duration === 'Weekly' ? 300000 : duration === 'Monthly' ? 800000 : 8500000)
+            : (duration === 'Daily' ? 80000 : duration === 'Weekly' ? 450000 : duration === 'Monthly' ? 1200000 : 13000000)
         })
       });
 
@@ -88,14 +88,14 @@ export default function Rentals() {
         <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10 text-center">
           <h1 className="text-4xl md:text-5xl font-serif text-white mb-4">Furnished Apartments for Rent</h1>
           <p className="text-gray-text text-lg max-w-2xl mx-auto mb-10">
-            Premium short-stay and long-term furnished apartments in Houston. Daily, weekly, monthly and yearly rates available.
+            Premium short-stay and long-term furnished apartments in Onitsha, Anambra. Daily, weekly, monthly and yearly rates available.
           </p>
 
           {/* Search Bar */}
           <div className="bg-navy-mid border border-border-gold p-2 rounded-2xl max-w-4xl mx-auto flex flex-col md:flex-row gap-2 shadow-2xl shadow-gold/5">
             <div className="flex-1 relative">
               <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gold" />
-              <input type="text" placeholder="Location (e.g. Midtown, Houston)" className="w-full bg-navy border border-border-subtle rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-gold transition-colors placeholder-gray-text" />
+              <input type="text" placeholder="Location (e.g. Onitsha GRA)" className="w-full bg-navy border border-border-subtle rounded-xl py-3 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-gold transition-colors placeholder-gray-text" />
             </div>
             <div className="flex-1 relative">
               <select className="w-full bg-navy border border-border-subtle rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-gold appearance-none">
@@ -157,7 +157,7 @@ export default function Rentals() {
                 Williston Residences
               </h3>
               <div className="flex items-center text-gray-text text-sm mb-4 gap-1">
-                <MapPin size={16} className="text-gold" /> River Oaks District, Houston, TX
+                <MapPin size={16} className="text-gold" /> Awka Road, Onitsha GRA, Anambra
               </div>
               <p className="text-gray-text text-sm mb-6 leading-relaxed">
                 Fully furnished 2-bedroom serviced apartment with modern kitchen, air conditioning, 24/7 electricity (solar + generator backup), fast WiFi, and dedicated parking. Ideal for professionals, couples, and small families.
@@ -228,7 +228,7 @@ export default function Rentals() {
                 Williston Executive Suites
               </h3>
               <div className="flex items-center text-gray-text text-sm mb-4 gap-1">
-                <MapPin size={16} className="text-gold" /> Midtown, Houston, TX
+                <MapPin size={16} className="text-gold" /> Housing Estate, Onitsha, Anambra
               </div>
               <p className="text-gray-text text-sm mb-6 leading-relaxed">
                 Spacious fully furnished 3-bedroom executive apartment perfect for families, corporate clients, and extended stays. Features a large living area, modern chef&apos;s kitchen, 3 en-suite bathrooms, and a private balcony.
@@ -434,7 +434,7 @@ export default function Rentals() {
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs text-gray-text uppercase tracking-widest font-semibold">WhatsApp Number</label>
-                        <input type="tel" name="guestPhone" required placeholder="+1..." className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:border-gold focus:outline-none placeholder-gray-text/50" />
+                        <input type="tel" name="guestPhone" required placeholder="+234..." className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:border-gold focus:outline-none placeholder-gray-text/50" />
                       </div>
                     </div>
                     

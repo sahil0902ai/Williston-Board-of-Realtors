@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { sendInvestmentMaturedEmail } from '@/lib/email';
+import { sendMaturedEmail } from '@/lib/emails';
 
 export const dynamic = 'force-dynamic';
 
@@ -112,7 +112,14 @@ export async function POST(request: Request) {
       });
 
       // Send Email to User
-      await sendInvestmentMaturedEmail(userProfile.full_name, userProfile.email, plan_name, principal, profit, totalRet);
+      await sendMaturedEmail({
+        name: userProfile.full_name,
+        email: userProfile.email,
+        plan: plan_name,
+        principal,
+        profit,
+        total: totalRet,
+      });
 
       processedCount++;
     }

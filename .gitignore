@@ -6,3 +6,5 @@ coverage/
 !.env.example
 .next/
 .antigravity/
+scratch/
+tsconfig.tsbuildinfo

@@ -1,61 +1,51 @@
 "use client"
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import OpayTransfer from '@/components/OpayTransfer'
+import MonnifyTransfer from '@/components/MonnifyTransfer'
+import CryptoManualDeposit from '@/components/CryptoManualDeposit'
 
 const PAYMENT_METHODS = [
   {
-    id: 'cashapp',
-    label: 'Cash App',
-    icon: '$',
-    color: '#00D632',
-    detail: '$WillistonInvest',
-    detailLabel: 'Send to Cash App tag',
-    note: 'Open Cash App → Pay → $WillistonInvest → Enter amount → Add your name + plan in note',
-    instant: true,
+    id: 'monnify_transfer',
+    label: 'Automated Bank Transfer',
+    icon: '⚡',
+    color: '#C9A84C',
+    description: 'Get a permanent personal account that auto-credits instantly',
+    badge: '⚡ Auto-Confirm',
+    recommended: true,
   },
   {
-    id: 'zelle',
-    label: 'Zelle',
-    icon: 'Z',
-    color: '#6D1ED4',
-    detail: 'willistonboardofrealtors@gmail.com',
-    detailLabel: 'Send to Zelle email',
-    note: 'Open your bank app → Zelle → Send to this email → Add your name + plan in memo',
-    instant: true,
-  },
-  {
-    id: 'bitcoin',
-    label: 'Bitcoin (BTC)',
-    icon: '₿',
-    color: '#F7931A',
-    detail: 'YOUR_BTC_WALLET_ADDRESS',
-    detailLabel: 'Bitcoin wallet address',
-    note: 'Send BTC to this address. Confirmed after 1-3 blockchain confirmations (15-45 mins)',
-    instant: false,
+    id: 'opay_transfer',
+    label: 'OPay / Bank Transfer (Manual)',
+    icon: '🏦',
+    color: '#00A651',
+    description: 'Transfer manually to our OPay account & upload proof',
+    badge: '15-60 min',
+    recommended: false,
   },
   {
     id: 'usdt',
     label: 'USDT (TRC20)',
     icon: '₮',
     color: '#26A17B',
-    detail: 'YOUR_USDT_TRC20_ADDRESS',
-    detailLabel: 'USDT TRC20 address',
-    note: 'Send USDT on TRON network only. Do NOT send on ERC20. Confirmed in 15-30 minutes.',
-    instant: false,
+    description: 'Send USDT — for diaspora investors',
+    badge: '15-30 min',
+    recommended: false,
   },
   {
-    id: 'wire',
-    label: 'Bank Wire Transfer',
-    icon: '🏦',
-    color: '#C9A84C',
-    detail: 'Contact us for wire details',
-    detailLabel: 'Wire transfer',
-    note: 'Best for large deposits ($5,000+). Contact us on Telegram for wire instructions.',
-    instant: false,
+    id: 'bitcoin',
+    label: 'Bitcoin (BTC)',
+    icon: '₿',
+    color: '#F7931A',
+    description: 'Send Bitcoin',
+    badge: '15-45 min',
+    recommended: false,
   },
 ]
 
 export default function DepositPage() {
+  const [paymentMethods, setPaymentMethods] = useState<any[]>(PAYMENT_METHODS)
   const [step, setStep] = useState(1)
   const [amount, setAmount] = useState('')
   const [selectedMethod, setSelectedMethod] = useState<any>(null)
@@ -65,9 +55,98 @@ export default function DepositPage() {
   const [success, setSuccess] = useState(false)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
+  const [profile, setProfile] = useState<any>(null)
+  const [planName, setPlanName] = useState('Investment Deposit')
   const router = useRouter()
 
-  const quickAmounts = [500, 1000, 2000, 5000, 10000]
+  const [bankDetails, setBankDetails] = useState({
+    bank: 'OPay',
+    accountName: 'Chukwuebuka Irenaus Onyegere',
+    accountNumber: '9167455410',
+    whatsapp: '+2349167455410',
+    ussd: '*955#',
+  })
+
+  async function handleOnlinePayment(gateway: 'paystack' | 'flutterwave') {
+    setLoading(true)
+    setError('')
+    try {
+      const endpoint = gateway === 'paystack'
+        ? '/api/paystack/initialize'
+        : '/api/flutterwave/initialize'
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          amount: parseFloat(amount),
+          planName: planName || 'Investment Deposit',
+        }),
+      })
+
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+
+      const redirectUrl = gateway === 'paystack' ? data.authorizationUrl : data.link
+      if (redirectUrl) {
+        window.location.href = redirectUrl
+      } else {
+        throw new Error('Payment gateway redirect URL not found')
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to initialize payment. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const userId = profile?.id
+  const selectedPlan = planName
+
+  useEffect(() => {
+    async function checkAuthAndSettings() {
+      try {
+        // Parse plan name from URL
+        if (typeof window !== 'undefined') {
+          const params = new URLSearchParams(window.location.search);
+          const plan = params.get('plan');
+          if (plan) setPlanName(plan);
+        }
+
+        // Fetch user profile to get userId and check auth
+        const profileRes = await fetch('/api/user/profile');
+        if (profileRes.status === 401) {
+          router.push('/login?redirect=/deposit');
+          return;
+        }
+        if (profileRes.ok) {
+          const data = await profileRes.json();
+          setProfile(data);
+        }
+
+        // Fetch settings
+        const res = await fetch('/api/settings');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.settings) {
+            setBankDetails({
+              bank: data.settings.bank_name || 'OPay',
+              accountNumber: data.settings.account_number || '9167455410',
+              accountName: data.settings.account_name || 'Chukwuebuka Irenaus Onyegere',
+              whatsapp: data.settings.bank_whatsapp || '+2349167455410',
+              ussd: data.settings.bank_ussd || '*955#',
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load settings or profile:', err);
+      }
+    }
+    checkAuthAndSettings();
+  }, [])
+
+  const quickAmounts = [20000, 50000, 100000, 200000, 500000, 1000000]
 
   function copyDetail(text: string) {
     navigator.clipboard.writeText(text)
@@ -78,7 +157,7 @@ export default function DepositPage() {
   function handleNextStep() {
     if (step === 1) {
       if (!amount || parseFloat(amount) < 500) {
-        setError('Minimum deposit is $500')
+        setError('Minimum deposit is ₦500')
         return
       }
       setError('')
@@ -149,7 +228,7 @@ export default function DepositPage() {
             Deposit Submitted!
           </h2>
           <p style={{ color: '#8A9BB5', fontSize: '14px', lineHeight: 1.8, marginBottom: '24px' }}>
-            Your deposit of <strong style={{ color: '#fff' }}>${parseFloat(amount).toLocaleString()}</strong> via{' '}
+            Your deposit of <strong style={{ color: '#fff' }}>₦{parseFloat(amount).toLocaleString()}</strong> via{' '}
             <strong style={{ color: '#fff' }}>{selectedMethod?.label}</strong> is under review.
             You will be notified once confirmed — usually within 15-60 minutes.
           </p>
@@ -296,7 +375,7 @@ export default function DepositPage() {
                 textTransform: 'uppercase',
                 marginBottom: '8px',
               }}>
-                Amount (USD)
+                Amount (Naira)
               </label>
               <div style={{ position: 'relative' }}>
                 <span style={{
@@ -307,7 +386,7 @@ export default function DepositPage() {
                   color: '#C9A84C',
                   fontSize: '18px',
                   fontWeight: 700,
-                }}>$</span>
+                }}>₦</span>
                 <input
                   suppressHydrationWarning
                   type="number"
@@ -329,7 +408,7 @@ export default function DepositPage() {
                 />
               </div>
               <p style={{ color: '#8A9BB5', fontSize: '12px', marginTop: '6px' }}>
-                Minimum deposit: $500
+                Minimum deposit: ₦500
               </p>
             </div>
 
@@ -363,7 +442,7 @@ export default function DepositPage() {
                       fontWeight: 600,
                     }}
                   >
-                    ${q.toLocaleString()}
+                    ₦{q.toLocaleString()}
                   </button>
                 ))}
               </div>
@@ -418,75 +497,123 @@ export default function DepositPage() {
             </h3>
             <p style={{ color: '#8A9BB5', fontSize: '13px', marginBottom: '20px' }}>
               Depositing: <strong style={{ color: '#C9A84C' }}>
-                ${parseFloat(amount).toLocaleString()}
+                ₦{parseFloat(amount).toLocaleString()}
               </strong>
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {PAYMENT_METHODS.map(method => (
+              {paymentMethods.map(method => (
                 <div
                   key={method.id}
                   onClick={() => setSelectedMethod(method)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      setSelectedMethod(method)
+                    }
+                  }}
                   style={{
-                    padding: '16px 20px',
-                    border: `1px solid ${selectedMethod?.id === method.id
-                      ? 'rgba(201,168,76,0.5)'
-                      : 'rgba(255,255,255,0.07)'}`,
+                    position: 'relative',
+                    padding: '20px 20px 16px',
+                    border: selectedMethod?.id === method.id
+                      ? '1px solid rgba(201,168,76,0.8)'
+                      : method.recommended
+                      ? '1px solid rgba(201,168,76,0.4)'
+                      : '1px solid rgba(255,255,255,0.07)',
                     background: selectedMethod?.id === method.id
                       ? 'rgba(201,168,76,0.06)'
+                      : method.recommended
+                      ? 'rgba(201,168,76,0.02)'
                       : 'rgba(255,255,255,0.02)',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '14px',
                     transition: 'all 0.2s',
+                    minHeight: '64px',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
                   }}
                 >
-                  <div style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    background: method.color + '20',
-                    border: `1px solid ${method.color}40`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '16px',
-                    fontWeight: 700,
-                    color: method.color,
-                    flexShrink: 0,
-                  }}>
-                    {method.icon}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <p style={{
-                      fontWeight: 600,
-                      fontSize: '14px',
-                      color: '#fff',
-                      margin: 0,
+                  <div style={{ pointerEvents: 'none', display: 'flex', alignItems: 'center', width: '100%', gap: '14px', position: 'relative' }}>
+                    {method.recommended && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '-8px',
+                        right: '-8px',
+                        background: '#C9A84C',
+                        color: '#04091A',
+                        fontSize: '9px',
+                        fontWeight: 800,
+                        padding: '2px 8px',
+                        borderRadius: '99px',
+                        letterSpacing: '0.5px',
+                      }}>
+                        ⭐ RECOMMENDED
+                      </div>
+                    )}
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      background: method.color + '20',
+                      border: `1px solid ${method.color}40`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '16px',
+                      fontWeight: 700,
+                      color: method.color,
+                      flexShrink: 0,
                     }}>
-                      {method.label}
-                    </p>
-                    <p style={{
-                      fontSize: '12px',
-                      color: '#8A9BB5',
-                      margin: '2px 0 0',
-                    }}>
-                      {method.instant ? '⚡ Instant confirmation' : '⏱ 15-45 min confirmation'}
-                    </p>
+                      {method.icon}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{
+                        fontWeight: 600,
+                        fontSize: '14px',
+                        color: '#fff',
+                        margin: 0,
+                      }}>
+                        {method.label}
+                      </p>
+                      <p style={{
+                        fontSize: '12px',
+                        color: '#8A9BB5',
+                        margin: '2px 0 0',
+                      }}>
+                        {method.description || (method.instant ? '⚡ Instant confirmation' : '⏱ 15-45 min confirmation')}
+                      </p>
+                      {method.badge && (
+                        <span style={{
+                          display: 'inline-block',
+                          background: method.recommended ? 'rgba(39,197,116,0.1)' : 'rgba(255,255,255,0.05)',
+                          color: method.recommended ? '#27C574' : '#8A9BB5',
+                          fontSize: '10px',
+                          fontWeight: 600,
+                          padding: '1px 6px',
+                          marginTop: '4px',
+                          borderRadius: '4px',
+                          border: `1px solid ${method.recommended ? 'rgba(39,197,116,0.2)' : 'rgba(255,255,255,0.05)'}`,
+                        }}>
+                          {method.badge}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{
+                      width: '18px',
+                      height: '18px',
+                      borderRadius: '50%',
+                      border: `2px solid ${selectedMethod?.id === method.id
+                        ? '#C9A84C'
+                        : 'rgba(255,255,255,0.2)'}`,
+                      background: selectedMethod?.id === method.id
+                        ? '#C9A84C'
+                        : 'transparent',
+                      flexShrink: 0,
+                    }} />
                   </div>
-                  <div style={{
-                    width: '18px',
-                    height: '18px',
-                    borderRadius: '50%',
-                    border: `2px solid ${selectedMethod?.id === method.id
-                      ? '#C9A84C'
-                      : 'rgba(255,255,255,0.2)'}`,
-                    background: selectedMethod?.id === method.id
-                      ? '#C9A84C'
-                      : 'transparent',
-                    flexShrink: 0,
-                  }} />
                 </div>
               ))}
             </div>
@@ -544,224 +671,240 @@ export default function DepositPage() {
             border: '1px solid rgba(255,255,255,0.07)',
             padding: '32px',
           }}>
-            <h3 style={{
-              fontFamily: 'Cormorant Garamond, serif',
-              fontSize: '24px',
-              color: '#fff',
-              marginBottom: '8px',
-            }}>
-              Send Payment & Upload Proof
-            </h3>
-            <p style={{ color: '#8A9BB5', fontSize: '13px', marginBottom: '20px' }}>
-              Send <strong style={{ color: '#C9A84C' }}>
-                ${parseFloat(amount).toLocaleString()}
-              </strong> via {selectedMethod.label}
-            </p>
-
-            {/* Payment Detail */}
-            <div style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.07)',
-              padding: '16px',
-              marginBottom: '16px',
-            }}>
-              <p style={{
-                color: '#8A9BB5',
-                fontSize: '11px',
-                letterSpacing: '2px',
-                textTransform: 'uppercase',
-                marginBottom: '8px',
-              }}>
-                {selectedMethod.detailLabel}
-              </p>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
-                <span style={{
-                  color: '#C9A84C',
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  wordBreak: 'break-all',
+            {selectedMethod.id === 'monnify_transfer' ? (
+              <MonnifyTransfer
+                amount={parseFloat(amount)}
+                userId={userId}
+                profile={profile}
+              />
+            ) : selectedMethod.id === 'opay_transfer' ? (
+              <OpayTransfer
+                amount={parseFloat(amount)}
+                userId={userId}
+                planName={planName || 'Investment Deposit'}
+              />
+            ) : selectedMethod.id === 'usdt' || selectedMethod.id === 'bitcoin' ? (
+              <CryptoManualDeposit
+                amountNgn={parseFloat(amount)}
+                userId={userId}
+                planName={planName || 'Investment Deposit'}
+              />
+            ) : (
+              <>
+                <h3 style={{
+                  fontFamily: 'Cormorant Garamond, serif',
+                  fontSize: '24px',
+                  color: '#fff',
+                  marginBottom: '8px',
                 }}>
-                  {selectedMethod.detail}
-                </span>
-                <button
-                  suppressHydrationWarning
-                  onClick={() => copyDetail(selectedMethod.detail)}
-                  style={{
-                    background: copied ? '#27C574' : 'rgba(201,168,76,0.15)',
-                    color: copied ? '#fff' : '#C9A84C',
-                    border: 'none',
-                    padding: '6px 14px',
-                    cursor: 'pointer',
+                  Send Payment & Upload Proof
+                </h3>
+                <p style={{ color: '#8A9BB5', fontSize: '13px', marginBottom: '20px' }}>
+                  Send <strong style={{ color: '#C9A84C' }}>
+                    ₦{parseFloat(amount).toLocaleString()}
+                  </strong> via {selectedMethod.label}
+                </p>
+
+                <div style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  padding: '16px',
+                  marginBottom: '16px',
+                }}>
+                  <p style={{
+                    color: '#8A9BB5',
+                    fontSize: '11px',
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase',
+                    marginBottom: '8px',
+                  }}>
+                    {selectedMethod.label} Address
+                  </p>
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}>
+                    <span style={{
+                      color: '#C9A84C',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      wordBreak: 'break-all',
+                      fontFamily: 'monospace',
+                    }}>
+                      {selectedMethod.id === 'usdt' 
+                        ? 'TRC20placeholder_address_goes_here_xyz' 
+                        : 'bc1qplaceholder_address_goes_here_xyz'}
+                    </span>
+                    <button
+                      suppressHydrationWarning
+                      onClick={() => copyDetail(selectedMethod.id === 'usdt' 
+                        ? 'TRC20placeholder_address_goes_here_xyz' 
+                        : 'bc1qplaceholder_address_goes_here_xyz')}
+                      style={{
+                        background: copied ? '#27C574' : 'rgba(201,168,76,0.15)',
+                        color: copied ? '#fff' : '#C9A84C',
+                        border: 'none',
+                        padding: '6px 14px',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        flexShrink: 0,
+                        marginLeft: '12px',
+                      }}
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+
+                {/* Instructions */}
+                <div style={{
+                  background: 'rgba(255,165,0,0.06)',
+                  border: '1px solid rgba(255,165,0,0.2)',
+                  padding: '14px',
+                  marginBottom: '20px',
+                }}>
+                  <p style={{
+                    color: '#FFA500',
                     fontSize: '12px',
                     fontWeight: 600,
-                    flexShrink: 0,
-                    marginLeft: '12px',
-                  }}
-                >
-                  {copied ? '✓ Copied' : 'Copy'}
-                </button>
-              </div>
-            </div>
+                    marginBottom: '6px',
+                  }}>
+                    📌 How to send:
+                  </p>
+                  <p style={{ color: '#8A9BB5', fontSize: '13px', lineHeight: 1.7 }}>
+                    Transfer the exact crypto amount to the address above, and upload proof.
+                  </p>
+                </div>
 
-            {/* Instructions */}
-            <div style={{
-              background: 'rgba(255,165,0,0.06)',
-              border: '1px solid rgba(255,165,0,0.2)',
-              padding: '14px',
-              marginBottom: '20px',
-            }}>
-              <p style={{
-                color: '#FFA500',
-                fontSize: '12px',
-                fontWeight: 600,
-                marginBottom: '6px',
-              }}>
-                📌 How to send:
-              </p>
-              <p style={{ color: '#8A9BB5', fontSize: '13px', lineHeight: 1.7 }}>
-                {selectedMethod.note}
-              </p>
-            </div>
+                {/* Reference input */}
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{
+                    display: 'block',
+                    color: '#8A9BB5',
+                    fontSize: '12px',
+                    letterSpacing: '1px',
+                    textTransform: 'uppercase',
+                    marginBottom: '6px',
+                  }}>
+                    Transaction Reference (Optional)
+                  </label>
+                  <input
+                    suppressHydrationWarning
+                    type="text"
+                    value={reference}
+                    onChange={e => setReference(e.target.value)}
+                    placeholder="Transaction ID or confirmation number"
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.07)',
+                      color: '#fff',
+                      fontSize: '14px',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
 
-            {/* Reference input */}
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{
-                display: 'block',
-                color: '#8A9BB5',
-                fontSize: '12px',
-                letterSpacing: '1px',
-                textTransform: 'uppercase',
-                marginBottom: '6px',
-              }}>
-                Transaction Reference (Optional)
-              </label>
-              <input
-                suppressHydrationWarning
-                type="text"
-                value={reference}
-                onChange={e => setReference(e.target.value)}
-                placeholder="Transaction ID or confirmation number"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  color: '#fff',
-                  fontSize: '14px',
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
+                {/* Proof upload */}
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{
+                    display: 'block',
+                    border: `2px dashed ${proof
+                      ? 'rgba(39,197,116,0.4)'
+                      : 'rgba(201,168,76,0.25)'}`,
+                    padding: '28px',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    background: proof
+                      ? 'rgba(39,197,116,0.04)'
+                      : 'transparent',
+                  }}>
+                    <input
+                      suppressHydrationWarning
+                      type="file"
+                      accept="image/*,.pdf"
+                      style={{ display: 'none' }}
+                      onChange={e => {
+                        if (e.target.files && e.target.files[0]) {
+                          setProof(e.target.files[0])
+                        }
+                      }}
+                    />
+                    {proof ? (
+                      <div>
+                        <p style={{ color: '#27C574', fontSize: '14px', fontWeight: 600 }}>
+                          ✓ {proof.name}
+                        </p>
+                        <p style={{ color: '#8A9BB5', fontSize: '12px', marginTop: '4px' }}>
+                          Click to change file
+                        </p>
+                      </div>
+                    ) : (
+                      <div>
+                        <p style={{ fontSize: '32px', marginBottom: '8px' }}>📷</p>
+                        <p style={{ color: '#C9A84C', fontSize: '14px', fontWeight: 600 }}>
+                          Click to upload screenshot
+                        </p>
+                        <p style={{ color: '#8A9BB5', fontSize: '12px', marginTop: '4px' }}>
+                          JPG, PNG or PDF — Max 5MB
+                        </p>
+                      </div>
+                    )}
+                  </label>
+                </div>
 
-            {/* Proof upload */}
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{
-                display: 'block',
-                color: '#8A9BB5',
-                fontSize: '12px',
-                letterSpacing: '1px',
-                textTransform: 'uppercase',
-                marginBottom: '6px',
-              }}>
-                Payment Screenshot (Required)
-              </label>
-              <label style={{
-                display: 'block',
-                border: `2px dashed ${proof
-                  ? 'rgba(39,197,116,0.4)'
-                  : 'rgba(201,168,76,0.25)'}`,
-                padding: '28px',
-                textAlign: 'center',
-                cursor: 'pointer',
-                background: proof
-                  ? 'rgba(39,197,116,0.04)'
-                  : 'transparent',
-              }}>
-                <input
-                  suppressHydrationWarning
-                  type="file"
-                  accept="image/*,.pdf"
-                  style={{ display: 'none' }}
-                  onChange={e => {
-                    if (e.target.files && e.target.files[0]) {
-                      setProof(e.target.files[0])
-                    }
-                  }}
-                />
-                {proof ? (
-                  <div>
-                    <p style={{ color: '#27C574', fontSize: '14px', fontWeight: 600 }}>
-                      ✓ {proof.name}
-                    </p>
-                    <p style={{ color: '#8A9BB5', fontSize: '12px', marginTop: '4px' }}>
-                      Click to change file
-                    </p>
-                  </div>
-                ) : (
-                  <div>
-                    <p style={{ fontSize: '32px', marginBottom: '8px' }}>📷</p>
-                    <p style={{ color: '#C9A84C', fontSize: '14px', fontWeight: 600 }}>
-                      Click to upload screenshot
-                    </p>
-                    <p style={{ color: '#8A9BB5', fontSize: '12px', marginTop: '4px' }}>
-                      JPG, PNG or PDF — Max 5MB
-                    </p>
-                  </div>
+                {error && (
+                  <p style={{
+                    color: '#ff4444',
+                    fontSize: '13px',
+                    marginBottom: '16px',
+                    padding: '10px',
+                    background: 'rgba(255,68,68,0.08)',
+                    border: '1px solid rgba(255,68,68,0.2)',
+                  }}>
+                    {error}
+                  </p>
                 )}
-              </label>
-            </div>
 
-            {error && (
-              <p style={{
-                color: '#ff4444',
-                fontSize: '13px',
-                marginBottom: '16px',
-                padding: '10px',
-                background: 'rgba(255,68,68,0.08)',
-                border: '1px solid rgba(255,68,68,0.2)',
-              }}>
-                {error}
-              </p>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button
+                    suppressHydrationWarning
+                    onClick={() => setStep(2)}
+                    style={{
+                      flex: 1,
+                      padding: '13px',
+                      background: 'transparent',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: '#8A9BB5',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                    }}
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    suppressHydrationWarning
+                    onClick={submitDeposit}
+                    disabled={loading}
+                    style={{
+                      flex: 2,
+                      padding: '13px',
+                      background: loading ? 'rgba(201,168,76,0.5)' : '#C9A84C',
+                      color: '#04091A',
+                      fontWeight: 700,
+                      border: 'none',
+                      cursor: loading ? 'not-allowed' : 'pointer',
+                      fontSize: '14px',
+                    }}
+                  >
+                    {loading ? 'Submitting...' : '✓ Submit Deposit'}
+                  </button>
+                </div>
+              </>
             )}
-
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button
-                suppressHydrationWarning
-                onClick={() => setStep(2)}
-                style={{
-                  flex: 1,
-                  padding: '13px',
-                  background: 'transparent',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#8A9BB5',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                }}
-              >
-                ← Back
-              </button>
-              <button
-                suppressHydrationWarning
-                onClick={submitDeposit}
-                disabled={loading}
-                style={{
-                  flex: 2,
-                  padding: '13px',
-                  background: loading ? 'rgba(201,168,76,0.5)' : '#C9A84C',
-                  color: '#04091A',
-                  fontWeight: 700,
-                  border: 'none',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  fontSize: '14px',
-                }}
-              >
-                {loading ? 'Submitting...' : '✓ Submit Deposit'}
-              </button>
-            </div>
           </div>
         )}
 

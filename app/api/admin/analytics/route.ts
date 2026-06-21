@@ -44,8 +44,8 @@ export async function GET(request: Request) {
       // 5. Pending Withdrawals (amounts to sum in JS)
       supabaseAdmin.from('withdrawals').select('amount').eq('status', 'pending'),
 
-      // 6. Confirmed Deposits (amounts and methods to sum in JS)
-      supabaseAdmin.from('deposits').select('amount, method').eq('status', 'confirmed'),
+      // 6. Confirmed Deposits (amounts, methods and created_at to sum in JS)
+      supabaseAdmin.from('deposits').select('amount, method, created_at').eq('status', 'confirmed'),
 
       // 7. Approved Withdrawals (amounts to sum in JS)
       supabaseAdmin.from('withdrawals').select('amount').eq('status', 'approved'),
@@ -56,8 +56,8 @@ export async function GET(request: Request) {
       // 9. Recent 10 Transactions with joined user full_name
       supabaseAdmin.from('transactions').select('*, users(full_name)').order('created_at', { ascending: false }).limit(10),
 
-      // 10. Fetch created_at dates for signup chart grouping
-      supabaseAdmin.from('users').select('created_at'),
+      // 10. Fetch created_at dates and wallet balances for signup chart & stats
+      supabaseAdmin.from('users').select('created_at, wallet_balance'),
 
       // 11. Fetch plan names for active plans chart grouping
       supabaseAdmin.from('investments').select('plan_name').eq('status', 'active')
@@ -109,14 +109,19 @@ export async function GET(request: Request) {
     // Total Deposited
     const totalDeposited = confirmedDepositsRes.data?.reduce((sum, item) => sum + parseFloat(item.amount as any), 0) || 0;
 
+    // Total Deposited Today
+    const totalDepositedToday = confirmedDepositsRes.data
+      ?.filter((d: any) => new Date(d.created_at) >= startOfToday)
+      .reduce((sum, item) => sum + parseFloat(item.amount as any), 0) || 0;
+
     // Total Withdrawn
     const totalWithdrawn = approvedWithdrawalsRes.data?.reduce((sum, item) => sum + parseFloat(item.amount as any), 0) || 0;
 
     // Total Returns Paid
     const totalReturnsPaid = returnsPaidRes.data?.reduce((sum, item) => sum + Math.abs(parseFloat(item.amount as any)), 0) || 0;
 
-    // Net Platform Balance
-    const platformBalance = totalDeposited - totalWithdrawn;
+    // Net Platform Balance (Sum of all wallet balances)
+    const platformBalance = signupsHistoryRes.data?.reduce((sum, u: any) => sum + parseFloat(u.wallet_balance as any || '0'), 0) || 0;
 
     // Map recent transactions
     const recentTransactions = recentTransactionsRes.data?.map((tx: any) => ({
@@ -189,6 +194,7 @@ export async function GET(request: Request) {
           amount: pendingWithdrawalsAmount
         },
         totalDeposited,
+        totalDepositedToday,
         totalWithdrawn,
         totalReturnsPaid,
         platformBalance,

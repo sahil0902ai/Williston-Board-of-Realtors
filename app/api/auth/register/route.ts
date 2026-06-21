@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { sendWelcomeEmail } from '@/lib/email';
+import { sendWelcomeEmail } from '@/lib/emails';
 import bcrypt from 'bcryptjs';
 
 export const dynamic = 'force-dynamic';

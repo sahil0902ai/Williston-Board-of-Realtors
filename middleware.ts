@@ -40,32 +40,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Protect /admin paths (requires active admin session)
-  if (path.startsWith('/admin')) {
-    if (!user) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-
-    // Verify if user email has admin credentials
-    const email = user.email || '';
-    const isAdmin = 
-      email === 'admin@williston.com' || 
-      email === 'willistonadmin@gmail.com' || 
-      email === 'willistonadmin@williston.com' ||
-      email.startsWith('admin@');
-
-    if (!isAdmin) {
-      // Redirect regular users to their dashboard
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-  }
-
   return response;
 }
 
 export const config = {
   matcher: [
     '/dashboard/:path*',
-    '/admin/:path*',
   ],
 };

@@ -56,11 +56,11 @@ export default function ReferralTab({ profile }: ReferralTabProps) {
         </div>
         <div className="bg-navy-mid border border-border-subtle rounded-xl p-6">
           <div className="text-sm text-gray-text mb-2">Total Earned</div>
-          <div className="text-3xl font-serif text-green-400">${stats.totalEarned.toLocaleString()}</div>
+          <div className="text-3xl font-serif text-green-400">₦{stats.totalEarned.toLocaleString()}</div>
         </div>
         <div className="bg-navy-mid border border-border-subtle rounded-xl p-6">
           <div className="text-sm text-gray-text mb-2">Pending Bonus</div>
-          <div className="text-3xl font-serif text-yellow-500">${stats.pendingCommission.toLocaleString()}</div>
+          <div className="text-3xl font-serif text-yellow-500">₦{stats.pendingCommission.toLocaleString()}</div>
         </div>
       </div>
 
@@ -170,7 +170,7 @@ export default function ReferralTab({ profile }: ReferralTabProps) {
                     </td>
                     <td className="p-4 text-gray-text">{ref.email}</td>
                     <td className="p-4 text-gray-text">{new Date(ref.date).toLocaleDateString()}</td>
-                    <td className="p-4 font-medium text-green-400">${parseFloat(ref.commission).toLocaleString()}</td>
+                    <td className="p-4 font-medium text-green-400">₦{parseFloat(ref.commission).toLocaleString()}</td>
                     <td className="p-4">
                        <span className={`px-2 py-1 rounded text-xs font-medium ${ref.status === 'paid' ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-500'}`}>
                           {ref.status}

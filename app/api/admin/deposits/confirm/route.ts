@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { isAdminRequest, getAuthenticatedUser } from '@/lib/auth-helper';
-import { sendDepositEmail } from '@/lib/email';
+import { sendDepositConfirmedEmail } from '@/lib/emails';
 
 export const dynamic = 'force-dynamic';
 
@@ -93,18 +93,17 @@ export async function POST(request: Request) {
       await supabaseAdmin.from('notifications').insert({
         user_id: userId,
         title: 'Deposit Confirmed ✅',
-        message: `Your deposit of $${amount.toLocaleString()} has been verified and credited to your wallet balance.`,
+        message: `Your deposit of ₦${amount.toLocaleString()} has been verified and credited to your wallet balance.`,
         type: 'success',
         is_read: false,
       });
 
       // Send confirmation email
-      await sendDepositEmail({
+      await sendDepositConfirmedEmail({
         name: profile.full_name,
         email: profile.email,
         amount: amount,
-        method: deposit.method,
-        reference: deposit.bank_reference || deposit.transaction_hash || `DEP-${depositId.substring(0, 8).toUpperCase()}`,
+        newBalance: newBalance,
       });
 
     } else if (action === 'reject') {
@@ -123,7 +122,7 @@ export async function POST(request: Request) {
       await supabaseAdmin.from('notifications').insert({
         user_id: userId,
         title: 'Deposit Rejected ❌',
-        message: `Your deposit request of $${amount.toLocaleString()} was rejected. Reason: ${reason}.`,
+        message: `Your deposit request of ₦${amount.toLocaleString()} was rejected. Reason: ${reason}.`,
         type: 'error',
         is_read: false,
       });

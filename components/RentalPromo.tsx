@@ -22,7 +22,7 @@ export default function RentalPromo({ isRentPage = false }: { isRentPage?: boole
                 Premium Furnished <span className="italic text-gold">Apartments</span>
               </h2>
               <p className="text-gray-text text-lg mb-8 leading-relaxed max-w-lg">
-                Visiting Houston? We now offer luxury short-stay and long-term serviced apartments. Enjoy 24/7 power, full security, and premium comfort without the hassle of setting up a new home.
+                Visiting Onitsha? We now offer luxury short-stay and long-term serviced apartments. Enjoy 24/7 power, full security, and premium comfort without the hassle of setting up a new home.
               </p>
               
               <ul className="space-y-3 mb-10">
@@ -57,7 +57,7 @@ export default function RentalPromo({ isRentPage = false }: { isRentPage?: boole
                 <div className="p-4 bg-navy-mid border border-border-subtle rounded-2xl">
                   <div className="text-center">
                     <div className="text-xl font-serif text-white mb-1">2 Bed</div>
-                    <div className="text-xs text-gray-text">From $300/night</div>
+                    <div className="text-xs text-gray-text">From ₦50,000/night</div>
                   </div>
                 </div>
               </div>
@@ -65,7 +65,7 @@ export default function RentalPromo({ isRentPage = false }: { isRentPage?: boole
                 <div className="p-4 bg-navy-mid border border-border-subtle rounded-2xl">
                   <div className="text-center">
                     <div className="text-xl font-serif text-white mb-1">3 Bed</div>
-                    <div className="text-xs text-gray-text">From $500/night</div>
+                    <div className="text-xs text-gray-text">From ₦80,000/night</div>
                   </div>
                 </div>
                 <div className="rounded-2xl overflow-hidden aspect-[4/5] border border-border-subtle relative -translate-y-8">

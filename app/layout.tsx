@@ -3,7 +3,7 @@ import { Cormorant_Garamond, Outfit } from 'next/font/google';
 import './globals.css';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import CookieConsent from '@/components/CookieConsent';
-import MobileBottomBar from '@/components/MobileBottomBar';
+import MobileBottomNav from '@/components/MobileBottomNav';
 import Chatbot from '@/components/Chatbot';
 import SplashScreenController from '@/components/SplashScreenController';
 import { GoogleAnalytics } from '@next/third-parties/google';
@@ -23,31 +23,37 @@ const outfit = Outfit({
   display: 'swap',
 });
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://williston-board-of-realtors.vercel.app'),
   title: {
-    default: 'Williston Board of Realtors & Investments | Houston, TX',
+    default: 'Williston Board of Realtors & Investments | Real Estate Investment Nigeria',
     template: '%s | Williston Investments'
   },
-  description: 'Premium real estate investment platform based in Houston, Texas. Earn 18-35% annual returns. Invest in commercial, standard and luxury properties. Cash App, Zelle, and Crypto accepted.',
+  description: "Nigeria's trusted real estate investment platform based in Onitsha, Anambra. Earn 15-35% returns. Pay via Paystack, bank transfer, or crypto. Diaspora friendly.",
   keywords: [
-    'real estate investment Houston Texas',
-    'property investment platform USA',
-    'passive income real estate',
-    'wealth investment platform',
-    'commercial real estate investment',
-    'luxury property investment',
-    'Cash App investment',
-    'crypto real estate investment',
-    'Williston Board of Realtors',
+    'real estate investment Nigeria',
+    'property investment Onitsha Anambra',
+    'investment platform Nigeria',
+    'wealth investment Nigeria',
+    'diaspora investment Nigeria',
+    'passive income Nigeria',
+    'land investment Nigeria',
+    'Williston Board of Realtors Nigeria',
   ],
   openGraph: {
     title: 'Williston Board of Realtors & Investments',
-    description: 'Build wealth through premium real estate investment. 18-35% annual returns.',
+    description: 'Build wealth through premium real estate investment in Nigeria. 15-35% annual returns.',
     url: 'https://williston-board-of-realtors.vercel.app',
     siteName: 'Williston Investments',
     type: 'website',
-    locale: 'en_US',
+    locale: 'en_NG',
     images: [{
       url: '/og-image.png',
       width: 1200,
@@ -58,7 +64,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Williston Board of Realtors & Investments',
-    description: 'Premium real estate investment | Houston, TX | 18-35% returns',
+    description: "Nigeria's trusted real estate investment | Onitsha, Anambra | 15-35% returns",
     images: ['/og-image.png'],
   },
   robots: {
@@ -76,6 +82,7 @@ export const metadata: Metadata = {
   icons: {
     icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">💼</text></svg>',
   },
+  manifest: '/manifest.json',
   alternates: {
     canonical: 'https://williston-board-of-realtors.vercel.app',
   },
@@ -86,14 +93,13 @@ const jsonLd = {
   '@type': 'RealEstateAgent',
   name: 'Williston Board of Realtors & Investments',
   image: 'https://williston-board-of-realtors.vercel.app/og-image.png',
-  description: "Invest in verified real estate and earn 18–35% annual returns. America's trusted wealth investment platform based in Houston. Join 4,800+ investors.",
+  description: "Nigeria's trusted real estate investment platform based in Onitsha, Anambra. Earn 15-35% returns. Pay via Paystack, bank transfer, or crypto. Diaspora friendly. Join 4,800+ investors.",
   address: {
     '@type': 'PostalAddress',
-    streetAddress: '1847 Westheimer Road, Suite 300',
-    addressLocality: 'Houston',
-    addressRegion: 'TX',
-    postalCode: '77098',
-    addressCountry: 'US',
+    streetAddress: '15 Oguta Road',
+    addressLocality: 'Onitsha',
+    addressRegion: 'Anambra State',
+    addressCountry: 'NG',
   },
   email: 'willistonboardofrealtors@gmail.com',
   url: 'https://williston-board-of-realtors.vercel.app',
@@ -104,7 +110,6 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
     <html lang="en" className={`${cormorant.variable} ${outfit.variable} scroll-smooth`} suppressHydrationWarning>
       <head>
         <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
         <link rel="dns-prefetch" href="//fonts.gstatic.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -198,12 +203,49 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         />
       </head>
       <body className="font-sans bg-navy text-white antialiased selection:bg-gold selection:text-navy" suppressHydrationWarning>
-        {/* HTML Loading Splash Screen Overlay */}
-        <div id="global-splash-screen" className="fixed inset-0 bg-[#04091A] z-[9999] flex flex-col items-center justify-center transition-opacity duration-400">
-           <div className="flex flex-col items-center text-center px-4 max-w-sm md:max-w-md w-full">
+        {/* HTML Loading Splash Screen Overlay with robust inline styles fallbacks */}
+        <div 
+          id="global-splash-screen" 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: '#04091A',
+            zIndex: 9999,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'opacity 0.4s ease-in-out',
+          }}
+          className="transition-opacity duration-400"
+        >
+           <div 
+             style={{
+               display: 'flex',
+               flexDirection: 'column',
+               alignItems: 'center',
+               textAlign: 'center',
+               paddingLeft: '16px',
+               paddingRight: '16px',
+               maxWidth: '448px',
+               width: '100%',
+             }}
+           >
               {/* Animated Monogram */}
-              <div className="mb-4">
-                 <svg viewBox="0 0 100 100" className="w-24 h-24 text-[#C9A84C]" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+              <div style={{ marginBottom: '16px' }}>
+                 <svg 
+                   viewBox="0 0 100 100" 
+                   style={{
+                     width: '96px',
+                     height: '96px',
+                     color: '#C9A84C',
+                   }}
+                   fill="none" 
+                   stroke="currentColor" 
+                   strokeWidth="3.5" 
+                   strokeLinecap="round" 
+                   strokeLinejoin="round"
+                 >
                     <path 
                        d="M22 25 L40 75 L50 45 L60 75 L78 25" 
                        className="w-stroke-main"
@@ -218,12 +260,28 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
               </div>
 
               {/* WILLISTON Text */}
-              <div className="flex justify-center gap-1.5 mb-2 h-10 select-none">
+              <div 
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  marginBottom: '8px',
+                  height: '40px',
+                  userSelect: 'none',
+                }}
+              >
                  {Array.from("WILLISTON").map((char, idx) => (
                     <span 
                        key={idx} 
-                       className="splash-letter font-serif text-3xl md:text-4xl tracking-[0.1em] text-white font-bold"
-                       style={{ animationDelay: `${0.8 + idx * 0.055}s` }}
+                       className="splash-letter font-serif"
+                       style={{ 
+                         animationDelay: `${0.8 + idx * 0.055}s`,
+                         display: 'inline-block',
+                         fontSize: '2rem',
+                         letterSpacing: '0.1em',
+                         color: '#ffffff',
+                         fontWeight: 'bold',
+                       }}
                     >
                        {char}
                     </span>
@@ -231,20 +289,56 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
               </div>
 
               {/* Subtitle */}
-              <p className="splash-subtitle text-[#C9A84C] text-[10px] md:text-xs tracking-[0.25em] uppercase text-center opacity-0 select-none">
+              <p 
+                className="splash-subtitle"
+                style={{
+                  color: '#C9A84C',
+                  fontSize: '11px',
+                  letterSpacing: '0.25em',
+                  textTransform: 'uppercase',
+                  textAlign: 'center',
+                  opacity: 0,
+                  userSelect: 'none',
+                  margin: 0,
+                }}
+              >
                  Board of Realtors & Investments
               </p>
 
               {/* Progress Bar */}
-              <div className="w-44 md:w-56 h-[2px] bg-white/10 rounded-full overflow-hidden mt-6">
-                 <div className="splash-progress bg-[#C9A84C] h-full w-0"></div>
+              <div 
+                style={{
+                  width: '180px',
+                  height: '2px',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: '9999px',
+                  overflow: 'hidden',
+                  marginTop: '24px',
+                }}
+              >
+                 <div 
+                   className="splash-progress"
+                   style={{
+                     background: '#C9A84C',
+                     height: '100%',
+                     width: '0%',
+                   }}
+                 ></div>
               </div>
 
               {/* Loading Text */}
-              <div className="h-6 mt-4 flex items-center justify-center">
-                 <span id="splash-loading-text" className="text-gray-400 text-xs tracking-wider transition-opacity duration-150" style={{ transition: 'opacity 0.15s ease-in-out' }}>
+              <div style={{ height: '24px', marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                 <span 
+                   id="splash-loading-text" 
+                   style={{
+                     color: '#8A9BB5',
+                     fontSize: '12px',
+                     letterSpacing: '0.05em',
+                     transition: 'opacity 0.15s ease-in-out',
+                   }}
+                 >
                     Securing your connection...
-                  </span>
+                 </span>
               </div>
            </div>
         </div>
@@ -255,8 +349,8 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         <WhatsAppButton />
         <Chatbot />
         <CookieConsent />
-        <MobileBottomBar />
-        <GoogleAnalytics gaId="G-XXXXXXXXXX" />
+        <MobileBottomNav />
+        {/* <GoogleAnalytics gaId="G-XXXXXXXXXX" /> */}
       </body>
     </html>
   );

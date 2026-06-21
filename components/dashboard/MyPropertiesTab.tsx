@@ -4,6 +4,7 @@ import {
   Building, Map as MapIcon, List, Bell, Download, ChevronDown, ChevronUp, MapPin, CheckCircle2, Phone, X
 } from 'lucide-react';
 import Image from 'next/image';
+import { supabase } from '@/lib/supabase';
 
 type PropertyStatus = 'Under Development' | 'Ready / Completed' | 'Rented / Occupied' | 'Pending Title Transfer' | 'Title Transferred';
 type PropertyType = 'Residential' | 'Commercial' | 'Land';
@@ -34,15 +35,15 @@ interface Property {
 const mockProperties: Property[] = [
   {
     id: 'WBR-PROP-2025-0042',
-    name: 'Williston Heights — River Oaks, Unit 4B',
-    address: '1204 River Oaks Blvd, Houston, TX 77019',
+    name: 'Williston Heights Phase 1, Unit 4B',
+    address: '15 Oguta Road, Onitsha, Anambra, Nigeria',
     type: 'Residential',
     status: 'Under Development',
     progress: 65,
     estCompletion: 'August 15, 2025',
-    price: '$85,000',
+    price: '₦8,500,000',
     purchaseDate: 'January 2025',
-    agentName: 'John Williams',
+    agentName: 'Chinedu Okoye',
     legalStatus: 'Deed in Processing',
     insurance: 'Insured',
     tax: 'Paid through 2025',
@@ -54,7 +55,7 @@ const mockProperties: Property[] = [
       { name: 'Investment Certificate', status: 'ready' },
     ],
     timeline: [
-      { date: 'Jan 15, 2025', title: 'Payment of $85,000 confirmed', status: 'completed' },
+      { date: 'Jan 15, 2025', title: 'Payment of ₦8,500,000 confirmed', status: 'completed' },
       { date: 'Jan 20, 2025', title: 'Purchase agreement signed digitally', status: 'completed' },
       { date: 'Feb 1, 2025', title: 'Title search initiated', status: 'completed' },
       { date: 'Feb 28, 2025', title: 'Foundation work completed', status: 'completed' },
@@ -63,20 +64,20 @@ const mockProperties: Property[] = [
       { date: 'Jun 2025', title: 'Interior finishing', status: 'upcoming' },
       { date: 'Aug 2025', title: 'Final inspection and handover', status: 'upcoming' },
     ],
-    lat: 29.7558,
-    lng: -95.3995,
-    neighborhood: 'River Oaks',
-    landmarks: ['River Oaks Elementary', 'Buffalo Bayou Park', 'Hwy 59'],
+    lat: 6.1472,
+    lng: 6.7904,
+    neighborhood: 'Onitsha',
+    landmarks: ['Onitsha Main Market', 'Oguta Road Plaza', 'Bridge Head'],
   },
   {
     id: 'WBR-PROP-2024-0118',
-    name: 'The Williston Residences, Unit 12A',
-    address: '8842 Westheimer Rd, Houston, TX 77063',
+    name: 'Williston Lekki Towers, Unit 12A',
+    address: 'Lekki Phase 1, Lagos, Nigeria',
     type: 'Residential',
     status: 'Rented / Occupied',
     progress: 100,
     estCompletion: 'Completed',
-    price: '$120,000',
+    price: '₦25,000,000',
     purchaseDate: 'June 2024',
     agentName: 'Sarah Jenkins',
     legalStatus: 'Title Transferred',
@@ -96,21 +97,21 @@ const mockProperties: Property[] = [
       { date: 'Aug 1, 2024', title: 'Tenant lease signed', status: 'completed' },
     ],
     rent: {
-      monthly: '$2,500/month',
+      monthly: '₦400,000/month',
       status: 'Occupied',
       end: 'December 31, 2025',
       lastReceived: 'March 1, 2025',
-      amount: '$2,500',
+      amount: '₦400,000',
       history: [
-        { month: 'March 2025', amount: '$2,500', date: 'Mar 1, 2025', status: 'Received' },
-        { month: 'February 2025', amount: '$2,500', date: 'Feb 1, 2025', status: 'Received' },
-        { month: 'January 2025', amount: '$2,500', date: 'Jan 2, 2025', status: 'Received' },
+        { month: 'March 2025', amount: '₦400,000', date: 'Mar 1, 2025', status: 'Received' },
+        { month: 'February 2025', amount: '₦400,000', date: 'Feb 1, 2025', status: 'Received' },
+        { month: 'January 2025', amount: '₦400,000', date: 'Jan 2, 2025', status: 'Received' },
       ]
     },
-    lat: 29.7368,
-    lng: -95.5134,
-    neighborhood: 'Mid West / Galleria',
-    landmarks: ['The Galleria', 'Tanglewood Park', 'Westheimer Center'],
+    lat: 6.4281,
+    lng: 3.4219,
+    neighborhood: 'Lekki',
+    landmarks: ['Lekki Conservation Centre', 'Enyo Petrol Station', 'The Palms Mall'],
   }
 ];
 
@@ -324,7 +325,7 @@ function PropertyCard({
                      {/* TIMELINE TAB */}
                      {activeTab === 'timeline' && (
                         <div className="space-y-3.5 bg-navy-light/10 p-4 rounded-xl border border-border-subtle">
-                           {property.timeline.map((item, idx) => {
+                           {(property.timeline || []).map((item, idx) => {
                               let emoji = '⏳';
                               let suffix = ' (upcoming)';
                               if (item.status === 'completed') {
@@ -392,7 +393,7 @@ function PropertyCard({
                      {/* DOCS TAB */}
                      {activeTab === 'docs' && (
                         <div className="space-y-2">
-                           {property.docs.map((doc, idx) => (
+                           {(property.docs || []).map((doc, idx) => (
                               <div key={idx} className="flex items-center justify-between p-3 rounded-xl border border-border-subtle bg-navy-light/30 hover:bg-navy-light transition-colors">
                                  <div className="flex items-center gap-3">
                                     <span className="text-base shrink-0">📄</span>
@@ -445,7 +446,7 @@ function PropertyCard({
                                        </tr>
                                     </thead>
                                     <tbody className="divide-y divide-border-subtle bg-navy-mid/20">
-                                       {property.rent.history.map((row, idx) => (
+                                       {(property.rent?.history || []).map((row, idx) => (
                                           <tr key={idx} className="hover:bg-navy-light/20 transition-colors">
                                              <td className="p-3 text-white font-semibold">{row.month}</td>
                                              <td className="p-3 text-white">{row.amount}</td>
@@ -512,7 +513,7 @@ function PropertyMapCard({ property }: { property: Property }) {
                   <div className="border-t border-border-subtle/50 pt-2.5">
                      <span className="text-gray-400 text-xs font-medium block mb-2">Nearby Landmarks (Schools, Highways, Commercial Areas)</span>
                      <div className="flex flex-wrap gap-1.5">
-                        {property.landmarks.map(l => (
+                        {(property.landmarks || []).map(l => (
                            <span key={l} className="px-2.5 py-1 bg-navy-light text-xs rounded-lg text-gray-200 border border-border-subtle/40">
                               📍 {l}
                            </span>
@@ -546,10 +547,53 @@ export default function MyPropertiesTab() {
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const res = await fetch('/api/properties');
-        if (res.ok) {
-          const data = await res.json();
-          setProperties(data || []);
+        const { data, error } = await supabase
+          .from('properties')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          const mapped: Property[] = data.map((p: any) => ({
+            id: p.id,
+            name: p.property_name || 'Williston Property',
+            address: p.address || `${p.city || ''}, ${p.state || ''}`,
+            type: (p.type === 'commercial' ? 'Commercial' : p.type === 'land' ? 'Land' : 'Residential') as PropertyType,
+            status: (p.status === 'payment_confirmed' ? 'Under Development' :
+                    p.status === 'documents_signed' ? 'Under Development' :
+                    p.status === 'under_construction' ? 'Under Development' :
+                    p.status === 'completed' ? 'Ready / Completed' :
+                    p.status === 'title_transferred' ? 'Title Transferred' : 'Under Development') as PropertyStatus,
+            progress: p.progress_percent || 0,
+            estCompletion: p.estimated_completion ? new Date(p.estimated_completion).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'August 2026',
+            price: p.price_usd ? `₦${parseFloat(p.price_usd).toLocaleString()}` : '₦0',
+            purchaseDate: p.purchase_date ? new Date(p.purchase_date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'N/A',
+            agentName: 'Sarah Jenkins',
+            legalStatus: p.status === 'title_transferred' ? 'Title Transferred' : 'Deed in Processing',
+            insurance: 'Insured',
+            tax: 'Paid',
+            docs: [
+              { name: 'Purchase Agreement', status: 'ready' },
+              { name: 'Deed of Sale', status: p.status === 'title_transferred' ? 'ready' : 'pending' },
+              { name: 'Title Insurance', status: 'ready' },
+              { name: 'Property Inspection Report', status: 'ready' },
+            ],
+            timeline: [
+              { date: 'Step 1', title: 'Payment Confirmed', status: 'completed' },
+              { date: 'Step 2', title: 'Documents Signed', status: p.progress_percent >= 30 ? 'completed' : 'in-progress' },
+              { date: 'Step 3', title: 'Under Construction', status: p.status === 'under_construction' ? 'in-progress' : p.progress_percent >= 60 ? 'completed' : 'upcoming' },
+              { date: 'Step 4', title: 'Completed', status: p.status === 'completed' || p.status === 'title_transferred' ? 'completed' : 'upcoming' },
+              { date: 'Step 5', title: 'Title Transferred', status: p.status === 'title_transferred' ? 'completed' : 'upcoming' }
+            ],
+            neighborhood: p.city || 'Onitsha',
+            landmarks: ['Onitsha Main Market', 'Bridge Head'],
+            lat: 6.1472,
+            lng: 6.7904
+          }));
+          setProperties(mapped);
+        } else {
+          setProperties([]);
         }
       } catch (err) {
         console.error('Error fetching properties:', err);

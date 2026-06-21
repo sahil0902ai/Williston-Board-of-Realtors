@@ -7,7 +7,7 @@ const files = [
   'components/RealEstateListings.tsx',
   'components/About.tsx',
   'components/Rentals.tsx',
-  'components/MobileBottomBar.tsx',
+  'components/MobileBottomNav.tsx',
   'app/properties/page.tsx'
 ];
 

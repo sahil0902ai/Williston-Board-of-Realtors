@@ -38,7 +38,7 @@ export default function ScrollToTop() {
       {isVisible && (
         <button suppressHydrationWarning
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 p-3 rounded-full bg-gold hover:bg-gold-light text-navy shadow-[0_0_20px_rgba(201,168,76,0.3)] transition z-50 animate-in fade-in zoom-in duration-300"
+          className="fixed bottom-20 md:bottom-8 right-8 p-3 rounded-full bg-gold hover:bg-gold-light text-navy shadow-[0_0_20px_rgba(201,168,76,0.3)] transition z-50 animate-in fade-in zoom-in duration-300"
           aria-label="Scroll to top"
         >
           <ArrowUp size={24} />

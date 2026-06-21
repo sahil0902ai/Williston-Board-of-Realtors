@@ -21,7 +21,7 @@ export default function ForgotPassword() {
     return '';
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const err = validateEmail(email);
     setEmailError(err);
@@ -29,10 +29,22 @@ export default function ForgotPassword() {
     if (err) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      const { supabase } = await import('@/lib/supabase');
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) {
+        setEmailError(error.message);
+      } else {
+        setIsSuccess(true);
+      }
+    } catch (err: any) {
+      setEmailError(err.message || 'Failed to send reset link.');
+    } finally {
       setIsSubmitting(false);
-      setIsSuccess(true);
-    }, 1500);
+    }
   };
 
   return (
@@ -82,6 +94,7 @@ export default function ForgotPassword() {
                       emailError ? 'border-red-500' : 'border-white/5'
                     }`}
                     placeholder="name@example.com"
+                    suppressHydrationWarning
                   />
                 </div>
                 {emailError && <p className="text-xs text-red-500 mt-1 font-medium">⚠️ {emailError}</p>}
@@ -92,6 +105,7 @@ export default function ForgotPassword() {
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full py-3.5 bg-gold hover:bg-gold-light text-navy font-bold rounded-xl text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-lg disabled:opacity-75"
+                suppressHydrationWarning
               >
                 {isSubmitting ? (
                   <>

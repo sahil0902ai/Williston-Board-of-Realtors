@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { getAuthenticatedUser } from '@/lib/auth-helper';
-import { sendDepositPendingEmail } from '@/lib/email';
+import { sendDepositSubmittedEmail } from '@/lib/emails';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,16 +21,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Amount and method are required' }, { status: 400 });
     }
 
-    // 1. Enforce minimum $100 deposit
-    if (amount < 100) {
-      return NextResponse.json({ error: 'Minimum deposit amount is $100' }, { status: 400 });
+    // 1. Enforce minimum ₦20,000 deposit
+    if (amount < 20000) {
+      return NextResponse.json({ error: 'Minimum deposit amount is ₦20,000' }, { status: 400 });
     }
 
     // 2. Calculate Fraud / Audit Score
     let fraudScore = 0;
-    if (amount > 50000) {
+    if (amount > 10000000) {
       fraudScore = 80;
-    } else if (amount > 10000) {
+    } else if (amount > 2000000) {
       fraudScore = 60;
     }
 
@@ -93,14 +93,20 @@ export async function POST(request: Request) {
     await supabaseAdmin.from('notifications').insert({
       user_id: user.id,
       title: 'Deposit Received — Verification Pending',
-      message: `Your deposit request of $${amount.toLocaleString()} via ${method} has been received. Reference: ${refNumber}. We are verifying details.`,
+      message: `Your deposit request of ₦${amount.toLocaleString()} via ${method} has been received. Reference: ${refNumber}. We are verifying details.`,
       type: 'info',
       is_read: false,
     });
 
     // 6. Send Deposit Pending Email
     if (email) {
-      await sendDepositPendingEmail(fullName, email, amount, method);
+      await sendDepositSubmittedEmail({
+        name: fullName,
+        email,
+        amount,
+        method,
+        reference: refNumber,
+      });
     }
 
     return NextResponse.json({

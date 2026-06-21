@@ -2,10 +2,30 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, CheckCircle2, ChevronDown, Check, User, Mail, Phone, Calendar, Globe, Eye, EyeOff, Lock } from 'lucide-react';
 import { registerUser } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 
 export default function Register() {
+  const router = useRouter();
+
+  // Google Sign Up Handler
+  const handleGoogleSignUp = async () => {
+    setErrors({});
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      console.error('Google signup error:', err);
+      setErrors({ submit: err.message || 'Google sign up failed' });
+    }
+  };
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -13,10 +33,10 @@ export default function Register() {
   // STEP 1 FIELDS
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [phonePrefix, setPhonePrefix] = useState('+1');
+  const [phonePrefix, setPhonePrefix] = useState('+234');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [dob, setDob] = useState('');
-  const [country, setCountry] = useState('United States');
+  const [country, setCountry] = useState('Nigeria');
 
   // STEP 2 FIELDS
   const [password, setPassword] = useState('');
@@ -28,9 +48,9 @@ export default function Register() {
   const [referralCode, setReferralCode] = useState('');
 
   // STEP 3 FIELDS
-  const [verificationType, setVerificationType] = useState<'ssn' | 'dl' | 'passport'>('ssn');
-  const [ssnValue, setSsnValue] = useState('');
-  const [dlValue, setDlValue] = useState('');
+  const [verificationType, setVerificationType] = useState<'bvn' | 'nin' | 'passport'>('bvn');
+  const [bvnValue, setBvnValue] = useState('');
+  const [ninValue, setNinValue] = useState('');
   const [passportFile, setPassportFile] = useState<File | null>(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
 
@@ -171,17 +191,17 @@ export default function Register() {
     e.preventDefault();
     const stepErrors: {[key: string]: string} = {};
 
-    if (verificationType === 'ssn') {
-      if (!ssnValue) {
-        stepErrors.verification = 'SSN is required';
-      } else if (!/^\d{4}$/.test(ssnValue)) {
-        stepErrors.verification = 'SSN must be the last 4 digits (numeric)';
+    if (verificationType === 'bvn') {
+      if (!bvnValue) {
+        stepErrors.verification = 'BVN is required';
+      } else if (!/^\d{11}$/.test(bvnValue)) {
+        stepErrors.verification = 'BVN must be an 11-digit number';
       }
-    } else if (verificationType === 'dl') {
-      if (!dlValue) {
-        stepErrors.verification = 'Driver\'s License / State ID is required';
-      } else if (dlValue.trim().length < 5) {
-        stepErrors.verification = 'Driver\'s License / State ID must be at least 5 characters';
+    } else if (verificationType === 'nin') {
+      if (!ninValue) {
+        stepErrors.verification = 'NIN is required';
+      } else if (!/^\d{11}$/.test(ninValue)) {
+        stepErrors.verification = 'NIN must be an 11-digit number';
       }
     } else if (verificationType === 'passport') {
       if (!passportFile) {
@@ -212,6 +232,7 @@ export default function Register() {
 
         setIsSubmitting(false);
         setIsSuccess(true);
+        router.push('/login?registered=true');
 
       } catch (err: any) {
         console.error('Registration submit error:', err);
@@ -254,26 +275,24 @@ export default function Register() {
         <div className="my-auto relative z-10 max-w-md space-y-8">
           <div>
             <h2 className="text-3xl font-serif font-bold text-white mb-4 leading-tight">
-              &ldquo;Join 4,800+ investors building generational wealth&rdquo;
+              &ldquo;Join 4,800+ Nigerian investors building wealth at home&rdquo;
             </h2>
             <div className="w-12 h-0.5 bg-gold"></div>
           </div>
 
-          {/* Investment Plan Returns list */}
+          {/* Stats shown */}
           <div className="space-y-4">
              {[
-                { name: 'Foundation', roi: '18% Returns', desc: 'Secure entry-level plan' },
-                { name: 'Prosperity', roi: '24% Returns', desc: 'Popular growth allocation' },
-                { name: 'Legacy', roi: '30% Returns', desc: 'High-yield wealth builder' },
-                { name: 'Dynasty', roi: '35%+ Returns', desc: 'Bespoke co-developer opportunity' }
-             ].map(p => (
-                <div key={p.name} className="flex justify-between items-center p-4 bg-navy-mid border border-white/5 rounded-xl hover:border-gold/25 transition">
+                { label: 'Active Investors', value: '4,800+' },
+                { label: 'Returns Paid', value: '₦2.4B+' },
+                { label: 'Track Record', value: '8 Years Strong' },
+             ].map(s => (
+                <div key={s.label} className="flex justify-between items-center p-4 bg-navy-mid border border-white/5 rounded-xl hover:border-gold/25 transition">
                    <div>
-                      <div className="text-sm font-semibold text-white">{p.name}</div>
-                      <div className="text-xs text-gray-text mt-0.5">{p.desc}</div>
+                      <div className="text-sm font-semibold text-white">{s.label}</div>
                    </div>
-                   <div className="text-xs font-bold text-gold bg-gold/5 border border-gold/15 px-3 py-1.5 rounded-lg">
-                      {p.roi}
+                   <div className="text-sm font-bold text-gold bg-gold/5 border border-gold/15 px-3 py-1.5 rounded-lg">
+                      {s.value}
                    </div>
                 </div>
              ))}
@@ -334,6 +353,7 @@ export default function Register() {
                           errors.fullName ? 'border-red-500' : 'border-white/5'
                         }`}
                         placeholder="John Doe"
+                        suppressHydrationWarning
                       />
                     </div>
                     {errors.fullName && <p className="text-[10px] text-red-500 mt-1">⚠️ {errors.fullName}</p>}
@@ -354,6 +374,7 @@ export default function Register() {
                           errors.email ? 'border-red-500' : 'border-white/5'
                         }`}
                         placeholder="john@example.com"
+                        suppressHydrationWarning
                       />
                     </div>
                     {errors.email && <p className="text-[10px] text-red-500 mt-1">⚠️ {errors.email}</p>}
@@ -368,13 +389,16 @@ export default function Register() {
                           value={phonePrefix}
                           onChange={(e) => setPhonePrefix(e.target.value)}
                           className="pl-3.5 pr-8 py-2.5 bg-[#04091A] rounded-xl border border-white/5 text-sm text-white focus:outline-none focus:border-gold appearance-none"
+                          suppressHydrationWarning
                         >
-                          <option value="+1">🇺🇸 +1</option>
-                          <option value="+44">🇬🇧 +44</option>
-                          <option value="+1 CA">🇨🇦 +1 CA</option>
-                          <option value="+61">🇦🇺 +61</option>
-                          <option value="+971">🇦🇪 +971</option>
-                          <option value="+49">🇩🇪 +49</option>
+                          <option value="+234">🇳🇬 Nigeria +234</option>
+                          <option value="+44">🇬🇧 United Kingdom +44</option>
+                          <option value="+1">🇺🇸 United States +1</option>
+                          <option value="+1 CA">🇨🇦 Canada +1</option>
+                          <option value="+27">🇿🇦 South Africa +27</option>
+                          <option value="+233">🇬🇭 Ghana +233</option>
+                          <option value="+254">🇰🇪 Kenya +254</option>
+                          <option value="+971">🇦🇪 UAE +971</option>
                           <option value="Other">Other</option>
                         </select>
                         <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -391,6 +415,7 @@ export default function Register() {
                             errors.phoneNumber ? 'border-red-500' : 'border-white/5'
                           }`}
                           placeholder="8012345678"
+                          suppressHydrationWarning
                         />
                       </div>
                     </div>
@@ -411,6 +436,7 @@ export default function Register() {
                         className={`w-full pl-10 pr-4 py-2.5 bg-[#04091A] rounded-xl border text-sm text-white focus:outline-none focus:border-gold transition-all ${
                           errors.dob ? 'border-red-500' : 'border-white/5'
                         }`}
+                        suppressHydrationWarning
                       />
                     </div>
                     {errors.dob && <p className="text-[10px] text-red-500 mt-1">⚠️ {errors.dob}</p>}
@@ -427,13 +453,16 @@ export default function Register() {
                         value={country}
                         onChange={(e) => setCountry(e.target.value)}
                         className="w-full pl-10 pr-10 py-2.5 bg-[#04091A] rounded-xl border border-white/5 text-sm text-white focus:outline-none focus:border-gold appearance-none"
+                        suppressHydrationWarning
                       >
+                        <option value="Nigeria">Nigeria</option>
+                        <option value="United Kingdom">United Kingdom</option>
                         <option value="United States">United States</option>
                         <option value="Canada">Canada</option>
-                        <option value="United Kingdom">United Kingdom</option>
-                        <option value="Australia">Australia</option>
-                        <option value="UAE">UAE</option>
-                        <option value="Germany">Germany</option>
+                        <option value="South Africa">South Africa</option>
+                        <option value="Ghana">Ghana</option>
+                        <option value="Kenya">Kenya</option>
+                        <option value="United Arab Emirates">United Arab Emirates</option>
                         <option value="Other">Other</option>
                       </select>
                       <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -444,8 +473,33 @@ export default function Register() {
                   <button 
                     onClick={handleNext}
                     className="w-full mt-4 py-3 bg-gold hover:bg-gold-light text-navy font-bold rounded-xl text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-lg"
+                    suppressHydrationWarning
                   >
                     Continue
+                  </button>
+
+                  {/* Social Divider */}
+                  <div className="relative my-4 flex items-center justify-center">
+                    <div className="absolute inset-x-0 h-px bg-white/5"></div>
+                    <span className="relative z-10 px-4 bg-[#0e162f] text-[10px] text-gray-500 uppercase tracking-widest">
+                      or sign up with
+                    </span>
+                  </div>
+
+                  {/* Google Button */}
+                  <button 
+                    type="button"
+                    onClick={handleGoogleSignUp}
+                    className="w-full py-2.5 bg-[#04091A] hover:bg-navy-light/40 border border-white/10 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2.5 transition-all"
+                    suppressHydrationWarning
+                  >
+                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05" strokeWidth="0.5" />
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335" />
+                     </svg>
+                     Google
                   </button>
                 </div>
               )}
@@ -473,11 +527,13 @@ export default function Register() {
                           errors.password ? 'border-red-500' : 'border-white/5'
                         }`}
                         placeholder="At least 8 characters"
+                        suppressHydrationWarning
                       />
                       <button 
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-white"
+                        suppressHydrationWarning
                       >
                         {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                       </button>
@@ -509,11 +565,13 @@ export default function Register() {
                           errors.confirmPassword ? 'border-red-500' : 'border-white/5'
                         }`}
                         placeholder="Re-enter password"
+                        suppressHydrationWarning
                       />
                       <button 
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-white"
+                        suppressHydrationWarning
                       >
                         {showConfirmPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                       </button>
@@ -535,6 +593,7 @@ export default function Register() {
                           onChange={(e) => handlePinChange(e.target.value, idx, false)}
                           onKeyDown={(e) => handlePinKeyDown(e, idx, false)}
                           className="w-10 h-10 bg-[#04091A] rounded-xl border border-white/5 focus:border-gold focus:outline-none text-center text-lg font-bold text-white"
+                          suppressHydrationWarning
                         />
                       ))}
                     </div>
@@ -555,6 +614,7 @@ export default function Register() {
                           onChange={(e) => handlePinChange(e.target.value, idx, true)}
                           onKeyDown={(e) => handlePinKeyDown(e, idx, true)}
                           className="w-10 h-10 bg-[#04091A] rounded-xl border border-white/5 focus:border-gold focus:outline-none text-center text-lg font-bold text-white"
+                          suppressHydrationWarning
                         />
                       ))}
                     </div>
@@ -570,6 +630,7 @@ export default function Register() {
                       onChange={(e) => setReferralCode(e.target.value)}
                       className="w-full px-4 py-2.5 bg-[#04091A] rounded-xl border border-white/5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gold transition-all"
                       placeholder="Have a referral code? Enter it here"
+                      suppressHydrationWarning
                     />
                   </div>
 
@@ -578,12 +639,14 @@ export default function Register() {
                     <button 
                       onClick={handleBack}
                       className="flex-1 py-3 bg-[#04091A] hover:bg-navy-light/40 border border-white/10 rounded-xl text-sm font-semibold text-white transition-all duration-300"
+                      suppressHydrationWarning
                     >
                       Back
                     </button>
                     <button 
                       onClick={handleNext}
                       className="flex-1 py-3 bg-gold hover:bg-gold-light text-navy font-bold rounded-xl text-sm transition-all duration-300 shadow-lg"
+                      suppressHydrationWarning
                     >
                       Continue
                     </button>
@@ -607,7 +670,7 @@ export default function Register() {
 
                   {/* Verification Type Toggle */}
                   <div className="grid grid-cols-3 gap-2 bg-[#04091A] p-1.5 rounded-xl border border-white/5">
-                    {(['ssn', 'dl', 'passport'] as const).map((type) => (
+                    {(['bvn', 'nin', 'passport'] as const).map((type) => (
                       <button
                         key={type}
                         type="button"
@@ -618,40 +681,44 @@ export default function Register() {
                         className={`py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition ${
                           verificationType === type ? 'bg-gold text-navy' : 'text-gray-text hover:text-white'
                         }`}
+                        suppressHydrationWarning
                       >
-                        {type === 'ssn' ? 'SSN' : type === 'dl' ? 'State ID / DL' : 'Passport'}
+                        {type === 'bvn' ? 'BVN' : type === 'nin' ? 'NIN' : 'Passport'}
                       </button>
                     ))}
                   </div>
 
                   {/* Verification inputs based on type */}
-                  {verificationType === 'ssn' && (
+                  {verificationType === 'bvn' && (
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-text uppercase tracking-wider block">Social Security Number (SSN - Last 4 Digits)</label>
+                      <label className="text-[10px] font-bold text-gray-text uppercase tracking-wider block">Bank Verification Number (BVN)</label>
                       <input 
                         type="text" 
-                        maxLength={4}
-                        value={ssnValue}
-                        onChange={(e) => setSsnValue(e.target.value.replace(/\D/g, ''))}
+                        maxLength={11}
+                        value={bvnValue}
+                        onChange={(e) => setBvnValue(e.target.value.replace(/\D/g, ''))}
                         className={`w-full px-4 py-2.5 bg-[#04091A] rounded-xl border text-sm text-white focus:outline-none focus:border-gold transition-all ${
                           errors.verification ? 'border-red-500' : 'border-white/5'
                         }`}
-                        placeholder="1234"
+                        placeholder="Enter 11-digit BVN"
+                        suppressHydrationWarning
                       />
                     </div>
                   )}
 
-                  {verificationType === 'dl' && (
+                  {verificationType === 'nin' && (
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-gray-text uppercase tracking-wider block">Driver's License / State ID Number</label>
+                      <label className="text-[10px] font-bold text-gray-text uppercase tracking-wider block">National Identification Number (NIN)</label>
                       <input 
                         type="text" 
-                        value={dlValue}
-                        onChange={(e) => setDlValue(e.target.value)}
+                        maxLength={11}
+                        value={ninValue}
+                        onChange={(e) => setNinValue(e.target.value.replace(/\D/g, ''))}
                         className={`w-full px-4 py-2.5 bg-[#04091A] rounded-xl border text-sm text-white focus:outline-none focus:border-gold transition-all ${
                           errors.verification ? 'border-red-500' : 'border-white/5'
                         }`}
-                        placeholder="A1234567"
+                        placeholder="Enter 11-digit NIN"
+                        suppressHydrationWarning
                       />
                     </div>
                   )}
@@ -670,6 +737,7 @@ export default function Register() {
                             if (e.target.files) setPassportFile(e.target.files[0]);
                           }}
                           className="hidden"
+                          suppressHydrationWarning
                         />
                         <label htmlFor="passport-file-input" className="cursor-pointer block">
                           <span className="text-2xl block mb-1">📤</span>
@@ -691,6 +759,7 @@ export default function Register() {
                         checked={termsAccepted}
                         onChange={(e) => setTermsAccepted(e.target.checked)}
                         className="mt-0.5 w-4 h-4 rounded text-gold bg-[#04091A] border-white/10 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                        suppressHydrationWarning
                       />
                       <span className="leading-normal">
                         I agree to the <Link href="/terms" target="_blank" className="text-gold font-semibold underline">Terms of Service</Link>, <Link href="/privacy" target="_blank" className="text-gold font-semibold underline">Privacy Policy</Link> and <Link href="/risk" target="_blank" className="text-gold font-semibold underline">Investment Risk Disclosure</Link>
@@ -705,6 +774,7 @@ export default function Register() {
                       type="button"
                       onClick={handleBack}
                       className="flex-1 py-3 bg-[#04091A] hover:bg-navy-light/40 border border-white/10 rounded-xl text-sm font-semibold text-white transition-all duration-300"
+                      suppressHydrationWarning
                     >
                       Back
                     </button>
@@ -712,6 +782,7 @@ export default function Register() {
                       type="submit"
                       disabled={isSubmitting}
                       className="flex-1 py-3 bg-gold hover:bg-gold-light text-navy font-bold rounded-xl text-sm transition-all duration-300 shadow-lg flex items-center justify-center gap-2"
+                      suppressHydrationWarning
                     >
                       {isSubmitting ? (
                         <>

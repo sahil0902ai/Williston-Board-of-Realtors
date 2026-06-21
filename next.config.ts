@@ -34,6 +34,7 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   transpilePackages: ['motion'],
+  devIndicators: false,
   webpack: (config, {dev, isServer}) => {
     // HMR is disabled in AI Studio via DISABLE_HMR env var.
     if (dev && process.env.DISABLE_HMR === 'true') {

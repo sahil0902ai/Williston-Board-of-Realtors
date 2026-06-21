@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { FadeUp } from './FadeUp';
 
 export default function Stats() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -29,7 +28,7 @@ export default function Stats() {
           requestAnimationFrame(tick);
           observer.unobserve(el);
         });
-      }, { threshold: 0.3, rootMargin: '0px 0px -50px 0px' });
+      }, { threshold: 0.2, rootMargin: '0px 0px -50px 0px' });
       counters.forEach(el => observer.observe(el));
 
       return () => {
@@ -38,82 +37,43 @@ export default function Stats() {
     }
   }, []);
 
+  const statItems = [
+    { count: "2.4", prefix: "₦", suffix: "B+", label: "Returns Paid" },
+    { count: "4800", prefix: "", suffix: "+", label: "Investors" },
+    { count: "120", prefix: "", suffix: "+", label: "Projects" },
+    { count: "35", prefix: "", suffix: "%", label: "Max ROI" },
+    { count: "8", prefix: "", suffix: " Years", label: "Experience" }
+  ];
+
   return (
-    <FadeUp className="w-full bg-navy-mid border-y border-gold/20 py-8 md:py-12 z-10 relative">
+    <div className="w-full bg-[#060C1C] border-y border-[rgba(201,168,76,0.15)] py-10 z-20 relative">
       <div className="max-w-7xl mx-auto px-6 md:px-12" ref={containerRef}>
-        <div className="grid grid-cols-2 gap-y-12 gap-x-6 md:flex md:justify-between items-center text-[10px] md:text-[11px] font-medium tracking-[0.1em] md:tracking-[0.15em] text-gray-text uppercase text-center md:text-left">
-          
-          {/* Active Investors */}
-          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
-            <span 
-              className="font-serif text-3xl md:text-4xl text-white normal-case tracking-normal"
-              data-count="4800"
-              data-suffix="+"
-            >
-              0+
-            </span>
-            <span className="text-gray-text">Active Investors</span>
-          </div>
-          
-          <span className="hidden md:inline text-gold/50 text-xl font-light">|</span>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 md:gap-4">
+          {statItems.map((item, idx) => (
+            <div key={idx} className="flex-1 flex flex-col md:flex-row items-center justify-center gap-4 text-center md:text-left relative">
+              {/* Stat Card */}
+              <div className="flex flex-col items-center">
+                <span 
+                  className="font-serif text-[42px] leading-tight text-gold font-semibold tracking-tight"
+                  data-count={item.count}
+                  data-prefix={item.prefix}
+                  data-suffix={item.suffix}
+                >
+                  {item.prefix}0{item.suffix}
+                </span>
+                <span className="text-[10px] tracking-[0.2em] text-gray-text uppercase font-semibold mt-1">
+                  {item.label}
+                </span>
+              </div>
 
-          {/* Returns Distributed */}
-          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
-            <span 
-              className="font-serif text-3xl md:text-4xl text-white normal-case tracking-normal"
-              data-count="2.4"
-              data-prefix="$"
-              data-suffix="M+"
-            >
-              $0M+
-            </span>
-            <span className="text-gray-text">Returns Distributed</span>
-          </div>
-
-          <span className="hidden md:inline text-gold/50 text-xl font-light">|</span>
-
-          {/* Completed Projects */}
-          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
-            <span 
-              className="font-serif text-3xl md:text-4xl text-white normal-case tracking-normal"
-              data-count="120"
-              data-suffix="+"
-            >
-              0+
-            </span>
-            <span className="text-gray-text">Completed Projects</span>
-          </div>
-
-          <span className="hidden md:inline text-gold/50 text-xl font-light">|</span>
-
-          {/* Max Annual ROI */}
-          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
-            <span 
-              className="font-serif text-3xl md:text-4xl text-gold normal-case tracking-normal"
-              data-count="35"
-              data-suffix="%"
-            >
-              0%
-            </span>
-            <span className="text-gray-text">Max Annual ROI</span>
-          </div>
-
-          <span className="hidden md:inline text-gold/50 text-xl font-light">|</span>
-
-          {/* Years Experience */}
-          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
-            <span 
-              className="font-serif text-3xl md:text-4xl text-white normal-case tracking-normal"
-              data-count="8"
-              data-suffix=""
-            >
-              0
-            </span>
-            <span className="text-gray-text">Years Experience</span>
-          </div>
-
+              {/* Vertical Gold Divider (Only on Desktop, between stats) */}
+              {idx < statItems.length - 1 && (
+                <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 w-[1px] h-10 bg-[rgba(201,168,76,0.15)]"></div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
-    </FadeUp>
+    </div>
   );
 }

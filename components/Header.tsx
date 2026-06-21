@@ -39,6 +39,23 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    };
+  }, [isMobileMenuOpen]);
+
   const navLinks = [
     { name: 'About', href: '/#about' },
     { name: 'Properties', href: '/properties' },
@@ -65,7 +82,7 @@ export default function Header() {
               <div className="bg-[#020510] border border-border-gold rounded-xl shadow-[0_10px_40px_-10px_rgba(201,168,76,0.15)] flex flex-col p-2 overflow-hidden">
                 <Link href="/#invest" className="px-4 py-3 hover:bg-navy-mid text-gray-300 text-sm rounded-lg transition-colors border border-transparent hover:border-border-subtle group/link">
                   <div className="font-bold text-white group-hover/link:text-gold transition-colors">Investment Plans</div>
-                  <div className="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">Foundation, Prosperity, Legacy</div>
+                  <div className="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">Quick, Standard, Foundation, Growth, Premium, Elite</div>
                 </Link>
                 <div className="h-px bg-border-subtle/50 mx-4 my-1"></div>
                 <Link href="/investment-plans" className="px-4 py-3 hover:bg-navy-mid text-gray-300 text-sm rounded-lg transition-colors border border-transparent hover:border-border-subtle group/link">
@@ -109,8 +126,23 @@ export default function Header() {
         </nav>
 
         {/* Mobile Nav Toggle */}
-        <button suppressHydrationWarning className="md:hidden text-white" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          {isMobileMenuOpen ? <X /> : <Menu />}
+        <button 
+          suppressHydrationWarning 
+          className="md:hidden text-white flex items-center justify-center" 
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          style={{
+            minHeight: '48px',
+            minWidth: '48px',
+            cursor: 'pointer',
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation',
+            position: 'relative',
+            zIndex: 1001,
+          }}
+        >
+          <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+            {isMobileMenuOpen ? <X /> : <Menu />}
+          </span>
         </button>
       </div>
 
@@ -123,15 +155,16 @@ export default function Header() {
         }`}
       >
         <div className="text-[10px] font-bold text-gold uppercase tracking-widest mb-4">Invest</div>
-        <Link href="/#invest" className="text-2xl font-serif text-white hover:text-gold py-3 pl-4 border-l border-gold/10 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Investment Plans</Link>
-        <Link href="/investment-plans" className="text-2xl font-serif text-white hover:text-gold py-3 pl-4 border-l border-gold/10 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Buy Property</Link>
-        <Link href="/rent" className="text-2xl font-serif text-white hover:text-gold py-3 pl-4 mb-6 border-l border-gold/10 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Rent Apartment</Link>
+        <Link href="/#invest" style={{ minHeight: '48px', display: 'flex', alignItems: 'center', touchAction: 'manipulation' }} className="text-2xl font-serif text-white hover:text-gold py-3 pl-4 border-l border-gold/10 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Investment Plans</Link>
+        <Link href="/investment-plans" style={{ minHeight: '48px', display: 'flex', alignItems: 'center', touchAction: 'manipulation' }} className="text-2xl font-serif text-white hover:text-gold py-3 pl-4 border-l border-gold/10 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Buy Property</Link>
+        <Link href="/rent" style={{ minHeight: '48px', display: 'flex', alignItems: 'center', touchAction: 'manipulation' }} className="text-2xl font-serif text-white hover:text-gold py-3 pl-4 mb-6 border-l border-gold/10 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Rent Apartment</Link>
         
         <div className="text-[10px] font-bold text-gold uppercase tracking-widest mb-4 mt-4">Menu</div>
         {navLinks.map((link) => (
           <Link
             key={link.name}
             href={link.href}
+            style={{ minHeight: '48px', display: 'flex', alignItems: 'center', touchAction: 'manipulation' }}
             className="text-2xl font-serif text-white hover:text-gold py-4 border-b border-border-subtle transition-colors"
             onClick={() => setIsMobileMenuOpen(false)}
           >
@@ -140,19 +173,19 @@ export default function Header() {
         ))}
         
         <div className="mt-12 flex flex-col gap-4">
-          <Link href="/deposit" className="bg-gold/10 border border-gold/30 text-center text-gold font-bold uppercase tracking-widest text-sm px-6 py-4 rounded-xl transition-colors flex items-center justify-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
+          <Link href="/deposit" style={{ minHeight: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', touchAction: 'manipulation' }} className="bg-gold/10 border border-gold/30 text-center text-gold font-bold uppercase tracking-widest text-sm px-6 py-4 rounded-xl transition-colors gap-2" onClick={() => setIsMobileMenuOpen(false)}>
             💳 Deposit Funds
           </Link>
           {isLoggedIn ? (
-            <Link href="/dashboard" className="bg-gold text-center hover:bg-white text-navy font-bold uppercase tracking-widest text-sm px-6 py-4 rounded-xl transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+            <Link href="/dashboard" style={{ minHeight: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', touchAction: 'manipulation' }} className="bg-gold text-center hover:bg-white text-navy font-bold uppercase tracking-widest text-sm px-6 py-4 rounded-xl transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
               Dashboard
             </Link>
           ) : (
             <>
-              <Link href="/login" className="bg-transparent border border-border-subtle text-center hover:border-gold hover:text-gold text-white font-bold uppercase tracking-widest text-sm px-6 py-4 rounded-xl transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+              <Link href="/login" style={{ minHeight: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', touchAction: 'manipulation' }} className="bg-transparent border border-border-subtle text-center hover:border-gold hover:text-gold text-white font-bold uppercase tracking-widest text-sm px-6 py-4 rounded-xl transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
                 Login
               </Link>
-              <Link href="/register" className="bg-gold text-center hover:bg-white text-navy font-bold uppercase tracking-widest text-sm px-6 py-4 rounded-xl transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
+              <Link href="/register" style={{ minHeight: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', touchAction: 'manipulation' }} className="bg-gold text-center hover:bg-white text-navy font-bold uppercase tracking-widest text-sm px-6 py-4 rounded-xl transition-colors" onClick={() => setIsMobileMenuOpen(false)}>
                 Start Investing
               </Link>
             </>

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { getAuthenticatedUser } from '@/lib/auth-helper';
-import { sendReferralCommissionEmail } from '@/lib/email';
+import { sendInvestmentEmail, sendReferralEmail } from '@/lib/emails';
 import { addDays } from 'date-fns';
 
 export const dynamic = 'force-dynamic';
@@ -38,10 +38,10 @@ export async function POST(request: Request) {
 
     // 2. Validate amount is within min and max
     if (amount < plan.min_deposit) {
-      return NextResponse.json({ error: `Minimum investment for this plan is $${plan.min_deposit}` }, { status: 400 });
+      return NextResponse.json({ error: `Minimum investment for this plan is ₦${plan.min_deposit.toLocaleString()}` }, { status: 400 });
     }
     if (plan.max_deposit && amount > plan.max_deposit) {
-      return NextResponse.json({ error: `Maximum investment for this plan is $${plan.max_deposit}` }, { status: 400 });
+      return NextResponse.json({ error: `Maximum investment for this plan is ₦${plan.max_deposit.toLocaleString()}` }, { status: 400 });
     }
 
     // 3. Check user wallet balance
@@ -121,10 +121,24 @@ export async function POST(request: Request) {
     await supabaseAdmin.from('notifications').insert({
       user_id: user.id,
       title: 'Investment Plan Activated',
-      message: `Your $${amount.toLocaleString()} investment in ${plan.name} has been activated and will mature on ${endDate.toLocaleDateString()}.`,
+      message: `Your ₦${amount.toLocaleString()} investment in ${plan.name} has been activated and will mature on ${endDate.toLocaleDateString()}.`,
       type: 'success',
       is_read: false,
     });
+
+    // Send investment activation email
+    if (user.email) {
+      const monthlyReturn = amount * (roi / 100) / (duration / 30);
+      await sendInvestmentEmail({
+        name: profile.full_name,
+        email: user.email,
+        plan: plan.name,
+        amount,
+        roi,
+        endDate: endDate.toLocaleDateString(),
+        monthlyReturn: monthlyReturn.toFixed(2),
+      });
+    }
 
     // 9. Process Referral Commission
     const { data: pendingReferral, error: refError } = await supabaseAdmin
@@ -183,13 +197,18 @@ export async function POST(request: Request) {
         await supabaseAdmin.from('notifications').insert({
           user_id: referrerId,
           title: 'Referral Commission Paid!',
-          message: `You earned $${commissionAmount.toLocaleString()} from ${profile.full_name}'s investment activation.`,
+          message: `You earned ₦${commissionAmount.toLocaleString()} from ${profile.full_name}'s investment activation.`,
           type: 'success',
           is_read: false,
         });
 
         // Email referrer
-        await sendReferralCommissionEmail(referrer.full_name, referrer.email, commissionAmount, profile.full_name);
+        await sendReferralEmail({
+          name: referrer.full_name,
+          email: referrer.email,
+          commission: commissionAmount,
+          referredName: profile.full_name,
+        });
       }
     }
 

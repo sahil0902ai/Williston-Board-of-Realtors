@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { MapPin, Building2, Eye, Search, X, CheckCircle2, AlertCircle } from 'lucide-react';
+import { MapPin, Building2, Home, Map, Eye, Search, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import { FadeUp, FadeUpItem } from './FadeUp';
 import SectionLabel from './SectionLabel';
 import { supabase } from '@/lib/supabase';
@@ -13,94 +13,64 @@ interface RealEstateListingsProps {
 
 const allProperties = [
   {
-    name: "Williston Heights — River Oaks",
-    location: "River Oaks District, Houston, TX",
+    name: "Williston Heights Phase 1",
+    location: "Awka Road, Onitsha, Anambra",
     type: "Residential",
     typeDisplay: "Residential Duplexes",
-    price: "$850,000 / Unit",
+    price: "₦8,500,000 / Unit",
     roi: "28%",
     status: "Open",
     imageSeed: "luxury+apartment",
   },
   {
-    name: "Williston Sunrise — Sugar Land",
-    location: "Sugar Land, Houston, TX",
-    type: "Land",
-    typeDisplay: "Land Plots — Clear Title",
-    price: "$220,000 / Plot",
+    name: "Williston Gardens Estate",
+    location: "Nnewi Road, Anambra",
+    type: "Residential",
+    typeDisplay: "Residential Estates",
+    price: "₦5,500,000 / Unit",
     roi: "35%",
     status: "Hot Deal",
     imageSeed: "land+estate",
   },
   {
-    name: "Williston Commerce Center — Downtown Houston",
-    location: "Downtown Houston, TX",
+    name: "Williston Commerce Plaza",
+    location: "Bridge Head, Onitsha, Anambra",
     type: "Commercial",
     typeDisplay: "Mixed-Use Commercial",
-    price: "$1.5M / Unit",
+    price: "₦15,000,000 / Unit",
     roi: "22%",
     status: "Open",
     imageSeed: "commercial+building",
   },
   {
-    name: "Williston Plaza — Miami",
-    location: "Miami, FL",
+    name: "Williston Lekki Towers",
+    location: "Lekki Phase 1, Lagos",
     type: "Commercial",
-    typeDisplay: "Commercial Plaza",
-    price: "$2.1M / Unit",
+    typeDisplay: "Commercial Towers",
+    price: "₦25,000,000 / Unit",
     roi: "26%",
     status: "Open",
     imageSeed: "shopping+mall",
   },
   {
-    name: "Williston Gardens — Atlanta",
-    location: "Atlanta, GA",
+    name: "Williston Abuja Estate",
+    location: "Gwarinpa, Abuja FCT",
     type: "Residential",
     typeDisplay: "Residential Gardens",
-    price: "$420,000 / Unit",
+    price: "₦18,000,000 / Unit",
     roi: "22%",
     status: "Hot Deal",
     imageSeed: "garden+apartment",
   },
   {
-    name: "Williston Business Park — Dallas",
-    location: "Dallas, TX",
-    type: "Commercial",
-    typeDisplay: "Business Park",
-    price: "$850,000 / Unit",
+    name: "Williston PH Gardens",
+    location: "GRA Phase 2, Port Harcourt, Rivers",
+    type: "Residential",
+    typeDisplay: "Residential Gardens",
+    price: "₦12,000,000 / Unit",
     roi: "24%",
     status: "Open",
-    imageSeed: "office+park",
-  },
-  {
-    name: "Williston Villas — Charlotte",
-    location: "Charlotte, NC",
-    type: "Residential",
-    typeDisplay: "Residential Villas",
-    price: "$380,000 / Unit",
-    roi: "20%",
-    status: "Open",
-    imageSeed: "suburban+villa",
-  },
-  {
-    name: "Williston Residences — Phoenix",
-    location: "Phoenix, AZ",
-    type: "Residential",
-    typeDisplay: "Residential Residences",
-    price: "$310,000 / Unit",
-    roi: "19%",
-    status: "Coming Soon",
     imageSeed: "modern+residence",
-  },
-  {
-    name: "Williston Square — Las Vegas",
-    location: "Las Vegas, NV",
-    type: "Commercial",
-    typeDisplay: "Commercial Square",
-    price: "$1.2M / Unit",
-    roi: "28%",
-    status: "Hot Deal",
-    imageSeed: "city+square",
   }
 ];
 
@@ -237,15 +207,12 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
   const propertiesToFilter = isPropertiesPage ? properties : properties.slice(0, 3);
 
   const filteredProperties = propertiesToFilter.filter((prop) => {
-    // 1. Search text (location/name)
     const matchesLocation = locationSearch === '' || 
       prop.location.toLowerCase().includes(locationSearch.toLowerCase()) ||
       prop.name.toLowerCase().includes(locationSearch.toLowerCase());
 
-    // 2. Dropdown Type
     const matchesDropdownType = dropdownType === 'All' || prop.type === dropdownType;
 
-    // 3. Pill Filter
     let matchesPill = true;
     if (selectedPill === 'Residential') {
       matchesPill = prop.type === 'Residential';
@@ -262,25 +229,82 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
     return matchesLocation && matchesDropdownType && matchesPill;
   });
 
+  // Helper to format Location to small caps city/state
+  const getCityStateCaps = (location: string) => {
+    const parts = location.split(',');
+    if (parts.length >= 2) {
+      const city = parts[parts.length - 2].trim().toUpperCase();
+      const state = parts[parts.length - 1].trim().toUpperCase();
+      return `${city}, ${state}`;
+    }
+    return location.toUpperCase();
+  };
+
+  // Helper to get Property Icon & Theme color
+  const getPropertyTypeSettings = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'residential':
+        return {
+          icon: <Home size={16} />,
+          colorClass: 'bg-blue-600/10 text-blue-400 border-blue-500/20',
+          badgeText: 'Residential'
+        };
+      case 'commercial':
+        return {
+          icon: <Building2 size={16} />,
+          colorClass: 'bg-purple-600/10 text-purple-400 border-purple-500/20',
+          badgeText: 'Commercial'
+        };
+      case 'land':
+      default:
+        return {
+          icon: <Map size={16} />,
+          colorClass: 'bg-emerald-600/10 text-emerald-400 border-emerald-500/20',
+          badgeText: 'Land'
+        };
+    }
+  };
+
   return (
-    <section id="properties" className={`relative bg-navy-mid ${isPropertiesPage ? 'py-12' : 'py-16 md:py-24'}`}>
-      <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('https://picsum.photos/seed/noise/400/400?grayscale')" }}></div>
+    <section id="properties" className={`relative bg-[#04091A] border-t border-white/5 ${isPropertiesPage ? 'py-12' : 'py-20 md:py-28'}`}>
+      
+      {/* Map-style background layer */}
+      <div className="absolute inset-0 opacity-[0.04] mix-blend-overlay pointer-events-none z-0" style={{ backgroundImage: "url('https://picsum.photos/seed/noise/400/400?grayscale')" }}></div>
+
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         
-        {/* HOMEPAGE VIEW HEADER */}
+        {/* HOMEPAGE VIEW HEADER WITH MAP STYLE BACKDROP */}
         {!isPropertiesPage && (
-          <FadeUp className="flex flex-col md:flex-row md:justify-between md:items-end mb-12 md:mb-16 gap-6">
-            <div className="max-w-2xl">
-              <SectionLabel>Our Portfolio</SectionLabel>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif mb-4">Featured Properties</h2>
-              <p className="text-gray-text text-lg">
-                Asset-backed investments mapped to high-value real estate projects across the United States.
-              </p>
+          <div className="relative mb-16 overflow-hidden py-10 rounded-2xl bg-[#060C1C] border border-white/5 px-8 md:px-12">
+            
+            {/* Styled vector map lines behind header */}
+            <div className="absolute inset-0 opacity-15 pointer-events-none z-0">
+              <svg viewBox="0 0 800 200" fill="none" stroke="rgba(201,168,76,0.3)" strokeWidth="0.5" className="w-full h-full">
+                <path d="M 0 50 Q 200 150 400 50 T 800 150" />
+                <path d="M 0 120 C 150 40 350 160 500 80 T 800 120" />
+                <path d="M 100 0 L 100 200" />
+                <path d="M 300 0 L 300 200" />
+                <path d="M 500 0 L 500 200" />
+                <path d="M 700 0 L 700 200" />
+                <circle cx="100" cy="50" r="3" fill="#C9A84C" />
+                <circle cx="300" cy="115" r="3" fill="#C9A84C" />
+                <circle cx="500" cy="80" r="3" fill="#C9A84C" />
+              </svg>
             </div>
-            <Link href="/properties" className="border-b border-gold text-gold hover:text-white hover:border-white transition-colors pb-1 uppercase tracking-widest text-sm font-semibold max-w-max">
-              View All Properties
-            </Link>
-          </FadeUp>
+
+            <FadeUp className="relative z-10 flex flex-col md:flex-row md:justify-between md:items-end gap-6">
+              <div className="max-w-2xl">
+                <SectionLabel>Our Portfolio</SectionLabel>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif mb-4 text-white leading-tight">Featured Real Estate Listings</h2>
+                <p className="text-gray-text text-base leading-relaxed">
+                  Explore asset-backed real estate projects across Nigeria. Start building your portfolio through fractional property co-ownership.
+                </p>
+              </div>
+              <Link suppressHydrationWarning href="/properties" className="border-b border-gold text-gold hover:text-white hover:border-white transition-colors pb-1.5 uppercase tracking-widest text-xs font-bold shrink-0">
+                View All Properties &rarr;
+              </Link>
+            </FadeUp>
+          </div>
         )}
 
         {/* PROPERTIES PAGE VIEW HEADER & SEARCH / FILTER HERO */}
@@ -289,14 +313,14 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
             <FadeUp className="text-center max-w-3xl mx-auto mb-10">
               <SectionLabel className="justify-center">Investment Catalog</SectionLabel>
               <h1 className="text-4xl md:text-6xl font-serif mb-4 text-white">Our Property Portfolio</h1>
-              <p className="text-gray-text text-lg md:text-xl">
-                Asset-backed real estate investments across the United States
+              <p className="text-gray-text text-lg md:text-xl font-light">
+                Secure property asset fragments yielding high-performance returns.
               </p>
             </FadeUp>
 
             {/* Search Bar Form */}
             <FadeUp className="max-w-4xl mx-auto mb-8">
-              <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4 bg-navy p-4 rounded-2xl border border-white/5 shadow-2xl">
+              <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4 bg-[#0A1433] p-4 rounded-2xl border border-white/5 shadow-2xl">
                 <div className="flex-1 relative">
                   <span className="absolute inset-y-0 left-4 flex items-center text-gray-500">
                     <MapPin size={18} />
@@ -306,7 +330,7 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
                     value={locationInput}
                     onChange={(e) => setLocationInput(e.target.value)}
                     placeholder="Enter city, state or project name..."
-                    className="w-full pl-12 pr-4 py-3 bg-[#04091A] rounded-xl text-white placeholder-gray-600 border border-white/5 focus:outline-none focus:border-gold text-sm transition-all"
+                    className="w-full pl-12 pr-4 py-3.5 bg-[#04091A] rounded-xl text-white placeholder-gray-600 border border-white/5 focus:outline-none focus:border-gold text-sm transition-all"
                   />
                 </div>
                 
@@ -314,7 +338,7 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
                   <select
                     value={typeInput}
                     onChange={(e) => setTypeInput(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#04091A] rounded-xl text-white border border-white/5 focus:outline-none focus:border-gold text-sm transition-all appearance-none cursor-pointer"
+                    className="w-full px-4 py-3.5 bg-[#04091A] rounded-xl text-white border border-white/5 focus:outline-none focus:border-gold text-sm transition-all appearance-none cursor-pointer"
                   >
                     <option value="All">All Property Types</option>
                     <option value="Residential">Residential</option>
@@ -326,7 +350,7 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
 
                 <button
                   type="submit"
-                  className="px-8 py-3 bg-gold hover:bg-gold-light text-navy font-bold rounded-xl text-sm transition-all shadow-lg flex items-center justify-center gap-2"
+                  className="px-8 py-3.5 bg-gold hover:bg-gold-light text-navy font-bold rounded-xl text-sm transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Search size={16} /> Search
                 </button>
@@ -339,10 +363,10 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
                 <button
                   key={pill}
                   onClick={() => handlePillClick(pill)}
-                  className={`px-5 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase border transition-all ${
+                  className={`px-5 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase border transition-all cursor-pointer ${
                     selectedPill === pill
                       ? 'bg-gold border-gold text-navy shadow-md shadow-gold/10'
-                      : 'bg-navy/40 border-white/5 text-gray-text hover:text-white hover:border-white/10'
+                      : 'bg-[#0A1433]/60 border-white/5 text-gray-text hover:text-white hover:border-white/10'
                   }`}
                 >
                   {pill}
@@ -352,103 +376,137 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
           </div>
         )}
 
-        {/* PROPERTY LISTINGS GRID */}
+        {/* PROPERTY LISTINGS GRID - EXACTLY 3 IN A ROW */}
         {filteredProperties.length > 0 ? (
           <FadeUp stagger className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProperties.map((prop, idx) => (
-              <FadeUpItem key={idx} className="group cursor-pointer">
-                <div className="relative aspect-[4/3] rounded-t-xl overflow-hidden group/image bg-gradient-to-br from-navy-mid to-navy flex flex-col items-center justify-center">
-                  {prop.imageUrl || prop.image_url ? (
-                    <img 
-                      src={prop.imageUrl || prop.image_url} 
-                      alt={prop.name} 
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-750" 
-                    />
-                  ) : (
-                    <>
-                      <div className="absolute inset-0 opacity-20 pointer-events-none mix-blend-overlay" style={{ backgroundImage: "url('https://picsum.photos/seed/noise/400/400?grayscale')" }}></div>
-                      <Building2 size={72} className="text-white/5 opacity-50 group-hover:scale-110 transition-transform duration-700" strokeWidth={1} />
-                    </>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-navy via-transparent to-transparent z-10 pointer-events-none"></div>
-
-                  <span className="text-gold/50 uppercase tracking-widest text-[10px] font-semibold mt-4 z-10">{prop.typeDisplay}</span>
-
-                  {/* Hover overlay with Quick View */}
-                  <div className="absolute inset-0 bg-[rgba(4,9,26,0.97)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 flex flex-col items-center justify-center border border-gold/30 rounded-t-xl">
-                    <button 
-                      suppressHydrationWarning
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setQuickViewProperty(prop);
-                      }}
-                      className="px-6 py-3 bg-gold/10 border border-gold text-gold hover:bg-gold hover:text-navy font-semibold uppercase tracking-wider text-xs rounded transition duration-300 flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 shadow-[0_0_20px_rgba(201,168,76,0.15)]"
-                    >
-                      <Eye size={16} /> Quick View
-                    </button>
-                  </div>
+            {filteredProperties.map((prop, idx) => {
+              const typeSettings = getPropertyTypeSettings(prop.type);
+              return (
+                <FadeUpItem key={idx} className="group flex flex-col bg-[#0A1628]/95 border border-white/5 hover:border-gold/30 rounded-2xl overflow-hidden shadow-2xl transition duration-300">
                   
-                  <div className="absolute top-4 left-4 z-30 bg-[rgba(4,9,26,0.97)] backdrop-blur border border-white/10 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded text-white flex items-center gap-2 shadow-lg">
-                    <div className={`w-2 h-2 rounded-full shadow-[0_0_8px_currentColor] ${prop.status === 'Hot Deal' ? 'bg-gold text-gold' : prop.status === 'Coming Soon' ? 'bg-amber-500 text-amber-500' : 'bg-green-500 text-green-500'}`}></div>
-                    {prop.status}
+                  {/* Card Header Media area */}
+                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-[#0A1433] to-[#04091A] flex flex-col items-center justify-center">
+                    {prop.imageUrl || prop.image_url ? (
+                      <img 
+                        src={prop.imageUrl || prop.image_url} 
+                        alt={prop.name} 
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <>
+                        <div className="absolute inset-0 opacity-15 pointer-events-none mix-blend-overlay" style={{ backgroundImage: "url('https://picsum.photos/seed/noise/400/400?grayscale')" }}></div>
+                        <Building2 size={64} className="text-white/5 opacity-40 group-hover:scale-110 transition-transform duration-500" strokeWidth={1} />
+                      </>
+                    )}
+                    
+                    {/* Shadow overlay gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-navy/90 via-transparent to-black/30 z-10 pointer-events-none"></div>
+
+                    {/* Colored Property Type Header Bar */}
+                    <div className="absolute top-0 left-0 right-0 z-30 px-4 py-3 bg-navy/60 backdrop-blur-sm border-b border-white/5 flex justify-between items-center">
+                      <div className={`flex items-center gap-2 px-2.5 py-1 rounded border text-xs font-semibold ${typeSettings.colorClass}`}>
+                        {typeSettings.icon}
+                        <span>{typeSettings.badgeText}</span>
+                      </div>
+                      <span className="text-[10px] bg-gold/10 text-gold border border-gold/20 font-bold uppercase tracking-widest px-2.5 py-1 rounded">
+                        {prop.status}
+                      </span>
+                    </div>
+
+                    {/* ROI Badge Top Right overlay */}
+                    <div className="absolute top-16 right-4 z-30 bg-gold text-navy font-bold px-3 py-1.5 rounded-lg text-sm shadow-xl flex flex-col items-center leading-none">
+                      <span className="text-[9px] uppercase tracking-wider font-semibold opacity-75 mb-0.5">Est. ROI</span>
+                      <span className="text-base font-extrabold">{prop.roi}</span>
+                    </div>
+
+                    {/* Quick View Button overlay on hover */}
+                    <div className="absolute inset-0 bg-[rgba(4,9,26,0.95)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 flex flex-col items-center justify-center border border-gold/30 rounded-t-2xl">
+                      <button 
+                        suppressHydrationWarning
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setQuickViewProperty(prop);
+                        }}
+                        className="px-6 py-3 bg-gold/10 border border-gold text-gold hover:bg-gold hover:text-navy font-semibold uppercase tracking-wider text-xs rounded transition duration-300 flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 shadow-[0_0_20px_rgba(201,168,76,0.15)] cursor-pointer"
+                      >
+                        <Eye size={16} /> Quick View
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="absolute bottom-6 left-6 right-6 z-30 opacity-100 group-hover:opacity-0 transition-opacity duration-300">
-                     <div className="flex justify-between text-[9px] uppercase font-bold text-gray-text mb-1.5 tracking-widest">
-                      <span>{20 + (idx % 12)} Units Sold</span>
-                      <span className="text-gold">48 Total</span>
-                    </div>
-                    <div className="w-full h-1 bg-navy-light/50 overflow-hidden ">
-                      <div className="h-full bg-gold" style={{ width: `${50 + (idx * 15 % 40)}%` }}></div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-navy border border-border-subtle rounded-b-xl p-6 group-hover:border-border-gold transition-colors duration-300 relative z-30 flex flex-col justify-between min-h-[220px]">
-                  <div>
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="font-serif text-2xl group-hover:text-gold transition-colors line-clamp-1">{prop.name}</h3>
-                        <div className="flex items-center text-sm text-gray-text mt-2">
-                          <MapPin size={14} className="mr-1 shrink-0" /> <span className="line-clamp-1">{prop.location}</span>
+                  {/* Card Content Information */}
+                  <div className="p-6 flex-grow flex flex-col justify-between space-y-6">
+                    <div className="space-y-3">
+                      
+                      {/* Location City/State Caps in Gold */}
+                      <div className="text-[10px] text-gold font-bold tracking-[0.2em] uppercase font-sans">
+                        {getCityStateCaps(prop.location)}
+                      </div>
+                      
+                      <h3 className="font-serif text-2xl text-white group-hover:text-gold transition-colors duration-300 line-clamp-1 leading-snug">
+                        {prop.name}
+                      </h3>
+                      
+                      <div className="flex items-center text-sm text-gray-text pt-0.5">
+                        <MapPin size={14} className="mr-1 text-gold shrink-0" />
+                        <span className="truncate">{prop.location}</span>
+                      </div>
+
+                      <div className="h-[1px] w-full bg-white/5 pt-2"></div>
+
+                      <div className="flex justify-between items-center py-2">
+                        <div>
+                          <div className="text-[9px] uppercase tracking-widest text-gray-500 mb-0.5">Fraction Value</div>
+                          <div className="font-sans font-bold text-white text-lg">{prop.price}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-[9px] uppercase tracking-widest text-gray-500 mb-0.5">Asset Security</div>
+                          <div className="font-semibold text-green-400 text-sm flex items-center gap-1 justify-end">
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span> 100% Backed
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="my-5 h-px w-full bg-border-subtle"></div>
+                    <div className="space-y-4">
+                      {/* Units Sold Progress Bar */}
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between text-[9px] uppercase font-bold text-gray-text tracking-widest">
+                          <span>{20 + (idx % 12)} Co-Owners Joined</span>
+                          <span className="text-gold">48 Max Limits</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-navy rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-gold-dark to-gold" 
+                            style={{ width: `${50 + (idx * 15 % 40)}%` }}
+                          ></div>
+                        </div>
+                      </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <div className="text-xs text-gray-text uppercase tracking-widest mb-1">Buy Price</div>
-                        <div className="font-semibold text-lg">{prop.price}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-text uppercase tracking-widest mb-1">Expected ROI</div>
-                        <div className="font-semibold text-gold text-lg">{prop.roi}</div>
-                      </div>
+                      <button 
+                        suppressHydrationWarning
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!user) {
+                            window.location.href = '/register';
+                          } else {
+                            setSelectedProperty(prop);
+                            setPurchaseStatus('idle');
+                            setPurchaseAmount('');
+                            setErrorMessage('');
+                          }
+                        }}
+                        className="w-full py-3 bg-gold hover:bg-gold-light text-navy text-center font-bold rounded-xl text-xs uppercase tracking-wider transition duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-gold/10 cursor-pointer"
+                      >
+                        Invest Now
+                      </button>
                     </div>
-                  </div>
 
-                  <button 
-                    suppressHydrationWarning
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (!user) {
-                        window.location.href = '/register';
-                      } else {
-                        setSelectedProperty(prop);
-                        setPurchaseStatus('idle');
-                        setPurchaseAmount('');
-                        setErrorMessage('');
-                      }
-                    }}
-                    className="mt-6 w-full py-2.5 bg-gold hover:bg-gold-light text-navy text-center font-bold rounded-xl text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-gold/10"
-                  >
-                    Invest Now
-                  </button>
-                </div>
-              </FadeUpItem>
-            ))}
+                  </div>
+                </FadeUpItem>
+              );
+            })}
           </FadeUp>
         ) : (
           <FadeUp className="text-center py-20 bg-navy/20 border border-dashed border-white/5 rounded-2xl">
@@ -502,17 +560,17 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
                     <div className="flex justify-between"><span className="text-gray-text">Location</span><span className="text-white font-medium">{selectedProperty.location}</span></div>
                     <div className="flex justify-between"><span className="text-gray-text">Expected ROI</span><span className="text-gold font-bold">{selectedProperty.roi}</span></div>
                     <div className="flex justify-between"><span className="text-gray-text">Target Price</span><span className="text-white font-medium">{selectedProperty.price}</span></div>
-                    <div className="flex justify-between"><span className="text-gray-text">Wallet Balance</span><span className="text-white font-mono font-bold">${parseFloat(userProfile?.wallet_balance || '0').toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-text">Wallet Balance</span><span className="text-white font-mono font-bold">₦{parseFloat(userProfile?.wallet_balance || '0').toLocaleString()}</span></div>
                   </div>
 
                   <form onSubmit={handlePurchaseSubmit} className="space-y-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs text-gray-text uppercase tracking-widest font-semibold">Investment Amount ($)</label>
+                      <label className="text-xs text-gray-text uppercase tracking-widest font-semibold">Investment Amount (₦)</label>
                       <input 
                         type="number"
                         required
                         min="1"
-                        placeholder="Enter investment amount in USD..."
+                        placeholder="Enter investment amount in NGN..."
                         value={purchaseAmount}
                         onChange={(e) => setPurchaseAmount(e.target.value)}
                         className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:border-gold focus:outline-none placeholder-gray-text/50"
@@ -598,9 +656,9 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
               </div>
 
               <div className="space-y-4">
-                <p className="text-sm text-gray-300 leading-relaxed">
-                  Invest in this asset-backed property to earn consistent high-yield monthly returns. Our properties are fully vetted, LLC-held, and SEC-compliant, providing real physical security for your capital.
-                </p>
+                  <p className="text-sm text-gray-300 leading-relaxed">
+                    Invest in this asset-backed property to earn consistent high-yield monthly returns. Our properties are fully vetted, registered under CAC, and SEC Nigeria compliant, providing real physical security for your capital.
+                  </p>
 
                 <button 
                   suppressHydrationWarning

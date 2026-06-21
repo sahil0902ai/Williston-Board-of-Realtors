@@ -15,7 +15,7 @@ export async function GET(request: Request) {
       .from('deposits')
       .select(`
         *,
-        users(full_name, email)
+        users(full_name, email, phone)
       `)
       .order('created_at', { ascending: false });
 
@@ -28,13 +28,15 @@ export async function GET(request: Request) {
       id: d.id,
       investorName: d.users?.full_name || 'Anonymous',
       email: d.users?.email || '',
+      phone: d.users?.phone || '',
       amount: parseFloat(d.amount),
       method: d.method,
       reference: d.transaction_hash || d.bank_reference || `DEP-${d.id.substring(0, 8).toUpperCase()}`,
       date: new Date(d.created_at).toLocaleDateString(),
       status: d.status,
       receipt: d.proof_url || null,
-      notes: d.notes || ''
+      notes: d.notes || '',
+      created_at: d.created_at
     })) || [];
 
     return NextResponse.json({ success: true, deposits: mapped }, { status: 200 });

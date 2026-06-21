@@ -29,12 +29,12 @@ export default function PropertyPlans() {
             </div>
             <h3 className="text-2xl font-serif text-white mb-3">Commercial House</h3>
             <p className="text-gray-text text-sm mb-6 min-h-[80px]">
-              High-yield commercial real estate investments in prime business districts across Texas. Ideal for investors seeking strong rental and capital appreciation returns.
+              High-yield commercial real estate investments in prime business districts across Onitsha. Ideal for investors seeking strong rental and capital appreciation returns.
             </p>
             
             <div className="mb-8 p-4 bg-navy border border-border-subtle rounded-xl text-center">
               <div className="text-sm text-gray-text uppercase tracking-widest mb-1 font-semibold">Price Range</div>
-              <div className="text-2xl font-serif text-gold">$40,000 — $70,000</div>
+              <div className="text-2xl font-serif text-gold">₦20,000,000 — ₦50,000,000</div>
               <div className="text-xs text-gray-500 mt-2 font-mono">22–28% per annum ROI</div>
             </div>
 
@@ -69,12 +69,12 @@ export default function PropertyPlans() {
             </div>
             <h3 className="text-2xl font-serif text-white mb-3">Standard House</h3>
             <p className="text-gray-text text-sm mb-6 min-h-[80px]">
-              Comfortable residential properties in fast-growing residential estates across Houston, River Oaks, and Sugar Land. Perfect for families and rental income investors.
+              Comfortable residential properties in fast-growing residential estates across Anambra State. Perfect for families and rental income investors.
             </p>
             
             <div className="mb-8 p-4 bg-navy border border-gold/30 rounded-xl text-center">
               <div className="text-sm text-gray-text uppercase tracking-widest mb-1 font-semibold">Price Range</div>
-              <div className="text-3xl font-serif text-white">$80,000 — $150,000</div>
+              <div className="text-3xl font-serif text-white">₦35,000,000 — ₦80,000,000</div>
               <div className="text-xs text-gold mt-2 font-mono font-medium">18–24% per annum ROI</div>
             </div>
 
@@ -108,12 +108,12 @@ export default function PropertyPlans() {
             </div>
             <h3 className="text-2xl font-serif text-white mb-3">Luxury House</h3>
             <p className="text-gray-500 text-sm mb-6 min-h-[80px]">
-              Ultra-premium luxury residential properties for the discerning investor. Bespoke finishes, smart home features, and exclusive locations delivering prestige alongside exceptional returns.
+              Ultra-premium luxury residential properties for the discerning investor. Bespoke finishes, smart home features, and exclusive locations in Onitsha GRA, Lekki, and Asokoro.
             </p>
             
             <div className="mb-8 p-4 bg-navy-mid border border-[#1a2235] rounded-xl text-center">
               <div className="text-sm text-gray-500 uppercase tracking-widest mb-1 font-semibold">Price Range</div>
-              <div className="text-2xl font-serif text-white">$300,000 — $2,000,000</div>
+              <div className="text-2xl font-serif text-white">₦150,000,000 — ₦1,000,000,000</div>
               <div className="text-xs text-gold mt-2 font-mono">30–40% per annum ROI</div>
             </div>
 
@@ -161,9 +161,9 @@ export default function PropertyPlans() {
               <tbody className="text-sm">
                 <tr className="border-b border-border-subtle">
                   <td className="py-4 px-6 text-gray-text font-medium">Min Investment</td>
-                  <td className="py-4 px-6 text-white">$40,000</td>
-                  <td className="py-4 px-6 text-white bg-gold/5">$80,000</td>
-                  <td className="py-4 px-6 text-gray-300 bg-[#020510]">$300,000</td>
+                  <td className="py-4 px-6 text-white">₦20,000,000</td>
+                  <td className="py-4 px-6 text-white bg-gold/5">₦35,000,000</td>
+                  <td className="py-4 px-6 text-gray-300 bg-[#020510]">₦150,000,000</td>
                 </tr>
                 <tr className="border-b border-border-subtle">
                   <td className="py-4 px-6 text-gray-text font-medium">Property Type</td>

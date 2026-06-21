@@ -17,14 +17,21 @@ export default function Footer() {
               <span className="text-[10px] tracking-widest uppercase text-gray-text">Board of Realtors & Investments</span>
             </Link>
             <p className="text-sm text-gray-text leading-relaxed mb-6">
-              Empowering Americans globally to build generational wealth through secure, asset-backed real estate investments.
+              Empowering Nigerians globally to build generational wealth through secure, asset-backed real estate investments.
             </p>
             <address className="not-italic text-sm text-gray-300 space-y-2">
-              <p>1847 Westheimer Road, Suite 300, Houston</p>
-              <p>Texas, United States</p>
-              <p className="pt-2 text-sm text-gray-text">💬 Contact via WhatsApp or Telegram</p>
-              <p className="flex items-center gap-2 hover:text-gold transition-colors"><a href="mailto:willistonboardofrealtors@gmail.com">✉️ willistonboardofrealtors@gmail.com</a></p>
-              <p className="flex items-center gap-2 hover:text-gold transition-colors"><a href="https://t.me/willistonboardofrealtors" target="_blank" rel="noopener">✈️ t.me/willistonboardofrealtors</a></p>
+              <p>15 Oguta Road, Onitsha</p>
+              <p>Anambra State, Nigeria</p>
+              <p className="pt-2 text-sm text-gray-text font-semibold text-gold">💬 Contact Details:</p>
+              <p className="flex items-center gap-2 hover:text-gold transition-colors">
+                <a href="https://wa.me/2349167455410" target="_blank" rel="noopener">📲 WhatsApp: +234 916 745 5410</a>
+              </p>
+              <p className="flex items-center gap-2 hover:text-gold transition-colors">
+                <a href="https://t.me/willistonboardofrealtors" target="_blank" rel="noopener">✈️ Telegram: @willistonboardofrealtors</a>
+              </p>
+              <p className="flex items-center gap-2 hover:text-gold transition-colors">
+                <a href="mailto:willistonboardofrealtors@gmail.com">✉️ Email: willistonboardofrealtors@gmail.com</a>
+              </p>
             </address>
           </FadeUpItem>
 
@@ -68,12 +75,15 @@ export default function Footer() {
 
         <div className="pt-8 border-t border-border-subtle flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-xs text-gray-text text-center md:text-left order-2 md:order-1">
-            &copy; {currentYear} Williston Board of Realtors and Investments. LLC Registered. SEC Registered.<br className="hidden lg:block"/>
+            &copy; {currentYear} Williston Board of Realtors and Investments. Ltd Registered. CAC Registered. SEC Nigeria Compliant.<br className="hidden lg:block"/>
             Investment involves risk. Returns are targeted but not guaranteed. Past performance is not indicative of future results.
           </div>
           
           {/* Social Icons */}
           <div className="flex gap-4 order-1 md:order-2 flex-wrap justify-center">
+            <a href="https://wa.me/2349167455410" target="_blank" rel="noopener" aria-label="WhatsApp" className="w-10 h-10 rounded-full bg-navy border border-border-subtle flex items-center justify-center text-gray-text hover:border-[#25D366] hover:text-[#25D366] transition-colors">
+              <MessageCircle size={18} />
+            </a>
             <a href="https://t.me/willistonboardofrealtors" target="_blank" rel="noopener" aria-label="Telegram" className="w-10 h-10 rounded-full bg-navy border border-border-subtle flex items-center justify-center text-gray-text hover:border-[#0088cc] hover:text-[#0088cc] transition-colors">
               <Send size={18} className="-ml-1" />
             </a>

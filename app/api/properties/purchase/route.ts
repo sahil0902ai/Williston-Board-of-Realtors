@@ -51,85 +51,58 @@ export async function POST(request: Request) {
       // This is a brilliant safety fallback!
       const staticProperties = [
         {
-          name: "Williston Heights — River Oaks",
-          location: "River Oaks District, Houston, TX",
+          name: "Williston Heights Phase 1",
+          location: "Awka Road, Onitsha, Anambra",
           type: "Residential",
-          typeDisplay: "Residential Duplexes",
-          price: "$850,000 / Unit",
+          typeDisplay: "Residential Apartments",
+          price: "₦8,500,000 / Unit",
           roi: "28%",
           status: "Open"
         },
         {
-          name: "Williston Sunrise — Sugar Land",
-          location: "Sugar Land, Houston, TX",
-          type: "Land",
+          name: "Williston Gardens Estate",
+          location: "Nnewi Road, Anambra",
+          type: "Residential",
           typeDisplay: "Land Plots — Clear Title",
-          price: "$220,000 / Plot",
+          price: "₦5,500,000 / Plot",
           roi: "35%",
           status: "Hot Deal"
         },
         {
-          name: "Williston Commerce Center — Downtown Houston",
-          location: "Downtown Houston, TX",
+          name: "Williston Commerce Plaza",
+          location: "Bridge Head, Onitsha",
           type: "Commercial",
           typeDisplay: "Mixed-Use Commercial",
-          price: "$1.5M / Unit",
+          price: "₦15,000,000 / Unit",
           roi: "22%",
           status: "Open"
         },
         {
-          name: "Williston Plaza — Miami",
-          location: "Miami, FL",
+          name: "Williston Lekki Towers",
+          location: "Lekki Phase 1, Lagos",
           type: "Commercial",
-          typeDisplay: "Commercial Plaza",
-          price: "$2.1M / Unit",
+          typeDisplay: "Commercial/Residential Plaza",
+          price: "₦25,000,000 / Unit",
           roi: "26%",
           status: "Open"
         },
         {
-          name: "Williston Gardens — Atlanta",
-          location: "Atlanta, GA",
+          name: "Williston Abuja Estate",
+          location: "Gwarinpa, Abuja FCT",
           type: "Residential",
-          typeDisplay: "Residential Gardens",
-          price: "$420,000 / Unit",
+          typeDisplay: "Residential Duplexes",
+          price: "₦18,000,000 / Unit",
           roi: "22%",
           status: "Hot Deal"
         },
         {
-          name: "Williston Business Park — Dallas",
-          location: "Dallas, TX",
-          type: "Commercial",
-          typeDisplay: "Business Park",
-          price: "$850,000 / Unit",
+          name: "Williston PH Gardens",
+          location: "GRA Phase 2, Port Harcourt",
+          type: "Residential",
+          typeDisplay: "Residential Gardens",
+          price: "₦12,000,000 / Unit",
           roi: "24%",
           status: "Open"
-        },
-        {
-          name: "Williston Villas — Charlotte",
-          location: "Charlotte, NC",
-          type: "Residential",
-          typeDisplay: "Residential Villas",
-          price: "$380,000 / Unit",
-          roi: "20%",
-          status: "Open"
-        },
-        {
-          name: "Williston Residences — Phoenix",
-          location: "Phoenix, AZ",
-          type: "Residential",
-          typeDisplay: "Residential Residences",
-          price: "$310,000 / Unit",
-          roi: "19%",
-          status: "Coming Soon"
-        },
-        {
-          name: "Williston Square — Las Vegas",
-          location: "Las Vegas, NV",
-          type: "Commercial",
-          typeDisplay: "Commercial Square",
-          price: "$1.2M / Unit",
-          roi: "28%",
-          status: "Hot Deal"
         }
       ];
 
@@ -265,7 +238,7 @@ export async function POST(request: Request) {
     await supabaseAdmin.from('notifications').insert({
       user_id: user.id,
       title: 'Property Co-Ownership Activated',
-      message: `Your $${amount.toLocaleString()} purchase for ${property.name} has been activated. Daily yield payouts are now active.`,
+      message: `Your ₦${amount.toLocaleString()} purchase for ${property.name} has been activated. Daily yield payouts are now active.`,
       type: 'success',
       is_read: false
     });

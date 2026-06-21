@@ -69,14 +69,38 @@ export async function POST(request: Request) {
     const userId = authData.user.id;
 
     // 2. Fetch User Profile status and 2FA settings
-    const { data: profile, error: profileError } = await supabaseAdmin
+    let { data: profile, error: profileError } = await supabaseAdmin
       .from('users')
       .select('account_status, two_fa_enabled, two_fa_secret')
       .eq('id', userId)
       .single();
 
     if (profileError || !profile) {
-      return NextResponse.json({ error: 'User profile not found' }, { status: 404 });
+      console.log(`Profile missing for authenticated user ${authData.user.email}. Auto-creating profile...`);
+      const referralCode = `WBR-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      const { data: newProfile, error: insertError } = await supabaseAdmin
+        .from('users')
+        .insert({
+          id: userId,
+          full_name: authData.user.user_metadata?.full_name || authData.user.email?.split('@')[0] || 'User',
+          email: authData.user.email,
+          country: 'Nigeria',
+          referral_code: referralCode,
+          kyc_status: 'pending',
+          account_status: 'active',
+          wallet_balance: 0.0,
+          total_invested: 0.0,
+          total_returns: 0.0,
+          is_active: true,
+        })
+        .select('account_status, two_fa_enabled, two_fa_secret')
+        .single();
+
+      if (insertError || !newProfile) {
+        console.error('Failed to auto-create user profile:', insertError);
+        return NextResponse.json({ error: 'User profile not found' }, { status: 404 });
+      }
+      profile = newProfile;
     }
 
     // 3. Check Account Status
@@ -127,6 +151,15 @@ export async function POST(request: Request) {
         login_ip: ip,
       })
       .eq('id', userId);
+
+    const userAgent = request.headers.get('user-agent') || 'Unknown Device';
+    await supabaseAdmin.from('fraud_logs').insert({
+      user_id: userId,
+      event_type: 'successful_login',
+      ip_address: ip,
+      details: { device: userAgent },
+      risk_score: 0,
+    });
 
     return NextResponse.json({
       success: true,

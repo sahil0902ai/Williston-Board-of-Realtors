@@ -22,7 +22,16 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: error?.message || 'Profile not found' }, { status: 404 });
     }
 
-    return NextResponse.json(profile, { status: 200 });
+    const dob = user.user_metadata?.dob || '';
+    const preferred_currency = user.user_metadata?.preferred_currency || 'USD';
+    const notification_settings = user.user_metadata?.notification_settings || null;
+
+    return NextResponse.json({
+      ...profile,
+      dob,
+      preferred_currency,
+      notification_settings
+    }, { status: 200 });
 
   } catch (error: any) {
     console.error('GET Profile Error:', error);
@@ -30,7 +39,7 @@ export async function GET(request: Request) {
   }
 }
 
-// PATCH: Update phone, country, avatar_url only
+// PATCH: Update phone, country, avatar_url, full_name, dob, preferred_currency, notification_settings
 export async function PATCH(request: Request) {
   try {
     const user = await getAuthenticatedUser(request);
@@ -39,32 +48,76 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
-    const { phone, country, avatar_url } = body;
+    const { phone, country, avatar_url, full_name, dob, preferred_currency, notification_settings } = body;
 
-    // Filter update body strictly to prevent unauthorized field injections
+    // 1. Update public.users database fields if provided
     const updateData: any = {};
     if (phone !== undefined) updateData.phone = phone;
     if (country !== undefined) updateData.country = country;
     if (avatar_url !== undefined) updateData.avatar_url = avatar_url;
+    if (full_name !== undefined) updateData.full_name = full_name;
 
-    if (Object.keys(updateData).length === 0) {
-      return NextResponse.json({ error: 'No valid fields provided for update' }, { status: 400 });
+    let profile = null;
+
+    if (Object.keys(updateData).length > 0) {
+      const { data, error } = await supabaseAdmin
+        .from('users')
+        .update(updateData)
+        .eq('id', user.id)
+        .select('*')
+        .single();
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      profile = data;
+    } else {
+      // If no users table columns are updated, select existing profile
+      const { data, error } = await supabaseAdmin
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      profile = data;
     }
 
-    const { data: updatedProfile, error } = await supabaseAdmin
-      .from('users')
-      .update(updateData)
-      .eq('id', user.id)
-      .select('*')
-      .single();
+    // 2. Update auth user metadata for extra fields (dob, preferred_currency, notification_settings)
+    const metaUpdates: any = {};
+    if (dob !== undefined) metaUpdates.dob = dob;
+    if (preferred_currency !== undefined) metaUpdates.preferred_currency = preferred_currency;
+    if (full_name !== undefined) metaUpdates.full_name = full_name;
+    if (notification_settings !== undefined) metaUpdates.notification_settings = notification_settings;
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    let currentDob = user.user_metadata?.dob || '';
+    let currentCurrency = user.user_metadata?.preferred_currency || 'USD';
+    let currentNotifSettings = user.user_metadata?.notification_settings || null;
+
+    if (Object.keys(metaUpdates).length > 0) {
+      const newMetadata = { ...user.user_metadata, ...metaUpdates };
+      const { error: metaError } = await supabaseAdmin.auth.admin.updateUserById(
+        user.id,
+        { user_metadata: newMetadata }
+      );
+      if (metaError) {
+        console.error('Failed to update user auth metadata:', metaError.message);
+      } else {
+        if (dob !== undefined) currentDob = dob;
+        if (preferred_currency !== undefined) currentCurrency = preferred_currency;
+        if (notification_settings !== undefined) currentNotifSettings = notification_settings;
+      }
     }
 
     return NextResponse.json({
       success: true,
-      profile: updatedProfile,
+      profile: {
+        ...profile,
+        dob: currentDob,
+        preferred_currency: currentCurrency,
+        notification_settings: currentNotifSettings
+      },
       message: 'Profile updated successfully',
     }, { status: 200 });
 

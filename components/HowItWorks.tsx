@@ -1,4 +1,6 @@
-import { CircleDollarSign, ArrowRightLeft, Shield, BarChart3 } from "lucide-react";
+'use client';
+
+import { UserPlus, Layers, Wallet, TrendingUp, ChevronDown } from 'lucide-react';
 import { FadeUp, FadeUpItem } from './FadeUp';
 import SectionLabel from './SectionLabel';
 
@@ -6,66 +8,113 @@ export default function HowItWorks() {
   const steps = [
     {
       num: "01",
-      icon: <CircleDollarSign className="w-8 h-8 text-gold" />,
+      icon: <UserPlus className="w-6 h-6 text-gold" />,
       title: "Create Account",
-      desc: "Sign up securely in minutes and complete your KYC verification."
+      desc: "Sign up securely in minutes and complete your KYC verification to safeguard your portfolio."
     },
     {
       num: "02",
-      icon: <BarChart3 className="w-8 h-8 text-gold" />,
+      icon: <Layers className="w-6 h-6 text-gold" />,
       title: "Choose a Plan",
-      desc: "Select an investment package that matches your financial goals."
+      desc: "Select an institutional-grade investment package matching your yield targets and term goals."
     },
     {
       num: "03",
-      icon: <ArrowRightLeft className="w-8 h-8 text-gold" />,
+      icon: <Wallet className="w-6 h-6 text-gold" />,
       title: "Fund Your Wallet",
-      desc: "Deposit via local bank transfer or multi-currency options for diaspora."
+      desc: "Deposit funds easily via Paystack, Flutterwave, bank transfer, or secure crypto wallets."
     },
     {
       num: "04",
-      icon: <Shield className="w-8 h-8 text-gold" />,
+      icon: <TrendingUp className="w-6 h-6 text-gold" />,
       title: "Earn & Grow",
-      desc: "Watch your dashboard as you receive automated payouts."
+      desc: "Monitor your portfolio in real-time as monthly yield returns tick up and mature automatically."
     }
   ];
 
   return (
-    <section id="how-it-works" className="py-16 md:py-24 bg-navy">
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
-        <FadeUp className="text-center mb-16 md:mb-20 flex flex-col items-center">
+    <section id="how-it-works" className="py-20 md:py-28 bg-[#04091A] relative border-t border-white/5">
+      <div className="max-w-6xl mx-auto px-6 md:px-12 relative">
+        
+        <FadeUp className="text-center mb-20 flex flex-col items-center">
           <SectionLabel>The Process</SectionLabel>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif">How It Works</h2>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-white">How It Works</h2>
+          <p className="text-gray-text text-sm md:text-base max-w-lg mt-3 leading-relaxed font-light">
+            Start earning passive real estate yield in four simple, highly secure steps.
+          </p>
         </FadeUp>
 
+        {/* Alternating Timeline Section */}
         <div className="relative">
-          {/* Connector Line (Desktop) */}
-          <div className="hidden lg:block absolute top-[60px] left-[12%] right-[12%] h-[1px] bg-gradient-to-r from-transparent via-border-gold to-transparent border-dashed border-t border-border-gold opacity-50 z-0"></div>
+          {/* Vertical Dotted Line (Desktop Center, Mobile Left) */}
+          <div className="absolute left-6 lg:left-1/2 -translate-x-1/2 top-10 bottom-10 w-[1px] border-l border-dashed border-gold/30 z-0"></div>
 
-          <FadeUp stagger className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-12 relative z-10">
-            {steps.map((step, idx) => (
-              <FadeUpItem key={idx} className="relative group text-center lg:text-left flex flex-col items-center lg:items-start">
-                
-                <div className="flex justify-center items-center w-32 h-32 mb-8 relative">
-                  {/* Background Number */}
-                  <div className="absolute inset-0 flex items-center justify-center font-serif text-[100px] text-navy-light font-bold opacity-30 select-none group-hover:text-gold/10 transition-colors duration-500">
+          <div className="space-y-16 lg:space-y-24 relative z-10">
+            {steps.map((step, idx) => {
+              const isEven = idx % 2 === 1;
+              return (
+                <div 
+                  key={idx} 
+                  className={`flex flex-col lg:flex-row items-stretch gap-8 lg:gap-0 ${
+                    isEven ? 'lg:flex-row-reverse' : ''
+                  }`}
+                >
+                  {/* Left Pane: Content (Odd) or Number (Even) */}
+                  <div className={`w-full lg:w-1/2 pl-16 lg:pl-0 flex items-center ${
+                    isEven ? 'lg:justify-start lg:pl-16' : 'lg:justify-end lg:pr-16 lg:text-right'
+                  }`}>
+                    {!isEven ? (
+                      <FadeUpItem className="space-y-3 max-w-md">
+                        <h3 className="font-serif text-2xl text-white">{step.title}</h3>
+                        <p className="text-gray-text text-sm md:text-base font-light leading-relaxed">{step.desc}</p>
+                      </FadeUpItem>
+                    ) : (
+                      <div className="hidden lg:block font-serif text-7xl md:text-8xl text-gold/10 font-black select-none tracking-tighter">
+                        {step.num}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Central Node (Desktop Center, Mobile Left aligned with dotted line) */}
+                  <div className="absolute left-6 lg:left-1/2 -translate-x-1/2 flex flex-col items-center justify-center z-20">
+                    <div className="w-12 h-12 bg-[#0A1433] border-2 border-gold rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(201,168,76,0.2)] group hover:bg-gold hover:text-navy transition duration-300">
+                      {step.icon}
+                    </div>
+                    {/* Floating Down Arrow (Show between nodes) */}
+                    {idx < steps.length - 1 && (
+                      <div className="absolute top-16 hidden lg:flex flex-col items-center text-gold/35">
+                        <ChevronDown size={14} className="animate-bounce" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Pane: Number (Odd) or Content (Even) */}
+                  <div className={`w-full lg:w-1/2 pl-16 lg:pl-0 flex items-center ${
+                    isEven ? 'lg:justify-end lg:pr-16 lg:text-right' : 'lg:justify-start lg:pl-16'
+                  }`}>
+                    {isEven ? (
+                      <FadeUpItem className="space-y-3 max-w-md lg:text-left">
+                        <h3 className="font-serif text-2xl text-white">{step.title}</h3>
+                        <p className="text-gray-text text-sm md:text-base font-light leading-relaxed">{step.desc}</p>
+                      </FadeUpItem>
+                    ) : (
+                      <div className="hidden lg:block font-serif text-7xl md:text-8xl text-gold/10 font-black select-none tracking-tighter">
+                        {step.num}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Mobile Mobile Number Tag (Only shown on mobile) */}
+                  <div className="lg:hidden absolute left-14 top-2 text-2xl font-serif font-black text-gold/25 select-none">
                     {step.num}
                   </div>
-                  {/* Icon Container */}
-                  <div className="relative w-16 h-16 bg-navy border border-border-gold rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(201,168,76,0.1)] transition duration-300">
-                    {step.icon}
-                  </div>
+
                 </div>
-
-                <h3 className="font-serif text-2xl mb-3 text-white">{step.title}</h3>
-                <p className="text-gray-text leading-relaxed text-sm max-w-[250px] lg:max-w-none text-center lg:text-left">
-                  {step.desc}
-                </p>
-
-              </FadeUpItem>
-            ))}
-          </FadeUp>
+              );
+            })}
+          </div>
         </div>
+
       </div>
     </section>
   );

@@ -1,13 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, Loader2, ShieldCheck } from 'lucide-react';
 import { loginUser } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 
 export default function Login() {
   const router = useRouter();
+
+  // Google Login Handler
+  const handleGoogleLogin = async () => {
+    setLoginError('');
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      console.error('Google sign in error:', err);
+      setLoginError(err.message || 'Google sign in failed');
+    }
+  };
   
   // Form states
   const [email, setEmail] = useState('');
@@ -24,10 +42,23 @@ export default function Login() {
   const [passwordError, setPasswordError] = useState('');
   const [loginError, setLoginError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registered, setRegistered] = useState(false);
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('registered') === 'true') {
+        setRegistered(true);
+      }
+    }
+  }, []);
   
   const validateEmail = (val: string) => {
     if (!val) {
       return 'Email address is required';
+    }
+    if (val.trim().toLowerCase() === 'willistonadmin') {
+      return '';
     }
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!regex.test(val)) {
@@ -61,6 +92,21 @@ export default function Login() {
     }
     
     setIsSubmitting(true);
+
+    // Bypassing for admin login on main page
+    if (email.trim().toLowerCase() === 'willistonadmin') {
+      const targetPassword = process.env.ADMIN_SECRET_KEY || 'williston_admin_secret_2025';
+      if (password === targetPassword) {
+        sessionStorage.setItem('admin_authenticated', 'true');
+        setIsSubmitting(false);
+        router.push('/admin');
+        return;
+      } else {
+        setLoginError('Invalid admin password');
+        setIsSubmitting(false);
+        return;
+      }
+    }
 
     try {
       const data = await loginUser({
@@ -139,8 +185,8 @@ export default function Login() {
             <div className="text-[10px] text-gray-text uppercase tracking-widest mt-1">Investors</div>
           </div>
           <div>
-            <div className="text-xl font-bold font-sans text-gold">$2.4M+</div>
-            <div className="text-[10px] text-gray-text uppercase tracking-widest mt-1">Paid</div>
+            <div className="text-xl font-bold font-sans text-gold">₦2.4B+</div>
+            <div className="text-[10px] text-gray-text uppercase tracking-widest mt-1">Returns Paid</div>
           </div>
           <div>
             <div className="text-xl font-bold font-sans text-gold">8 Years</div>
@@ -167,6 +213,12 @@ export default function Login() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {registered && (
+              <div className="p-3 bg-green-950/20 border border-green-500/20 rounded-xl text-green-400 text-xs font-semibold mb-4">
+                ✓ Registration successful! Welcome to Williston. Please sign in below.
+              </div>
+            )}
+
             {loginError && (
               <div className="p-3 bg-red-950/20 border border-red-500/20 rounded-xl text-red-400 text-xs font-semibold">
                 ⚠️ {loginError}
@@ -247,6 +299,7 @@ export default function Login() {
                   className="w-full px-4 py-3 bg-[#04091A] rounded-xl border border-gold/40 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gold transition-all"
                   placeholder="Enter 6-digit 2FA code"
                   required
+                  suppressHydrationWarning
                 />
                 <p className="text-[10px] text-gray-text">A 2FA authentication token is required to secure your session.</p>
               </div>
@@ -261,6 +314,7 @@ export default function Login() {
                   disabled={twoFaRequired}
                   onChange={(e) => setRememberMe(e.target.checked)}
                   className="w-4 h-4 rounded text-gold bg-[#04091A] border-white/10 focus:ring-0 focus:ring-offset-0 cursor-pointer disabled:opacity-50"
+                  suppressHydrationWarning
                 />
                 <span>Remember me</span>
               </label>
@@ -296,7 +350,12 @@ export default function Login() {
           </div>
 
           {/* Google Button */}
-          <button suppressHydrationWarning className="w-full py-3 bg-[#04091A] hover:bg-navy-light/40 border border-white/10 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2.5 transition-all">
+          <button 
+            suppressHydrationWarning 
+            type="button"
+            onClick={handleGoogleLogin}
+            className="w-full py-3 bg-[#04091A] hover:bg-navy-light/40 border border-white/10 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2.5 transition-all"
+          >
              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />

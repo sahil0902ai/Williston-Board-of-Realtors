@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 
 export default function WhatsAppButton() {
   const [isTgHovered, setIsTgHovered] = useState(false);
+  const [isWaHovered, setIsWaHovered] = useState(false);
   const pathname = usePathname();
 
   if (pathname === "/login" || pathname === "/register") {
@@ -14,7 +15,40 @@ export default function WhatsAppButton() {
   }
 
   return (
-    <div className="fixed bottom-20 md:bottom-6 left-6 z-[997] flex flex-col items-start gap-4">
+    <div className="fixed bottom-20 md:bottom-6 left-6 z-[997] flex flex-col items-start gap-3">
+      {/* WhatsApp */}
+      <Link
+        href="https://wa.me/2349167455410"
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`flex items-center justify-center bg-[#25D366] text-white rounded-full shadow-lg transition duration-300 ease-in-out relative group overflow-hidden ${
+          isWaHovered ? "w-44 md:w-48 px-4" : "w-12 h-12 md:w-14 md:h-14"
+        }`}
+        onMouseEnter={() => setIsWaHovered(true)}
+        onMouseLeave={() => setIsWaHovered(false)}
+        style={{ height: "3rem" }}
+        title="Chat on WhatsApp"
+      >
+        <div
+          className={`flex items-center justify-center min-w-[3rem] h-[3rem] ${isWaHovered ? "" : "-ml-1"} transition duration-300`}
+        >
+          <MessageCircle
+            size={22}
+            className={
+              isWaHovered ? "md:w-5 md:h-5 mr-2" : "w-4 h-4 md:w-5 md:h-5"
+            }
+          />
+        </div>
+
+        <div
+          className={`whitespace-nowrap font-medium text-xs md:text-sm transition duration-300 ${
+            isWaHovered ? "opacity-100" : "opacity-0 w-0"
+          }`}
+        >
+          Chat on WhatsApp
+        </div>
+      </Link>
+
       {/* Telegram */}
       <Link
         href="https://t.me/willistonboardofrealtors"

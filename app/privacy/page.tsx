@@ -23,7 +23,7 @@ export default function PrivacyPage() {
             <section className="space-y-3">
               <h2 className="text-xl font-serif text-white">1. Information We Collect</h2>
               <p>
-                We collect personal information that you provide when registering, including your name, email, phone number, physical address, and verification details (KYC documentation, SSN last 4 digits, or passport copies).
+                We collect personal information that you provide when registering, including your name, email, phone number, physical address, and verification details (KYC documentation, BVN, NIN, or passport copies).
               </p>
             </section>
 
@@ -37,7 +37,7 @@ export default function PrivacyPage() {
             <section className="space-y-3">
               <h2 className="text-xl font-serif text-white">3. Data Protection & Security</h2>
               <p>
-                We implement industry-standard security measures, including SSL encryption, restricted administrative access, and secure database hosting, to prevent unauthorized access, alteration, or disclosure of your information.
+                We implement industry-standard security measures, including SSL encryption, restricted administrative access, and secure database hosting, to prevent unauthorized access, alteration, or disclosure of your information. We strictly comply with the Nigeria Data Protection Regulation (NDPR).
               </p>
             </section>
 
@@ -51,7 +51,7 @@ export default function PrivacyPage() {
             <section className="space-y-3">
               <h2 className="text-xl font-serif text-white">5. Access and Rights</h2>
               <p>
-                You have the right to request access to the personal data we hold about you and request corrections. For any inquiry, please email our support desk at willistonboardofrealtors@gmail.com.
+                Under the NDPR, you have the right to request access to the personal data we hold about you and request corrections or deletion. For any inquiry, please email our support desk at willistonboardofrealtors@gmail.com.
               </p>
             </section>
           </div>

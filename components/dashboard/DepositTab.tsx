@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Bitcoin, Wallet, CircleDollarSign, Send, Landmark, ShieldCheck, CheckCircle2, Lock, ArrowRight, Upload, ArrowLeft, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -11,10 +11,41 @@ interface DepositTabProps {
 
 export default function DepositTab({ setActiveTab, profile, fetchProfile }: DepositTabProps) {
   const [step, setStep] = useState(1);
-  const [amount, setAmount] = useState('500');
+  const [amount, setAmount] = useState('50000');
   const [paymentMethod, setPaymentMethod] = useState('');
-  const [cryptoTab, setCryptoTab] = useState('BTC');
+  const [cryptoTab, setCryptoTab] = useState('USDT');
   const [confirmed, setConfirmed] = useState(false);
+
+  const [bankDetails, setBankDetails] = useState({
+    bank: 'OPay',
+    accountName: 'Chukwuebuka Irenaus Onyegere',
+    accountNumber: '9167455410',
+    whatsapp: '+2349167455410',
+    ussd: '*955#',
+  });
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/settings');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.settings) {
+            setBankDetails({
+              bank: data.settings.bank_name || 'OPay',
+              accountName: data.settings.account_name || 'Chukwuebuka Irenaus Onyegere',
+              accountNumber: data.settings.account_number || '9167455410',
+              whatsapp: data.settings.bank_whatsapp || '+2349167455410',
+              ussd: data.settings.bank_ussd || '*955#',
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load settings:', err);
+      }
+    }
+    loadSettings();
+  }, []);
 
   // Form Fields
   const [txHash, setTxHash] = useState('');
@@ -45,6 +76,35 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
     setErrorMsg('');
 
     try {
+      if (paymentMethod === 'paystack' || paymentMethod === 'flutterwave') {
+        const endpoint = paymentMethod === 'paystack'
+          ? '/api/paystack/initialize'
+          : '/api/flutterwave/initialize';
+
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: profile?.id,
+            amount: parseFloat(amount),
+            planName: 'Investment Deposit',
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          throw new Error(data.error || 'Failed to initialize payment');
+        }
+
+        const redirectUrl = paymentMethod === 'paystack' ? data.authorizationUrl : data.link;
+        if (redirectUrl) {
+          window.location.href = redirectUrl;
+        } else {
+          throw new Error('Payment gateway redirect URL not found');
+        }
+        return;
+      }
+
       let proofUrl = '';
 
       // 1. Upload proof receipt to Supabase Storage if file is selected
@@ -80,10 +140,10 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           amount: parseFloat(amount),
-          method: paymentMethod,
+          method: paymentMethod === 'crypto' ? (cryptoTab === 'BTC' ? 'bitcoin' : 'usdt') : 'bank_transfer',
           transactionHash: paymentMethod === 'crypto' ? txHash : undefined,
-          bankReference: paymentMethod === 'wire' ? bankRef : undefined,
-          walletAddress: paymentMethod === 'crypto' ? (cryptoTab === 'BTC' ? 'bc1qplaceholder_address_goes_here_xyz' : cryptoTab === 'USDT' ? 'TRC20placeholder_address_goes_here_xyz' : '0xplaceholder_address_goes_here_xyz') : undefined,
+          bankReference: paymentMethod === 'bank' ? bankRef : undefined,
+          walletAddress: paymentMethod === 'crypto' ? (cryptoTab === 'BTC' ? 'bc1qplaceholder_address_goes_here_xyz' : 'TRC20placeholder_address_goes_here_xyz') : undefined,
           proofUrl: proofUrl || undefined
         })
       });
@@ -186,9 +246,9 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
               </div>
 
               <div className="space-y-3">
-                <label className="text-sm text-gray-text font-medium block">Amount ($)</label>
+                <label className="text-sm text-gray-text font-medium block">Amount (₦)</label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-text text-lg">$</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-text text-lg">₦</span>
                   <input 
                     type="number" 
                     value={amount}
@@ -197,19 +257,19 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
                     placeholder="Enter amount"
                   />
                 </div>
-                <div className="text-xs text-yellow-500">Minimum deposit: $100</div>
+                <div className="text-xs text-yellow-500">Minimum deposit: ₦20,000</div>
               </div>
 
               <div className="space-y-3">
                 <label className="text-sm text-gray-text font-medium block">Quick Amounts</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {['500', '1000', '2000', '5000'].map(val => (
+                  {['20000', '50000', '100000', '500000'].map(val => (
                     <button 
                       key={val}
                       onClick={() => handleAmountSelect(val)}
                       className={`py-3 px-2 rounded-lg border text-sm font-medium transition-colors ${amount === val ? 'bg-gold/10 border-gold text-gold' : 'bg-navy border-border-subtle text-gray-text hover:text-white hover:border-gray-500'}`}
                     >
-                      ${parseInt(val).toLocaleString()}
+                      ₦{parseInt(val).toLocaleString()}
                     </button>
                   ))}
                 </div>
@@ -218,7 +278,7 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
               <div className="pt-6">
                 <button 
                   onClick={handleNext}
-                  disabled={parseInt(amount) < 100}
+                  disabled={parseInt(amount) < 20000}
                   className="w-full py-4 bg-gold text-navy rounded-xl font-bold text-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   Continue <ArrowRight size={20} />
@@ -241,41 +301,111 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
 
               <div className="space-y-4">
                 
-                {/* Cash App */}
+                {/* Paystack */}
                 <div 
-                  className={`border rounded-xl p-5 cursor-pointer transition ${paymentMethod === 'cashapp' ? 'bg-green-500/10 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.1)]' : 'bg-navy border-border-subtle hover:border-gray-500'}`}
-                  onClick={() => setPaymentMethod('cashapp')}
+                  className={`border rounded-xl p-5 cursor-pointer transition ${paymentMethod === 'paystack' ? 'bg-gold/5 border-gold shadow-[0_0_15px_rgba(201,168,76,0.1)]' : 'bg-navy border-border-subtle hover:border-gray-500'}`}
+                  onClick={() => setPaymentMethod('paystack')}
                 >
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center shrink-0 border border-green-500/30">
-                      <CircleDollarSign size={24} />
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-[#00C3F7]/20 text-[#00C3F7] flex items-center justify-center shrink-0 border border-[#00C3F7]/30">
+                      💳
                     </div>
                     <div>
-                      <h4 className="font-semibold text-white">Cash App <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded ml-2">⚡ Instant — 15 mins</span></h4>
-                      <p className="text-xs text-gray-text">Send instantly via Cash App. Fastest method — credited within minutes.</p>
+                      <h4 className="font-semibold text-white">Paystack <span className="text-xs bg-gold/20 text-gold px-2 py-0.5 rounded ml-2">⚡ Instant</span></h4>
+                      <p className="text-xs text-gray-text">Pay with card, bank transfer, USSD, or Opay.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Flutterwave */}
+                <div 
+                  className={`border rounded-xl p-5 cursor-pointer transition ${paymentMethod === 'flutterwave' ? 'bg-gold/5 border-gold shadow-[0_0_15px_rgba(201,168,76,0.1)]' : 'bg-navy border-border-subtle hover:border-gray-500'}`}
+                  onClick={() => setPaymentMethod('flutterwave')}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-[#F5A623]/20 text-[#F5A623] flex items-center justify-center shrink-0 border border-[#F5A623]/30">
+                      🌊
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white">Flutterwave <span className="text-xs bg-gold/20 text-gold px-2 py-0.5 rounded ml-2">⚡ Instant</span></h4>
+                      <p className="text-xs text-gray-text">Card, bank transfer, mobile money, USSD.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Local Bank Transfer */}
+                <div 
+                  className={`border rounded-xl p-5 cursor-pointer transition ${paymentMethod === 'bank' ? 'bg-gold/5 border-gold shadow-[0_0_15px_rgba(201,168,76,0.1)]' : 'bg-navy border-border-subtle hover:border-gray-500'}`}
+                  onClick={() => setPaymentMethod('bank')}
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-full bg-navy-light flex items-center justify-center shrink-0 border border-border-subtle text-white">
+                      <Landmark size={24} />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-white">Direct Bank Transfer <span className="text-xs bg-gold/20 text-gold px-2 py-0.5 rounded ml-2">⏱ 2–4 Hours</span></h4>
+                      <p className="text-xs text-gray-text">Transfer directly to our Nigerian bank accounts.</p>
                     </div>
                   </div>
                   
-                  {paymentMethod === 'cashapp' && (
+                  {paymentMethod === 'bank' && (
                     <div className="mt-4 pt-4 border-t border-border-subtle space-y-4 animate-in fade-in slide-in-from-top-2 duration-300" onClick={(e) => e.stopPropagation()}>
-                      <div className="bg-navy-light rounded-lg p-4 space-y-4 text-sm text-gray-300">
-                        <ol className="list-decimal pl-4 space-y-2">
-                          <li>Open your Cash App</li>
-                          <li>Tap <b>&quot;Pay&quot;</b></li>
-                          <li>Send to <span className="text-green-400 font-mono select-all">$WillistonInvest</span></li>
-                          <li>Enter your investment amount in USD: <b>${parseInt(amount).toLocaleString()}</b></li>
-                          <li>In the note/memo write: <b>Your Full Name + Deposit</b> <br/> <em className="text-gray-500">(Example: &quot;John Smith - Deposit&quot;)</em></li>
-                          <li>Take a screenshot and upload proof below</li>
-                        </ol>
+                      <div className="bg-navy-light rounded-lg p-4 space-y-3 text-sm text-gray-300">
+                        {/* Bank Details */}
+                        <div>
+                          <div className="text-xs text-gold font-bold uppercase tracking-wider mb-2">{bankDetails.bank} Account</div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-text">Account Name:</span>
+                            <span className="font-medium text-white">{bankDetails.accountName}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-text">Account Number:</span>
+                            <span className="font-mono text-white font-bold select-all">{bankDetails.accountNumber}</span>
+                          </div>
+                          {bankDetails.ussd && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-text">USSD Transfer Code:</span>
+                              <span className="font-mono text-white select-all">{bankDetails.ussd}</span>
+                            </div>
+                          )}
+                          {bankDetails.whatsapp && (
+                            <div className="border-t border-border-subtle pt-2 mt-2">
+                              <a
+                                href={`https://wa.me/${bankDetails.whatsapp.replace(/\+/g, '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-green-400 text-xs hover:underline flex items-center gap-1.5"
+                              >
+                                💬 Contact on WhatsApp for instant confirmation
+                              </a>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="border-t border-border-subtle pt-2 mt-2">
+                          <div className="text-xs text-gray-text mb-1">Transfer Steps:</div>
+                          <ol className="list-decimal pl-4 space-y-1 text-xs">
+                            <li>Transfer exactly <b>₦{parseInt(amount).toLocaleString()}</b> to the account above.</li>
+                            <li>Write <b>Your Full Name + Deposit</b> in the reference/narration box.</li>
+                            <li>Input your transfer reference/receipt ID and upload proof below.</li>
+                          </ol>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-xs text-gray-text block">Upload Cash App payment screenshot:</label>
-                        <div className="flex flex-col items-center justify-center w-full h-24 border-2 border-border-subtle border-dashed rounded-lg cursor-pointer bg-navy hover:bg-navy-light/50 transition-colors relative">
-                            <input type="file" className="absolute inset-0 opacity-0 cursor-pointer w-full" onChange={handleFileChange} accept="image/*" />
-                            <Upload className="w-6 h-6 mb-2 text-gray-text" />
-                            <p className="text-xs text-gray-text">
-                              {uploadFile ? <span className="text-gold font-medium">{uploadFile.name}</span> : <span className="text-green-400 font-medium tracking-wide">Click to upload image</span>}
-                            </p>
+                      
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-xs text-gray-text block mb-1">Bank Reference/Session ID:</label>
+                          <input type="text" value={bankRef} onChange={(e) => setBankRef(e.target.value)} placeholder="Enter transfer reference number" className="w-full bg-navy border border-border-subtle rounded py-2 px-3 text-white text-sm focus:outline-none focus:border-gold transition-colors" />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-text block mb-1">Upload payment receipt/screenshot:</label>
+                          <div className="flex flex-col items-center justify-center w-full h-24 border-2 border-border-subtle border-dashed rounded-lg cursor-pointer bg-navy hover:bg-navy-light/50 transition-colors relative">
+                              <input type="file" className="absolute inset-0 opacity-0 cursor-pointer w-full" onChange={handleFileChange} accept="image/*" />
+                              <Upload className="w-6 h-6 mb-2 text-gray-text" />
+                              <p className="text-xs text-gray-text">
+                                {uploadFile ? <span className="text-gold font-medium">{uploadFile.name}</span> : <span className="text-green-400 font-medium tracking-wide">Click to upload receipt</span>}
+                              </p>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -293,39 +423,38 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
                     </div>
                     <div>
                       <h4 className="font-semibold text-white">Crypto Payment <span className="text-xs bg-gray-500/20 text-gray-400 px-2 py-0.5 rounded ml-2">🔄 15–45 mins</span></h4>
-                      <p className="text-xs text-gray-text">Pay with Bitcoin, USDT, Ethereum, or other major cryptocurrencies.</p>
+                      <p className="text-xs text-gray-text">Pay with Bitcoin or USDT (converted at ₦1,600 per USD).</p>
                     </div>
                   </div>
                   
                   {paymentMethod === 'crypto' && (
                     <div className="mt-4 pt-4 border-t border-border-subtle space-y-4 animate-in fade-in slide-in-from-top-2 duration-300" onClick={(e) => e.stopPropagation()}>
                       <div className="flex border border-border-subtle rounded-lg overflow-hidden bg-navy">
+                        <button onClick={() => { setCryptoTab('USDT'); setUploadFile(null); }} className={`flex-1 py-2 text-xs font-bold font-mono transition border-r border-border-subtle ${cryptoTab === 'USDT' ? 'bg-[#26A17B] text-white' : 'text-gray-400 hover:text-white hover:bg-navy-light'}`}>USDT (TRC20)</button>
                         <button onClick={() => { setCryptoTab('BTC'); setUploadFile(null); }} className={`flex-1 py-2 text-xs font-bold font-mono transition ${cryptoTab === 'BTC' ? 'bg-orange-500 text-white' : 'text-gray-400 hover:text-white hover:bg-navy-light'}`}>Bitcoin (BTC)</button>
-                        <button onClick={() => { setCryptoTab('USDT'); setUploadFile(null); }} className={`flex-1 py-2 text-xs font-bold font-mono transition border-x border-border-subtle ${cryptoTab === 'USDT' ? 'bg-[#26A17B] text-white' : 'text-gray-400 hover:text-white hover:bg-navy-light'}`}>USDT (TRC20)</button>
-                        <button onClick={() => { setCryptoTab('ETH'); setUploadFile(null); }} className={`flex-1 py-2 text-xs font-bold font-mono transition ${cryptoTab === 'ETH' ? 'bg-[#627EEA] text-white' : 'text-gray-400 hover:text-white hover:bg-navy-light'}`}>Ethereum (ETH)</button>
                       </div>
 
                       <div className="bg-navy-light p-4 rounded-lg space-y-3">
                         <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded text-amber-500 text-xs flex gap-2">
                           <span className="shrink-0">⚠️</span>
-                          <span>Always double-check the wallet address before sending. Crypto transactions are irreversible. Send only the exact currency to its matching address.</span>
+                          <span>Always double-check the wallet address. Crypto transactions are irreversible. Secondary Conversion rate: $1 USD = ₦1,600.</span>
                         </div>
                         
                         <div className="flex flex-col sm:flex-row gap-4 items-center sm:items-start pt-2">
                           <div className="w-24 h-24 shrink-0 bg-white p-1 rounded">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${cryptoTab === 'BTC' ? 'bc1qplaceholder_address_goes_here_xyz' : cryptoTab === 'USDT' ? 'TRC20placeholder_address_goes_here_xyz' : '0xplaceholder_address_goes_here_xyz'}`} alt="QR Code" className="w-full h-full opacity-80" />
+                            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${cryptoTab === 'BTC' ? 'bc1qplaceholder_address_goes_here_xyz' : 'TRC20placeholder_address_goes_here_xyz'}`} alt="QR Code" className="w-full h-full opacity-80" />
                           </div>
                           <div className="flex-1 w-full space-y-2">
                             <div className="text-xs text-gray-text">{cryptoTab} Wallet Address:</div>
                             <div className="font-mono text-sm break-all bg-navy p-2 rounded border border-border-subtle text-white select-all">
-                              {cryptoTab === 'BTC' ? 'bc1qplaceholder_address_goes_here_xyz' : cryptoTab === 'USDT' ? 'TRC20placeholder_address_goes_here_xyz' : '0xplaceholder_address_goes_here_xyz'}
+                              {cryptoTab === 'BTC' ? 'bc1qplaceholder_address_goes_here_xyz' : 'TRC20placeholder_address_goes_here_xyz'}
                             </div>
                             <div className="flex justify-between text-xs font-medium">
                               <span className="text-gray-text">Network: <span className="text-white">
-                                {cryptoTab === 'BTC' ? 'Bitcoin Mainnet' : cryptoTab === 'USDT' ? 'TRON (TRC20)' : 'Ethereum Mainnet'}
+                                {cryptoTab === 'BTC' ? 'Bitcoin Mainnet' : 'TRON (TRC20)'}
                               </span></span>
-                              <span className="text-gray-text">Minimum: <span className="text-white">$100 equivalent</span></span>
+                              <span className="text-gray-text">Convert Amount: <span className="text-gold font-bold">${(parseInt(amount) / 1600).toFixed(2)} USD</span></span>
                             </div>
                           </div>
                         </div>
@@ -345,117 +474,16 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
                   )}
                 </div>
                 
-                {/* Zelle */}
-                <div 
-                  className={`border rounded-xl p-5 cursor-pointer transition ${paymentMethod === 'zelle' ? 'bg-purple-500/10 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.1)]' : 'bg-navy border-border-subtle hover:border-gray-500'}`}
-                  onClick={() => setPaymentMethod('zelle')}
-                >
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0 border border-purple-500/30">
-                      <Send size={24} />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-white">Zelle <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded ml-2">⚡ Same Day</span></h4>
-                      <p className="text-xs text-gray-text">Send directly from your US bank account via Zelle. Zero fees.</p>
-                    </div>
-                  </div>
-                  {paymentMethod === 'zelle' && (
-                    <div className="mt-4 pt-4 border-t border-border-subtle animate-in fade-in duration-300" onClick={(e) => e.stopPropagation()}>
-                      <div className="bg-navy-light rounded-lg p-4 space-y-4 text-sm text-gray-300">
-                        <div className="space-y-1">
-                          <div className="flex justify-between items-center bg-navy p-2 rounded border border-border-subtle">
-                            <span className="text-gray-text text-xs">Email:</span>
-                            <span className="font-medium text-white select-all">willistonboardofrealtors@gmail.com</span>
-                          </div>
-                        </div>
-                        <ol className="list-decimal pl-4 space-y-2 mt-4 text-xs">
-                          <li>Open your bank&apos;s Zelle feature</li>
-                          <li>Send exactly <b>${parseInt(amount).toLocaleString()}</b> to the email above</li>
-                          <li>Memo: <b>Your Full Name + Deposit</b></li>
-                          <li>Upload confirmation screenshot below</li>
-                        </ol>
-                        <div className="mt-2">
-                             <input type="file" onChange={handleFileChange} accept="image/*" className="w-full text-xs text-gray-400 file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-navy-mid file:text-white file:border file:border-border-subtle hover:file:bg-navy-light cursor-pointer" />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Wire Transfer */}
-                <div 
-                  className={`border rounded-xl p-5 cursor-pointer transition ${paymentMethod === 'wire' ? 'bg-blue-500/10 border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.1)]' : 'bg-navy border-border-subtle hover:border-gray-500'}`}
-                  onClick={() => setPaymentMethod('wire')}
-                >
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/30">
-                      <Landmark size={24} />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-white">Bank Wire Transfer <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded ml-2">🏦 1–2 Days</span></h4>
-                      <p className="text-xs text-gray-text">Direct bank-to-bank wire transfer. Best for large investments ($1,000+).</p>
-                    </div>
-                  </div>
-                   {paymentMethod === 'wire' && (
-                     <div className="mt-4 pt-4 border-t border-border-subtle space-y-4 animate-in fade-in slide-in-from-top-2 duration-300" onClick={(e) => e.stopPropagation()}>
-                        <div className="bg-navy-light rounded-lg p-4 space-y-2">
-                           <div className="flex justify-between text-sm">
-                             <span className="text-gray-text">Bank Name:</span>
-                             <span className="font-medium text-white">Chase Bank</span>
-                           </div>
-                           <div className="flex justify-between text-sm">
-                             <span className="text-gray-text">Account Name:</span>
-                             <span className="font-medium text-white text-right">Williston Board of Realtors & Investments LLC</span>
-                           </div>
-                           <div className="flex justify-between text-sm">
-                             <span className="text-gray-text">Account Number:</span>
-                             <span className="font-mono text-white tracking-widest text-lg">1234567890</span>
-                           </div>
-                           <div className="flex justify-between text-sm">
-                             <span className="text-gray-text">Routing Number:</span>
-                             <span className="font-mono text-white tracking-widest text-lg">987654321</span>
-                           </div>
-                           <div className="flex justify-between text-sm">
-                             <span className="text-gray-text">Swift Code (Intl):</span>
-                             <span className="font-mono text-white tracking-widest">CHASUS33</span>
-                           </div>
-                           <div className="flex justify-between text-sm border-t border-border-subtle pt-2 mt-2">
-                             <span className="text-gray-text">Reference:</span>
-                             <span className="font-medium text-white text-right break-all max-w-[60%]">Your Full Name + Deposit</span>
-                           </div>
-                           <div className="flex justify-between text-sm">
-                             <span className="text-gray-text">Minimum:</span>
-                             <span className="font-medium text-white">$1,000</span>
-                           </div>
-                        </div>
-
-                        <div className="space-y-3 pt-3 border-t border-border-subtle">
-                          <div>
-                            <label className="text-xs text-gray-text block mb-1">Bank Reference/Wire ID:</label>
-                            <input type="text" value={bankRef} onChange={(e) => setBankRef(e.target.value)} placeholder="Enter bank transaction reference number" className="w-full bg-navy border border-border-subtle rounded py-2 px-3 text-white text-sm focus:outline-none focus:border-gold transition-colors" />
-                          </div>
-                          <div>
-                            <label className="text-xs text-gray-text block mb-1">Upload wire receipt screenshot:</label>
-                             <input type="file" onChange={handleFileChange} accept="image/*" className="w-full text-xs text-gray-400 file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-navy-mid file:text-white file:border file:border-border-subtle hover:file:bg-navy-light cursor-pointer" />
-                          </div>
-                        </div>
-                     </div>
-                   )}
-                </div>
-
               </div>
 
               <div className="pt-6">
                 <button 
                   onClick={handleNext}
-                  disabled={!paymentMethod || (paymentMethod === 'wire' && parseInt(amount) < 1000)}
+                  disabled={!paymentMethod}
                   className="w-full py-4 bg-gold text-navy rounded-xl font-bold text-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   Continue <ArrowRight size={20} />
                 </button>
-                {paymentMethod === 'wire' && parseInt(amount) < 1000 && (
-                  <p className="text-center text-xs text-red-400 mt-2">Bank wire transfers require a minimum of $1,000.</p>
-                )}
               </div>
             </div>
           )}
@@ -475,15 +503,15 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
               <div className="bg-navy border border-border-subtle rounded-xl p-6 space-y-4">
                 <div className="flex justify-between items-center pb-4 border-b border-border-subtle">
                   <span className="text-gray-text">Amount</span>
-                  <span className="text-2xl font-serif text-white">${parseInt(amount).toLocaleString()}</span>
+                  <span className="text-2xl font-serif text-white">₦{parseInt(amount).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-text text-sm">Payment Method</span>
                   <span className="text-white font-medium text-sm capitalize flex items-center gap-1.5">
-                    {paymentMethod === 'cashapp' && 'Cash App'}
+                    {paymentMethod === 'paystack' && 'Paystack'}
+                    {paymentMethod === 'flutterwave' && 'Flutterwave'}
+                    {paymentMethod === 'bank' && 'Direct Bank Transfer'}
                     {paymentMethod === 'crypto' && `Cryptocurrency (${cryptoTab})`}
-                    {paymentMethod === 'zelle' && 'Zelle'}
-                    {paymentMethod === 'wire' && 'Bank Wire Transfer'}
                   </span>
                 </div>
                 {uploadFile && (
@@ -495,10 +523,10 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
                 <div className="flex justify-between items-center">
                   <span className="text-gray-text text-sm">Processing Time</span>
                   <span className="text-gold font-medium text-sm">
-                    {paymentMethod === 'cashapp' && '15 minutes'}
+                    {paymentMethod === 'paystack' && 'Instant'}
+                    {paymentMethod === 'flutterwave' && 'Instant'}
+                    {paymentMethod === 'bank' && '2–4 hours'}
                     {paymentMethod === 'crypto' && '15-45 minutes'}
-                    {paymentMethod === 'zelle' && 'Same day'}
-                    {paymentMethod === 'wire' && '1-2 business days'}
                   </span>
                 </div>
               </div>
@@ -556,16 +584,15 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
         <div className="bg-navy border border-border-subtle rounded-xl p-4 md:p-6 text-sm text-gray-text">
           <h4 className="font-semibold text-white mb-2">Processing Times:</h4>
           <ul className="space-y-1">
-             <li className="flex gap-2 isolate"><span className="w-2.5 h-2.5 rounded-full bg-gold/50 shrink-0 mt-1"></span> Cash App: 15 minutes</li>
-             <li className="flex gap-2 isolate"><span className="w-2.5 h-2.5 rounded-full bg-gold/50 shrink-0 mt-1"></span> Crypto (BTC/ETH/USDT): 15–45 minutes</li>
-             <li className="flex gap-2 isolate"><span className="w-2.5 h-2.5 rounded-full bg-gold/50 shrink-0 mt-1"></span> Zelle: Same day (business hours)</li>
-             <li className="flex gap-2 isolate"><span className="w-2.5 h-2.5 rounded-full bg-gold/50 shrink-0 mt-1"></span> Bank Wire: 1–2 business days</li>
+             <li className="flex gap-2 isolate"><span className="w-2.5 h-2.5 rounded-full bg-gold/50 shrink-0 mt-1"></span> Paystack / Flutterwave: Instant</li>
+             <li className="flex gap-2 isolate"><span className="w-2.5 h-2.5 rounded-full bg-gold/50 shrink-0 mt-1"></span> Direct Bank Transfer: 2–4 hours</li>
+             <li className="flex gap-2 isolate"><span className="w-2.5 h-2.5 rounded-full bg-gold/50 shrink-0 mt-1"></span> Crypto (USDT/BTC): 15–45 minutes</li>
           </ul>
         </div>
 
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 text-xs text-gray-text uppercase tracking-wider font-semibold p-4 bg-navy-mid border border-border-subtle rounded-xl">
            <div className="flex items-center gap-1.5"><Lock size={14} className="text-gold" /> 256-bit SSL Encrypted</div>
-           <div className="flex items-center gap-1.5"><ShieldCheck size={14} className="text-gold" /> FinCEN Compliant</div>
+           <div className="flex items-center gap-1.5"><ShieldCheck size={14} className="text-gold" /> CBN Compliant</div>
            <div className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-gold" /> AML Verified</div>
         </div>
       </div>

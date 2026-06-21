@@ -58,7 +58,7 @@ export default function WalletTab({ setActiveTab, profile, fetchProfile }: Walle
                <span className="w-2 h-2 rounded-full bg-gold animate-pulse"></span> Available Balance
             </div>
             <div className="text-5xl md:text-6xl font-serif text-white mb-2 tracking-tight">
-              ${availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ₦{availableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
             <div className="text-sm text-gray-text">Ready for withdrawal or reinvestment</div>
           </div>
@@ -117,7 +117,7 @@ export default function WalletTab({ setActiveTab, profile, fetchProfile }: Walle
                          <span className="font-medium text-white capitalize">{tx.type}</span>
                       </td>
                       <td className={`p-4 font-medium ${isPositive ? 'text-green-400' : 'text-white'}`}>
-                        {isPositive ? '+' : ''}${parseFloat(tx.amount).toLocaleString()}
+                        {isPositive ? '+' : ''}₦{parseFloat(tx.amount).toLocaleString()}
                       </td>
                       <td className="p-4">
                          <span className={`px-2 py-1 rounded text-xs font-medium ${tx.status === 'completed' ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-500'}`}>

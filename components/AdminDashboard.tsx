@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getCurrentUser, logoutUser } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 import { 
   LayoutDashboard, Users, Layers, Building, Bed, CreditCard, 
   ArrowUpFromLine, ArrowDownToLine, Users2, FileText, Bell, 
@@ -106,10 +107,43 @@ const pieData = [
 
 const CHART_COLORS = ['#0A1433', '#C9A84C', '#1E3A8A', '#4F46E5'];
 
-export default function AdminDashboard() {
+function timeAgo(dateString: string) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  if (seconds < 60) return 'Just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} mins ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hours ago`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return 'Yesterday';
+  return `${days} days ago`;
+}
+
+export default function AdminDashboard({ adminSecret }: { adminSecret?: string }) {
+  // Local fetch wrapper to automatically attach Authorization header for API calls
+  const fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+    const headers = new Headers(init?.headers);
+    headers.set('Authorization', `Bearer ${adminSecret || 'williston_admin_secret_2025'}`);
+    const fetchFn = typeof window !== 'undefined' ? window.fetch : globalThis.fetch;
+    return fetchFn(input, { ...init, headers });
+  };
+
+  // Live Clock
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  useEffect(() => {
+    setCurrentTime(new Date());
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   // Authentication State
   const [loggedIn, setLoggedIn] = useState(false);
-  const [authUsername, setAuthUsername] = useState('');
+  const [authUsername, setAuthUsername] = useState('willistonadmin');
   const [authPassword, setAuthPassword] = useState('');
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutMsg, setLockoutMsg] = useState('');
@@ -126,12 +160,25 @@ export default function AdminDashboard() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [rentals, setRentals] = useState<any[]>([]);
   const [properties, setProperties] = useState<any[]>([]);
+  const [investments, setInvestments] = useState<any[]>([]);
+  const [investmentsFilter, setInvestmentsFilter] = useState('All');
 
   // API Integration States
   const [analytics, setAnalytics] = useState<any>(null);
   const [barChartData, setBarChartData] = useState<any[]>([]);
   const [pieChartData, setPieChartData] = useState<any[]>([]);
   const [adminLoading, setAdminLoading] = useState(false);
+
+  // Deposit Action Modals State
+  const [confirmDepositTarget, setConfirmDepositTarget] = useState<any>(null);
+  const [rejectDepositTarget, setRejectDepositTarget] = useState<any>(null);
+  const [depositRejectionReason, setDepositRejectionReason] = useState('');
+
+  // Withdrawal Action Modals State
+  const [withdrawalRejectionReason, setWithdrawalRejectionReason] = useState('');
+
+  // KYC Verification Modal State
+  const [kycRejectionReason, setKycRejectionReason] = useState('');
 
   const fetchAdminData = async () => {
     setAdminLoading(true);
@@ -225,6 +272,31 @@ export default function AdminDashboard() {
           setProperties(data);
         }
       }
+
+      // 8. Fetch Investments List
+      const investmentsRes = await fetch('/api/admin/investments/list');
+      if (investmentsRes.ok) {
+        const data = await investmentsRes.json();
+        if (data.success && Array.isArray(data.investments)) {
+          setInvestments(data.investments);
+        }
+      }
+
+      const settingsRes = await fetch('/api/admin/settings');
+      if (settingsRes.ok) {
+        const data = await settingsRes.json();
+        if (data.success && data.settings) {
+          setSettingsBankName(data.settings.bank_name || '');
+          setSettingsAccountNumber(data.settings.bank_account_number || '');
+          setSettingsAccountName(data.settings.bank_account_name || '');
+          setSettingsBankWhatsapp(data.settings.bank_whatsapp || '');
+          setSettingsBankUssd(data.settings.bank_ussd || '');
+          setSettingsBTC(data.settings.payment_btc_address || '');
+          setSettingsUSDT(data.settings.payment_usdt_address || '');
+          setSettingsETH(data.settings.payment_eth_address || '');
+          setSettingsUsdToNgn(data.settings.exchange_rate_usd_ngn || 1600);
+        }
+      }
     } catch (e) {
       console.error('Error fetching admin data:', e);
     } finally {
@@ -232,9 +304,71 @@ export default function AdminDashboard() {
     }
   };
 
+  const playNotificationSound = () => {
+    try {
+      // Play a beautiful premium synth alert sound immediately using Web Audio API
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContext) {
+        const ctx = new AudioContext();
+        
+        // Tone 1: C5
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(523.25, ctx.currentTime);
+        gain1.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start();
+        osc1.stop(ctx.currentTime + 0.15);
+
+        // Tone 2: E5
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+        gain2.gain.setValueAtTime(0.08, ctx.currentTime + 0.1);
+        gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(ctx.currentTime + 0.1);
+        osc2.stop(ctx.currentTime + 0.35);
+      }
+      
+      // Attempt standard mp3 notification
+      const audio = new Audio('/notification.mp3');
+      audio.play().catch(() => {});
+    } catch (e) {
+      console.warn('Audio play failed/blocked:', e);
+    }
+  };
+
   useEffect(() => {
     if (loggedIn) {
       fetchAdminData();
+
+      // Realtime listener for deposits
+      const channel = supabase
+        .channel('admin-deposits-realtime')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'deposits' },
+          (payload) => {
+            fetchAdminData();
+            if (payload.eventType === 'INSERT') {
+              playNotificationSound();
+              const amt = parseFloat(payload.new.amount || '0');
+              const formattedAmt = isNaN(amt) ? '' : `₦${amt.toLocaleString()}`;
+              showToast(`🔔 New deposit — ${formattedAmt} submitted!`);
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [loggedIn]);
 
@@ -246,6 +380,7 @@ export default function AdminDashboard() {
   const [confirmRejectWD, setConfirmRejectWD] = useState<any>(null);
   const [confirmDeleteInv, setConfirmDeleteInv] = useState<any>(null);
   const [editingInvestor, setEditingInvestor] = useState<any>(null);
+  const [kycReviewUser, setKycReviewUser] = useState<any>(null);
 
   // Filters & Search
   const [searchInvestorQuery, setSearchInvestorQuery] = useState('');
@@ -260,108 +395,122 @@ export default function AdminDashboard() {
   const [selectedWithdrawalIds, setSelectedWithdrawalIds] = useState<string[]>([]);
 
   // Notifications State
-  const [notifTarget, setNotifTarget] = useState('All Investors');
-  const [notifChannel, setNotifChannel] = useState('All');
+  const [notifTarget, setNotifTarget] = useState('all');
+  const [notifType, setNotifType] = useState('info');
   const [notifSubject, setNotifSubject] = useState('');
   const [notifBody, setNotifBody] = useState('');
-  const [scheduledDateTime, setScheduledDateTime] = useState('');
   const [broadcastAlert, setBroadcastAlert] = useState('');
 
   // Settings State
-  const [settingsTab, setSettingsTab] = useState('general');
-  const [settingsGeneral, setSettingsGeneral] = useState({
-    siteName: 'Williston Board of Realtors & Investments',
-    email: 'support@williston.app',
-    phone: '+1 (713) 000-0000',
-    address: 'Houston Financial Center, Houston, TX'
-  });
-  const [settingsExchangeRates, setSettingsExchangeRates] = useState({
-    usd: 1550,
-    gbp: 1940,
-    eur: 1680
-  });
-  const [settingsPayments, setSettingsPayments] = useState({
-    bankName: 'Guaranty Trust Bank (GTB)',
-    accountName: 'Williston Real Estate & Wealth Management LTD',
-    accountNo: '0691238472'
-  });
-  const [settingsSecurity, setSettingsSecurity] = useState({
-    newPassword: '',
-    confirmPassword: '',
-    twoFactor: true,
-    sessionTimeout: 30
-  });
+  const [settingsTab, setSettingsTab] = useState('payment_details');
+  const [settingsBankName, setSettingsBankName] = useState('OPay');
+  const [settingsAccountNumber, setSettingsAccountNumber] = useState('9167455410');
+  const [settingsAccountName, setSettingsAccountName] = useState('Chukwuebuka Irenaus Onyegere');
+  const [settingsBankWhatsapp, setSettingsBankWhatsapp] = useState('+2349167455410');
+  const [settingsBankUssd, setSettingsBankUssd] = useState('*955#');
+  const [settingsBTC, setSettingsBTC] = useState('YOUR_BTC_WALLET_ADDRESS');
+  const [settingsUSDT, setSettingsUSDT] = useState('YOUR_USDT_TRC20_ADDRESS');
+  const [settingsETH, setSettingsETH] = useState('YOUR_ETH_ADDRESS');
+  const [settingsUsdToNgn, setSettingsUsdToNgn] = useState(1600);
 
   // Recent Actions Log
   const [recentActivities, setRecentActivities] = useState([
-    { id: 1, time: '10 mins ago', investor: 'Emeka Okonkwo', action: 'Withdrawal Request', amount: '₦50,000', status: 'Pending' },
+    { id: 1, time: '10 mins ago', investor: 'Emeka Okonkwo', action: 'Withdrawal Request', amount: '$50,000', status: 'Pending' },
     { id: 2, time: '25 mins ago', investor: 'Tunde Adebayor', action: 'New Registration', amount: '-', status: 'Completed' },
-    { id: 3, time: '1 hour ago', investor: 'Emeka Musa', action: 'Deposit Confirmed', amount: '₦500,000', status: 'Completed' },
-    { id: 4, time: '2 hours ago', investor: 'Olumide Adebayor', action: 'Withdrawal Request', amount: '₦120,000', status: 'Pending' },
-    { id: 5, time: '4 hours ago', investor: 'Grace Ojo', action: 'New Investment', amount: '₦75,000', status: 'Completed' },
-    { id: 6, time: '1 day ago', investor: 'Fatima Bello', action: 'Deposit Confirmed', amount: '₦80,000', status: 'Completed' },
+    { id: 3, time: '1 hour ago', investor: 'Emeka Musa', action: 'Deposit Confirmed', amount: '$500,000', status: 'Completed' },
+    { id: 4, time: '2 hours ago', investor: 'Olumide Adebayor', action: 'Withdrawal Request', amount: '$120,000', status: 'Pending' },
+    { id: 5, time: '4 hours ago', investor: 'Grace Ojo', action: 'New Investment', amount: '$75,000', status: 'Completed' },
+    { id: 6, time: '1 day ago', investor: 'Fatima Bello', action: 'Deposit Confirmed', amount: '$80,000', status: 'Completed' },
     { id: 7, time: '1 day ago', investor: 'John Smith', action: 'Property Enquiry', amount: '-', status: 'Replied' },
-    { id: 8, time: '2 days ago', investor: 'Sarah Doe', action: 'New Investment', amount: '₦150,000', status: 'Completed' },
+    { id: 8, time: '2 days ago', investor: 'Sarah Doe', action: 'New Investment', amount: '$150,000', status: 'Completed' },
     { id: 9, time: '2 days ago', investor: 'Tunde Bello', action: 'New Registration', amount: '-', status: 'Completed' },
-    { id: 10, time: '3 days ago', investor: 'Olumide Adebayor', action: 'Deposit Confirmed', amount: '₦30,000', status: 'Completed' },
+    { id: 10, time: '3 days ago', investor: 'Olumide Adebayor', action: 'Deposit Confirmed', amount: '$30,000', status: 'Completed' },
   ]);
 
-  // Load real Supabase Admin Authentication session
+  // Load sessionStorage Admin Authentication session
   useEffect(() => {
-    async function checkAdminAuth() {
-      const user = await getCurrentUser();
-      if (!user) {
-        window.location.href = '/login';
-        return;
-      }
-
-      const email = user.email || '';
-      const isAdmin = 
-        email === 'admin@williston.com' || 
-        email === 'willistonadmin@gmail.com' || 
-        email === 'willistonadmin@williston.com' ||
-        email.startsWith('admin@');
-
-      if (!isAdmin) {
-        window.location.href = '/dashboard';
-        return;
-      }
-
+    const isAuth = sessionStorage.getItem('admin_authenticated') === 'true';
+    if (isAuth) {
       setLoggedIn(true);
+    } else {
+      setLoggedIn(false);
     }
-    checkAdminAuth();
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await logoutUser();
-    } catch (e) {
-      console.error('Logout error:', e);
+  const handleLogout = () => {
+    sessionStorage.removeItem('admin_authenticated');
+    setLoggedIn(false);
+  };
+
+  const handleAdminLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (failedAttempts >= 3) {
+      setLockoutMsg('Access blocked. Too many wrong attempts.');
+      return;
     }
-    window.location.href = '/login';
+
+    const targetPassword = adminSecret || 'williston_admin_secret_2025';
+    if (
+      authUsername.trim().toLowerCase() === 'willistonadmin' &&
+      authPassword === targetPassword
+    ) {
+      sessionStorage.setItem('admin_authenticated', 'true');
+      setLoggedIn(true);
+      setLoginError('');
+    } else {
+      const newAttempts = failedAttempts + 1;
+      setFailedAttempts(newAttempts);
+      if (newAttempts >= 3) {
+        setLockoutMsg('Access blocked. Too many wrong attempts.');
+      } else {
+        setLoginError(`Access Denied. (${3 - newAttempts} attempts remaining)`);
+      }
+    }
   };
 
   // Broadcast Handler
-  const handleBroadcastSubmit = (e: React.FormEvent) => {
+  const handleBroadcastSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!notifSubject.trim() || !notifBody.trim()) return;
 
-    setBroadcastAlert(`Successfully broadcasted notification via ${notifChannel} to ${notifTarget}!`);
-    setTimeout(() => setBroadcastAlert(''), 4000);
+    try {
+      const res = await fetch('/api/admin/announcements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: notifSubject,
+          message: notifBody,
+          type: notifType,
+          target: notifTarget
+        })
+      });
 
-    // Add to recent activity
-    const newAct = {
-      id: Date.now(),
-      time: 'Just now',
-      investor: notifTarget,
-      action: `Broadcast: ${notifSubject}`,
-      amount: '-',
-      status: 'Sent'
-    };
-    setRecentActivities(prev => [newAct, ...prev.slice(0, 9)]);
+      if (res.ok) {
+        showToast('Announcement broadcasted successfully');
+        setBroadcastAlert(`Successfully broadcasted notification to ${notifTarget}!`);
+        setTimeout(() => setBroadcastAlert(''), 4000);
 
-    setNotifSubject('');
-    setNotifBody('');
+        // Add to recent activity
+        const newAct = {
+          id: Date.now(),
+          time: 'Just now',
+          investor: notifTarget === 'all' ? 'All Users' : notifTarget,
+          action: `Broadcast: ${notifSubject}`,
+          amount: '-',
+          status: 'Completed'
+        };
+        setRecentActivities(prev => [newAct, ...prev.slice(0, 9)]);
+
+        setNotifSubject('');
+        setNotifBody('');
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to send announcement');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error broadcasting announcement');
+    }
   };
 
   const handleTemplateSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -394,6 +543,7 @@ export default function AdminDashboard() {
         })
       });
       if (res.ok) {
+        showToast(`Withdrawal of $${confirmApproveWD.amount.toLocaleString()} marked as paid`);
         fetchAdminData();
       } else {
         const data = await res.json();
@@ -444,7 +594,7 @@ export default function AdminDashboard() {
   };
 
   // Deposits Confirm/Reject
-  const handleConfirmDeposit = async (dep: any) => {
+  const handleConfirmDepositAction = async (dep: any) => {
     try {
       const res = await fetch('/api/admin/deposits/confirm', {
         method: 'POST',
@@ -455,6 +605,15 @@ export default function AdminDashboard() {
         })
       });
       if (res.ok) {
+        showToast(`✅ Confirmed — ₦${dep.amount.toLocaleString()} added to ${dep.investorName?.split(' ')[0] || 'User'}'s wallet`);
+        
+        if (dep.phone) {
+          const cleanPhone = dep.phone.replace(/[\s\-\+]/g, '');
+          const waMessage = `Hello ${dep.investorName}, we have successfully confirmed your deposit of ₦${dep.amount.toLocaleString()}. It has been credited to your wallet balance. Thank you!`;
+          const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMessage)}`;
+          window.open(waUrl, '_blank');
+        }
+
         fetchAdminData();
       } else {
         const data = await res.json();
@@ -462,11 +621,16 @@ export default function AdminDashboard() {
       }
     } catch (e) {
       console.error('Confirm deposit error:', e);
+    } finally {
+      setConfirmDepositTarget(null);
     }
   };
 
-  const handleRejectDeposit = async (dep: any) => {
-    const reason = prompt('Enter rejection reason:') || 'Invalid receipt or details mismatched';
+  const handleRejectDepositAction = async (dep: any, reason: string) => {
+    if (!reason.trim()) {
+      alert('Rejection reason is required');
+      return;
+    }
     try {
       const res = await fetch('/api/admin/deposits/confirm', {
         method: 'POST',
@@ -478,6 +642,7 @@ export default function AdminDashboard() {
         })
       });
       if (res.ok) {
+        showToast(`Deposit rejected — User notified`);
         fetchAdminData();
       } else {
         const data = await res.json();
@@ -485,6 +650,86 @@ export default function AdminDashboard() {
       }
     } catch (e) {
       console.error('Reject deposit error:', e);
+    } finally {
+      setRejectDepositTarget(null);
+      setDepositRejectionReason('');
+    }
+  };
+
+  // Reject Withdrawal Action
+  const handleRejectWithdrawalAction = async (wd: any, reason: string) => {
+    if (!reason.trim()) {
+      alert('Rejection reason is required');
+      return;
+    }
+    try {
+      const res = await fetch('/api/admin/withdrawals/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          withdrawalId: wd.id,
+          action: 'reject',
+          rejectionReason: reason
+        })
+      });
+      if (res.ok) {
+        showToast(`Withdrawal rejected & refunded`);
+        fetchAdminData();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to reject withdrawal');
+      }
+    } catch (e) {
+      console.error('Reject withdrawal error:', e);
+    } finally {
+      setConfirmRejectWD(null);
+      setWithdrawalRejectionReason('');
+    }
+  };
+
+  // Save Settings helper
+  const handleSaveSettings = async (keysPayload: { [key: string]: any }) => {
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ settings: keysPayload })
+      });
+      if (res.ok) {
+        showToast('Settings successfully saved');
+        fetchAdminData();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to save settings');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error saving settings');
+    }
+  };
+
+  // Toggle Plan Active
+  const handleTogglePlanActive = async (plan: any) => {
+    const newStatus = !(plan.is_active !== undefined ? plan.is_active : plan.enabled);
+    try {
+      const res = await fetch('/api/admin/plans', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planId: plan.id,
+          is_active: newStatus
+        })
+      });
+      if (res.ok) {
+        showToast(`Plan ${plan.name} is now ${newStatus ? 'enabled' : 'disabled'}`);
+        fetchAdminData();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to update plan status');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error updating plan status');
     }
   };
 
@@ -588,6 +833,77 @@ export default function AdminDashboard() {
       console.error(err);
     } finally {
       setEditingInvestor(null);
+    }
+  };
+
+  // Toast Alert Notification State
+  const [toastMsg, setToastMsg] = useState('');
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => {
+      setToastMsg('');
+    }, 4000);
+  };
+
+  // Direct Account suspension/activation trigger
+  const handleUpdateUserStatus = async (userId: string, newStatus: string) => {
+    try {
+      const res = await fetch('/api/admin/users/update-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, status: newStatus })
+      });
+      if (res.ok) {
+        showToast(`Account successfully ${newStatus === 'suspended' ? 'suspended' : 'activated'}`);
+        fetchAdminData();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to update user status');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Direct KYC review trigger
+  const handleKYCReview = async (userId: string, decision: 'approved' | 'rejected', reason?: string) => {
+    try {
+      const res = await fetch('/api/admin/users/kyc-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, decision, reason })
+      });
+      if (res.ok) {
+        showToast(`KYC status successfully updated to ${decision}`);
+        fetchAdminData();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to process KYC review');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Manual maturity trigger
+  const handleMarkAsMatured = async (investmentId: string) => {
+    if (!confirm("Are you sure you want to manually mature this investment? This will credit the return amount to the user's wallet.")) return;
+    try {
+      const res = await fetch('/api/admin/investments/mature', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ investmentId })
+      });
+      if (res.ok) {
+        showToast('Investment successfully matured!');
+        fetchAdminData();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to mature investment');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error maturing investment');
     }
   };
 
@@ -754,8 +1070,20 @@ export default function AdminDashboard() {
   });
 
   const filteredDeposits = deposits.filter(d => {
-    if (depositFilter === 'All') return true;
-    return d.status === depositFilter;
+    const statusLower = d.status?.toLowerCase();
+    if (depositFilter === 'Pending') {
+      return statusLower === 'pending';
+    }
+    if (depositFilter === 'Confirmed Today') {
+      if (statusLower !== 'confirmed') return false;
+      const depDate = d.created_at ? new Date(d.created_at) : new Date(d.date);
+      const today = new Date();
+      return depDate.toDateString() === today.toDateString();
+    }
+    if (depositFilter === 'Rejected') {
+      return statusLower === 'rejected' || statusLower === 'failed';
+    }
+    return true; // 'All'
   });
 
   const filteredTransactions = transactions.filter(t => {
@@ -779,9 +1107,62 @@ export default function AdminDashboard() {
 
   if (!loggedIn) {
     return (
-      <div className="min-h-screen bg-[#04091A] flex flex-col items-center justify-center text-white gap-4">
-        <RefreshCw size={40} className="animate-spin text-gold" />
-        <p className="font-serif text-sm tracking-widest text-gold uppercase font-semibold">Authenticating Admin Session...</p>
+      <div className="min-h-screen bg-[#04091A] flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-[#0A1628] border border-gold/30 rounded-2xl p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="flex flex-col items-center mb-8">
+            <div className="w-16 h-16 rounded-2xl bg-gold/10 border-2 border-gold flex items-center justify-center text-gold font-serif font-bold text-3xl mb-4 shadow-lg shadow-gold/5">W</div>
+            <h1 className="font-serif text-2xl font-bold tracking-widest text-gold mb-1">WILLISTON ADMIN</h1>
+            <span className="text-[10px] uppercase tracking-widest text-red-500 font-bold bg-red-950/30 px-2 py-0.5 rounded border border-red-500/10 flex items-center gap-1">
+              <ShieldAlert size={12} /> Restricted Access
+            </span>
+          </div>
+
+          {lockoutMsg ? (
+            <div className="p-4 bg-red-950/40 border border-red-500/30 rounded-xl text-red-200 text-xs text-center leading-relaxed">
+              <ShieldAlert size={24} className="mx-auto mb-2 text-red-500 animate-bounce" />
+              <span>{lockoutMsg}</span>
+            </div>
+          ) : (
+            <form onSubmit={handleAdminLoginSubmit} className="space-y-5">
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-gray-text font-bold mb-2">Username</label>
+                <input suppressHydrationWarning
+                  type="text"
+                  required
+                  placeholder="Username"
+                  value={authUsername}
+                  onChange={(e) => setAuthUsername(e.target.value)}
+                  className="w-full bg-[#04091A] border border-border-subtle rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-gold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-gray-text font-bold mb-2">Password</label>
+                <input suppressHydrationWarning
+                  type="password"
+                  required
+                  placeholder="••••••••"
+                  value={authPassword}
+                  onChange={(e) => setAuthPassword(e.target.value)}
+                  className="w-full bg-[#04091A] border border-border-subtle rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-gold"
+                />
+              </div>
+
+              {loginError && (
+                <div className="p-3 bg-red-950/30 border border-red-500/20 rounded-xl text-red-400 text-xs text-center font-medium">
+                  {loginError}
+                </div>
+              )}
+
+              <button suppressHydrationWarning
+                type="submit"
+                className="w-full py-3.5 bg-gold hover:bg-gold-light text-navy font-bold rounded-xl transition text-xs shadow-lg shadow-gold/5 uppercase tracking-wider font-sans"
+              >
+                Enter Admin Panel
+              </button>
+            </form>
+          )}
+        </div>
       </div>
     );
   }
@@ -833,23 +1214,51 @@ export default function AdminDashboard() {
           >
             <LayoutDashboard size={18} /> Overview
           </button>
-          
+
           <button 
-            onClick={() => setActiveTab('investors')} 
+            onClick={() => setActiveTab('deposits')} 
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
-              activeTab === 'investors' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
+              activeTab === 'deposits' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
             }`}
           >
-            <Users size={18} /> All Investors
+            <ArrowDownToLine size={18} /> Deposits 
+            {pendingDepositsCount > 0 && (
+              <span className={`ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                activeTab === 'deposits' ? 'bg-navy text-gold' : 'bg-red-500 text-white'
+              }`}>{pendingDepositsCount}</span>
+            )}
           </button>
 
           <button 
-            onClick={() => setActiveTab('plans')} 
+            onClick={() => setActiveTab('withdrawals')} 
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
-              activeTab === 'plans' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
+              activeTab === 'withdrawals' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
             }`}
           >
-            <Layers size={18} /> Investment Plans
+            <ArrowUpFromLine size={18} /> Withdrawals 
+            {pendingWithdrawalsCount > 0 && (
+              <span className={`ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                activeTab === 'withdrawals' ? 'bg-navy text-gold' : 'bg-amber-500 text-navy'
+              }`}>{pendingWithdrawalsCount}</span>
+            )}
+          </button>
+          
+          <button 
+            onClick={() => setActiveTab('users')} 
+            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
+              activeTab === 'users' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
+            }`}
+          >
+            <Users size={18} /> Users
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('investments')} 
+            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
+              activeTab === 'investments' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
+            }`}
+          >
+            <Layers size={18} /> Investments
           </button>
 
           <button 
@@ -862,74 +1271,12 @@ export default function AdminDashboard() {
           </button>
 
           <button 
-            onClick={() => setActiveTab('rentals')} 
+            onClick={() => setActiveTab('announcements')} 
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
-              activeTab === 'rentals' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
+              activeTab === 'announcements' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
             }`}
           >
-            <Bed size={18} /> Rentals
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('transactions')} 
-            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
-              activeTab === 'transactions' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
-            }`}
-          >
-            <CreditCard size={18} /> Transactions
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('withdrawals')} 
-            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
-              activeTab === 'withdrawals' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
-            }`}
-          >
-            <ArrowUpFromLine size={18} /> Withdrawals 
-            {pendingWithdrawalsCount > 0 && (
-              <span className={`ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                activeTab === 'withdrawals' ? 'bg-navy text-gold' : 'bg-red-500 text-white'
-              }`}>{pendingWithdrawalsCount}</span>
-            )}
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('deposits')} 
-            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
-              activeTab === 'deposits' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
-            }`}
-          >
-            <ArrowDownToLine size={18} /> Deposits 
-            {pendingDepositsCount > 0 && (
-              <span className={`ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                activeTab === 'deposits' ? 'bg-gold/20 text-gold' : 'bg-amber-500 text-navy'
-              }`}>{pendingDepositsCount}</span>
-            )}
-          </button>
-
-          <button 
-            onClick={() => {}} 
-            disabled
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 cursor-not-allowed opacity-50"
-          >
-            <Users2 size={18} /> Referrals
-          </button>
-
-          <button 
-            onClick={() => {}} 
-            disabled
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 cursor-not-allowed opacity-50"
-          >
-            <FileText size={18} /> Blog / News
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('notifications')} 
-            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
-              activeTab === 'notifications' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
-            }`}
-          >
-            <Bell size={18} /> Broadcast
+            <Bell size={18} /> Announcements
           </button>
 
           <button 
@@ -957,23 +1304,32 @@ export default function AdminDashboard() {
       <main className="flex-1 overflow-y-auto flex flex-col bg-navy">
         
         {/* Top Navigation Bar */}
-        <header className="h-16 border-b border-border-subtle bg-navy-mid flex items-center justify-between px-8 sticky top-0 z-20">
-          <div className="flex items-center gap-2">
-            <Shield size={16} className="text-gold" />
-            <span className="text-xs uppercase tracking-wider text-gold font-bold">Super Admin Panel</span>
+        <header className="h-16 border-b border-border-subtle bg-[#060D1A] flex items-center justify-between px-8 sticky top-0 z-20">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gold/10 border border-gold flex items-center justify-center text-gold font-serif font-bold text-lg">W</div>
+            <span className="font-serif text-sm font-bold tracking-wider text-gold">WILLISTON ADMIN</span>
           </div>
 
           <div className="flex items-center gap-6">
-            {/* Live NGN Rate */}
-            <div className="text-xs bg-navy/60 border border-border-subtle px-3.5 py-1.5 rounded-lg flex items-center gap-2 text-gray-text">
-              <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-              Exchange Rate: <strong className="text-white">₦{settingsExchangeRates.usd} / USD</strong>
+            <div className="text-xs text-gray-text font-semibold flex items-center gap-1.5">
+              <User size={14} className="text-gold" />
+              Admin: <span className="text-white">Administrator</span>
             </div>
 
-            {/* Time Stamp */}
-            <div className="text-xs text-gray-text font-mono flex items-center gap-1.5">
-              <Calendar size={14} /> 2026-05-27
+            {/* Live Clock */}
+            <div className="text-xs text-gray-text font-mono flex items-center gap-1.5 bg-navy/60 border border-border-subtle px-3 py-1.5 rounded-lg">
+              <Calendar size={14} className="text-gold" />
+              <span>
+                {currentTime ? currentTime.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) + ' ' + currentTime.toLocaleTimeString() : '...'}
+              </span>
             </div>
+
+            <button 
+              onClick={handleLogout}
+              className="text-xs text-red-400 hover:text-red-300 font-bold flex items-center gap-1.5 bg-red-950/20 px-3 py-1.5 rounded-lg border border-red-500/10 transition"
+            >
+              <LogOut size={14} /> Logout
+            </button>
           </div>
         </header>
 
@@ -994,8 +1350,12 @@ export default function AdminDashboard() {
 
               {/* 6 KPI Cards Grid */}
               <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
-                <div className="bg-navy-mid border border-border-subtle rounded-xl p-5">
-                  <div className="text-[10px] text-gray-text uppercase tracking-wider font-bold mb-1">Total Investors</div>
+                {/* Card 1: Total Users */}
+                <div 
+                  onClick={() => setActiveTab('users')}
+                  className="bg-navy-mid border border-gold/20 hover:border-gold/40 rounded-xl p-5 cursor-pointer transition duration-200"
+                >
+                  <div className="text-[10px] text-gold uppercase tracking-wider font-bold mb-1">Total Users</div>
                   <div className="text-xl font-bold font-serif text-white">
                     {analytics ? analytics.totalUsers.toLocaleString() : '...'}
                   </div>
@@ -1004,47 +1364,59 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div className="bg-navy-mid border border-border-subtle rounded-xl p-5">
-                  <div className="text-[10px] text-gray-text uppercase tracking-wider font-bold mb-1">Funds Invested</div>
-                  <div className="text-xl font-bold font-serif text-white">
-                    {analytics ? `$${analytics.totalDeposited.toLocaleString()}` : '...'}
+                {/* Card 2: Pending Deposits */}
+                <div 
+                  onClick={() => { setActiveTab('deposits'); setDepositFilter('⏳ Pending'); }}
+                  className="bg-navy-mid border border-red-500/20 hover:border-red-500/40 rounded-xl p-5 cursor-pointer transition duration-200"
+                >
+                  <div className="text-[10px] text-red-400 uppercase tracking-wider font-bold mb-1">Pending Deposits</div>
+                  <div className="text-xl font-bold font-serif text-red-500">
+                    {analytics ? analytics.pendingDeposits.count : pendingDepositsCount}
                   </div>
-                  <div className="text-[9px] text-green-400 mt-2 flex items-center">
-                    Active plans: {analytics ? analytics.activeInvestments : 0}
+                  <div className="text-[9px] text-red-400 mt-2 hover:underline font-medium">
+                    Needs Action
                   </div>
                 </div>
 
-                <div className="bg-navy-mid border border-border-subtle rounded-xl p-5">
-                  <div className="text-[10px] text-gray-text uppercase tracking-wider font-bold mb-1">Returns Paid</div>
-                  <div className="text-xl font-bold font-serif text-white">
-                    {analytics ? `$${analytics.totalReturnsPaid.toLocaleString()}` : '...'}
-                  </div>
-                  <div className="text-[9px] text-gray-500 mt-2">Paid on maturity</div>
-                </div>
-
-                <div className="bg-navy-mid border border-border-subtle rounded-xl p-5 relative">
-                  <div className="text-[10px] text-gray-text uppercase tracking-wider font-bold mb-1">Pending WD</div>
-                  <div className="text-xl font-bold font-serif text-white flex items-center gap-2">
+                {/* Card 3: Pending Withdrawals */}
+                <div 
+                  onClick={() => { setActiveTab('withdrawals'); setWithdrawalFilter('Pending'); }}
+                  className="bg-navy-mid border border-amber-500/20 hover:border-amber-500/40 rounded-xl p-5 cursor-pointer transition duration-200"
+                >
+                  <div className="text-[10px] text-amber-400 uppercase tracking-wider font-bold mb-1">Pending Withdrawals</div>
+                  <div className="text-xl font-bold font-serif text-amber-500">
                     {analytics ? analytics.pendingWithdrawals.count : pendingWithdrawalsCount}
-                    {(analytics ? analytics.pendingWithdrawals.count : pendingWithdrawalsCount) > 0 && (
-                      <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping absolute top-5 right-5"></span>
-                    )}
                   </div>
-                  <div className="text-[9px] text-red-400 mt-2 font-bold cursor-pointer hover:underline" onClick={() => { setActiveTab('withdrawals'); setWithdrawalFilter('Pending'); }}>Needs Approval</div>
+                  <div className="text-[9px] text-amber-400 mt-2 hover:underline font-medium">
+                    Needs Action
+                  </div>
                 </div>
 
-                <div className="bg-navy-mid border border-border-subtle rounded-xl p-5">
-                  <div className="text-[10px] text-gray-text uppercase tracking-wider font-bold mb-1">Active Properties</div>
-                  <div className="text-xl font-bold font-serif text-white">{plans.length || 8}</div>
-                  <div className="text-[9px] text-gold mt-2">{plans.filter(p => p.enabled).length || 4} Tiers Active</div>
+                {/* Card 4: Total Deposited Today */}
+                <div className="bg-navy-mid border border-green-500/20 rounded-xl p-5">
+                  <div className="text-[10px] text-green-400 uppercase tracking-wider font-bold mb-1">Deposited Today</div>
+                  <div className="text-xl font-bold font-serif text-green-400">
+                    {analytics ? `$${analytics.totalDepositedToday.toLocaleString()}` : '...'}
+                  </div>
+                  <div className="text-[9px] text-gray-500 mt-2">Confirmed today</div>
                 </div>
 
-                <div className="bg-navy-mid border border-border-subtle rounded-xl p-5">
-                  <div className="text-[10px] text-gray-text uppercase tracking-wider font-bold mb-1">Platform Balance</div>
+                {/* Card 5: Total Platform Balance */}
+                <div className="bg-navy-mid border border-gold/20 rounded-xl p-5">
+                  <div className="text-[10px] text-gold uppercase tracking-wider font-bold mb-1">Platform Balance</div>
                   <div className="text-xl font-bold font-serif text-gold">
                     {analytics ? `$${analytics.platformBalance.toLocaleString()}` : '...'}
                   </div>
-                  <div className="text-[9px] text-green-400 mt-2 flex items-center">Net liquid funds</div>
+                  <div className="text-[9px] text-green-400 mt-2">Sum of all wallets</div>
+                </div>
+
+                {/* Card 6: Total Paid Out */}
+                <div className="bg-navy-mid border border-blue-500/20 rounded-xl p-5">
+                  <div className="text-[10px] text-blue-400 uppercase tracking-wider font-bold mb-1">Total Paid Out</div>
+                  <div className="text-xl font-bold font-serif text-blue-400">
+                    {analytics ? `$${analytics.totalWithdrawn.toLocaleString()}` : '...'}
+                  </div>
+                  <div className="text-[9px] text-gray-500 mt-2">Approved payouts</div>
                 </div>
               </div>
 
@@ -1110,62 +1482,70 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Recent Activity Table */}
-              <div className="bg-navy-mid border border-border-subtle rounded-xl overflow-hidden">
-                <div className="px-6 py-4 border-b border-border-subtle">
-                  <h3 className="text-md font-serif font-bold text-white">Recent Activity</h3>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm border-collapse">
-                    <thead>
-                      <tr className="bg-navy-light/40 text-gray-text text-xs uppercase tracking-wider">
-                        <th className="p-4 font-semibold">Time</th>
-                        <th className="p-4 font-semibold">Investor</th>
-                        <th className="p-4 font-semibold">Action</th>
-                        <th className="p-4 font-semibold">Amount</th>
-                        <th className="p-4 font-semibold">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border-subtle">
-                      {(transactions.length > 0 ? transactions : recentActivities.slice(0, 5)).map((act: any) => {
-                        const formattedTime = act.date ? new Date(act.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : act.time;
-                        return (
-                          <tr key={act.id || act.reference} className="hover:bg-navy-light/20 transition-colors">
-                            <td className="p-4 text-gray-text text-xs">{formattedTime}</td>
-                            <td className="p-4 font-medium text-white">{act.investor}</td>
-                            <td className="p-4 text-gray-300">{act.type || act.action}</td>
-                            <td className="p-4 font-mono text-gold">
-                              {typeof act.amount === 'number' ? `$${act.amount.toLocaleString()}` : act.amount}
-                            </td>
-                            <td className="p-4">
-                              <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${
-                                act.status === 'completed' || act.status === 'Confirmed' || act.status === 'Approved' || act.status === 'Sent' || act.status === 'Replied' || act.status === 'Completed'
-                                  ? 'bg-green-500/10 text-green-400' 
-                                  : act.status === 'pending' || act.status === 'Pending'
-                                  ? 'bg-amber-500/10 text-amber-400'
-                                  : 'bg-red-500/10 text-red-400'
-                              }`}>{act.status}</span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+              {/* Recent Activity Feed */}
+              <div className="bg-navy-mid border border-border-subtle rounded-xl overflow-hidden p-6 shadow-xl">
+                <h3 className="text-md font-serif font-bold text-white mb-4">Recent Activity</h3>
+                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                  {(transactions.length > 0 ? transactions : recentActivities).slice(0, 20).map((act: any) => {
+                    const timeStr = act.date ? timeAgo(act.date) : act.time;
+                    const actionType = (act.type || act.action || '').toLowerCase();
+                    
+                    let colorClass = 'text-blue-400';
+                    if (actionType.includes('deposit')) {
+                      colorClass = 'text-green-400';
+                    } else if (actionType.includes('withdraw')) {
+                      colorClass = 'text-amber-400';
+                    } else if (actionType.includes('invest') || actionType.includes('return')) {
+                      colorClass = 'text-gold';
+                    }
+
+                    const amt = typeof act.amount === 'number' 
+                      ? `$${act.amount.toLocaleString()}` 
+                      : String(act.amount).startsWith('₦')
+                      ? String(act.amount).replace('₦', '$')
+                      : act.amount;
+
+                    return (
+                      <div 
+                        key={act.id || act.reference} 
+                        className={`p-3.5 rounded-xl border border-border-subtle/50 flex justify-between items-center bg-navy-light/10 hover:border-gold/25 transition duration-200`}
+                      >
+                        <div className="text-xs text-gray-text font-medium flex items-center gap-2">
+                          <span className="text-[10px] text-gray-500 font-mono">{timeStr}</span>
+                          <span className="text-border-subtle font-normal">|</span>
+                          <span className="text-white font-semibold">{act.investor}</span>
+                          <span className="text-border-subtle font-normal">|</span>
+                          <span className={`${colorClass} font-semibold`}>{act.type || act.action}</span>
+                          <span className="text-border-subtle font-normal">|</span>
+                          <span className="text-gold font-mono font-bold">{amt}</span>
+                        </div>
+                        <div>
+                          <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider ${
+                            act.status === 'completed' || act.status === 'Confirmed' || act.status === 'Approved' || act.status === 'Completed'
+                              ? 'bg-green-500/10 text-green-400 border border-green-500/10' 
+                              : act.status === 'pending' || act.status === 'Pending'
+                              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/10'
+                              : 'bg-red-500/10 text-red-400 border border-red-500/10'
+                          }`}>{act.status}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {transactions.length === 0 && recentActivities.length === 0 && (
+                    <p className="text-center text-xs text-gray-text py-8">No recent transactions logged.</p>
+                  )}
                 </div>
               </div>
 
             </div>
           )}
 
-          {/* ==========================================
-              TAB VIEW: ALL INVESTORS
-              ========================================== */}
-          {activeTab === 'investors' && (
+          {activeTab === 'users' && (
             <div className="space-y-6 animate-in fade-in duration-300">
               
               {/* Header */}
               <div>
-                <h1 className="text-3xl font-serif font-bold text-white mb-2">Investors Management</h1>
+                <h1 className="text-3xl font-serif font-bold text-white mb-2">Users Management</h1>
                 <p className="text-gray-text text-sm">Review register database details, audit balances, and update verify statuses.</p>
               </div>
 
@@ -1203,34 +1583,45 @@ export default function AdminDashboard() {
                   <table className="w-full text-left text-sm border-collapse">
                     <thead>
                       <tr className="bg-navy-light/40 text-gray-text text-xs uppercase tracking-wider">
-                        <th className="p-4 font-semibold">ID</th>
                         <th className="p-4 font-semibold">Name</th>
                         <th className="p-4 font-semibold">Email</th>
-                        <th className="p-4 font-semibold">Primary Plan</th>
-                        <th className="p-4 font-semibold">Invested</th>
-                        <th className="p-4 font-semibold">Returns Paid</th>
+                        <th className="p-4 font-semibold">Plan</th>
+                        <th className="p-4 font-semibold">Total Invested</th>
+                        <th className="p-4 font-semibold">Wallet Balance</th>
+                        <th className="p-4 font-semibold">KYC Status</th>
+                        <th className="p-4 font-semibold">Account Status</th>
                         <th className="p-4 font-semibold font-mono">Joined</th>
-                        <th className="p-4 font-semibold">Status</th>
                         <th className="p-4 font-semibold text-center">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border-subtle">
                       {displayedInvestors.map((inv) => (
                         <tr key={inv.id} className="hover:bg-navy-light/20 transition-colors">
-                          <td className="p-4 font-mono text-xs text-gray-text">{inv.id}</td>
-                          <td className="p-4 font-semibold text-white">{inv.name}</td>
+                          <td className="p-4 font-semibold text-white">
+                            <div>{inv.name}</div>
+                            <div className="text-[9px] text-gray-text/50 font-mono mt-0.5">{inv.id}</div>
+                          </td>
                           <td className="p-4 text-xs text-gray-300">{inv.email}</td>
                           <td className="p-4 text-xs text-gold font-medium">{inv.plan}</td>
                           <td className="p-4 font-mono text-xs">₦{inv.amountInvested.toLocaleString()}</td>
-                          <td className="p-4 font-mono text-xs text-green-400">₦{inv.returnsPaid.toLocaleString()}</td>
-                          <td className="p-4 text-xs text-gray-text font-mono">{inv.dateJoined}</td>
+                          <td className="p-4 font-mono text-xs text-green-400">₦{inv.walletBalance.toLocaleString()}</td>
                           <td className="p-4">
                             <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider ${
-                              inv.status === 'Active' ? 'bg-green-500/10 text-green-400' :
-                              inv.status === 'Pending' ? 'bg-amber-500/10 text-amber-400' :
-                              'bg-red-500/10 text-red-400'
+                              String(inv.kycStatus).toLowerCase() === 'approved' || String(inv.kycStatus).toLowerCase() === 'verified'
+                                ? 'bg-green-500/10 text-green-400 border border-green-500/10'
+                                : String(inv.kycStatus).toLowerCase() === 'submitted'
+                                ? 'bg-blue-500/10 text-blue-400 border border-blue-500/10'
+                                : String(inv.kycStatus).toLowerCase() === 'rejected'
+                                ? 'bg-red-500/10 text-red-400 border border-red-500/10'
+                                : 'bg-amber-500/10 text-amber-400 border border-amber-500/10'
+                            }`}>{inv.kycStatus || 'pending'}</span>
+                          </td>
+                          <td className="p-4">
+                            <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider ${
+                              inv.status === 'Active' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
                             }`}>{inv.status}</span>
                           </td>
+                          <td className="p-4 text-xs text-gray-text font-mono">{inv.dateJoined}</td>
                           <td className="p-4">
                             <div className="flex items-center justify-center gap-2">
                               <button 
@@ -1239,19 +1630,35 @@ export default function AdminDashboard() {
                               >
                                 <Eye size={10} /> Profile
                               </button>
+                              
+                              {String(inv.kycStatus).toLowerCase() === 'submitted' && (
+                                <button 
+                                  onClick={() => setKycReviewUser(inv)}
+                                  className="px-2 py-1 bg-blue-950/40 border border-blue-500/30 text-blue-400 rounded text-[10px] font-bold hover:bg-blue-600 hover:text-white transition flex items-center gap-1"
+                                >
+                                  Verify KYC
+                                </button>
+                              )}
+
                               <button 
-                                onClick={() => setEditingInvestor({ ...inv })} 
-                                className="p-1 bg-navy border border-border-subtle rounded text-gray-text hover:text-gold hover:border-gold transition"
-                                title="Edit"
+                                onClick={() => handleUpdateUserStatus(inv.id, inv.status === 'Active' ? 'suspended' : 'active')}
+                                className={`px-2 py-1 rounded text-[10px] font-bold border transition ${
+                                  inv.status === 'Active'
+                                    ? 'bg-red-950/20 border-red-500/30 text-red-400 hover:bg-red-600 hover:text-white'
+                                    : 'bg-green-950/20 border-green-500/30 text-green-400 hover:bg-green-600 hover:text-white'
+                                }`}
                               >
-                                <Edit size={10} />
+                                {inv.status === 'Active' ? 'Suspend' : 'Reactivate'}
                               </button>
+
                               <button 
-                                onClick={() => setConfirmDeleteInv(inv)} 
-                                className="p-1 bg-navy border border-border-subtle rounded text-red-400 hover:bg-red-500/10 hover:border-red-500 transition"
-                                title="Delete"
+                                onClick={() => {
+                                  setTransactionSearchQuery(inv.email);
+                                  setActiveTab('transactions');
+                                }}
+                                className="px-2 py-1 bg-navy border border-border-subtle rounded text-[10px] hover:border-gold transition"
                               >
-                                <Trash2 size={10} />
+                                Tx Log
                               </button>
                             </div>
                           </td>
@@ -1259,7 +1666,7 @@ export default function AdminDashboard() {
                       ))}
                       {displayedInvestors.length === 0 && (
                         <tr>
-                          <td colSpan={9} className="p-8 text-center text-gray-text text-sm">No investors found matching the filter query.</td>
+                          <td colSpan={9} className="p-8 text-center text-gray-text text-sm">No users found matching the filter query.</td>
                         </tr>
                       )}
                     </tbody>
@@ -1295,6 +1702,103 @@ export default function AdminDashboard() {
           )}
 
           {/* ==========================================
+              TAB VIEW: INVESTMENTS
+              ========================================== */}
+          {activeTab === 'investments' && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              
+              {/* Header */}
+              <div>
+                <h1 className="text-3xl font-serif font-bold text-white mb-2">Investments Management</h1>
+                <p className="text-gray-text text-sm">Review and manually mature user investment plans across the platform.</p>
+              </div>
+
+              {/* Filters */}
+              <div className="flex bg-navy-mid border border-border-subtle rounded-xl p-4">
+                <div className="flex gap-1.5">
+                  {['All', 'Active', 'Matured'].map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setInvestmentsFilter(f)}
+                      className={`px-4 py-2 rounded-lg text-xs font-semibold transition ${
+                        investmentsFilter === f ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/30'
+                      }`}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Table */}
+              <div className="bg-navy-mid border border-border-subtle rounded-xl overflow-hidden shadow-xl">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm border-collapse">
+                    <thead>
+                      <tr className="bg-navy-light/40 text-gray-text text-xs uppercase tracking-wider">
+                        <th className="p-4 font-semibold">User</th>
+                        <th className="p-4 font-semibold">Plan</th>
+                        <th className="p-4 font-semibold">Amount</th>
+                        <th className="p-4 font-semibold">ROI %</th>
+                        <th className="p-4 font-semibold">Start Date</th>
+                        <th className="p-4 font-semibold">End Date</th>
+                        <th className="p-4 font-semibold">Daily Profit</th>
+                        <th className="p-4 font-semibold">Status</th>
+                        <th className="p-4 font-semibold text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border-subtle">
+                      {investments
+                        .filter(inv => {
+                          if (investmentsFilter === 'All') return true;
+                          return String(inv.status).toLowerCase() === investmentsFilter.toLowerCase();
+                        })
+                        .map((inv) => (
+                          <tr key={inv.id} className="hover:bg-navy-light/20 transition-colors">
+                            <td className="p-4">
+                              <div className="font-semibold text-white">{inv.userName}</div>
+                              <div className="text-[10px] text-gray-500 font-mono mt-0.5">{inv.userEmail}</div>
+                            </td>
+                            <td className="p-4 text-xs font-bold text-gold uppercase">{inv.planName}</td>
+                            <td className="p-4 font-mono text-xs font-semibold">₦{inv.amount.toLocaleString()}</td>
+                            <td className="p-4 font-mono text-xs text-green-400 font-bold">{inv.roi}%</td>
+                            <td className="p-4 text-xs text-gray-300 font-mono">{inv.startDate}</td>
+                            <td className="p-4 text-xs text-gray-300 font-mono">{inv.endDate}</td>
+                            <td className="p-4 font-mono text-xs text-gold">₦{(inv.dailyProfit || 0).toLocaleString()}</td>
+                            <td className="p-4">
+                              <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider ${
+                                inv.status === 'active' ? 'bg-green-500/10 text-green-400 border border-green-500/10' : 'bg-gray-500/10 text-gray-400'
+                              }`}>{inv.status}</span>
+                            </td>
+                            <td className="p-4">
+                              <div className="flex justify-center">
+                                {inv.status === 'active' ? (
+                                  <button
+                                    onClick={() => handleMarkAsMatured(inv.id)}
+                                    className="px-2.5 py-1.5 bg-gold hover:bg-gold-light text-navy font-bold rounded-lg text-[10px] transition shadow"
+                                  >
+                                    Mark as Matured
+                                  </button>
+                                ) : (
+                                  <span className="text-[10px] text-gray-text/50 font-mono italic">Matured</span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      {investments.length === 0 && (
+                        <tr>
+                          <td colSpan={9} className="p-8 text-center text-gray-text text-sm">No investments registered yet on the platform.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==========================================
               TAB VIEW: PLANS MANAGEMENT
               ========================================== */}
           {activeTab === 'plans' && (
@@ -1325,10 +1829,10 @@ export default function AdminDashboard() {
                       {plans.map((p) => (
                         <tr key={p.id} className={`hover:bg-navy-light/20 transition-colors ${!p.enabled ? 'opacity-50' : ''}`}>
                           <td className="p-4 font-bold text-white">{p.name}</td>
-                          <td className="p-4 font-mono text-gold">${p.minAmount.toLocaleString()}</td>
+                          <td className="p-4 font-mono text-gold">₦{p.minAmount.toLocaleString()}</td>
                           <td className="p-4 font-mono font-bold text-green-400">{p.roi}%</td>
                           <td className="p-4 text-gray-300">{p.activeInvestors}</td>
-                          <td className="p-4 font-mono">${p.totalInvested.toLocaleString()}</td>
+                          <td className="p-4 font-mono">₦{p.totalInvested.toLocaleString()}</td>
                           <td className="p-4">
                             <button
                               onClick={() => setPlans(prev => prev.map(item => item.id === p.id ? { ...item, enabled: !item.enabled } : item))}
@@ -1510,7 +2014,7 @@ export default function AdminDashboard() {
                           <input
                             type="text"
                             required
-                            placeholder="e.g. $850,000 / Unit"
+                            placeholder="e.g. ₦850,000 / Unit"
                             value={newProperty.price}
                             onChange={(e) => setNewProperty({ ...newProperty, price: e.target.value })}
                             className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold"
@@ -1637,7 +2141,7 @@ export default function AdminDashboard() {
                             {new Date(r.checkin_date).toLocaleDateString()} &mdash; {new Date(r.checkout_date).toLocaleDateString()}
                           </td>
                           <td className="p-4 text-xs text-gray-300 uppercase tracking-widest">{r.duration_type}</td>
-                          <td className="p-4 font-mono font-bold text-white">${parseFloat(r.total_price || 0).toLocaleString()}</td>
+                          <td className="p-4 font-mono font-bold text-white">₦{parseFloat(r.total_price || 0).toLocaleString()}</td>
                           <td className="p-4">
                             <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider ${
                               r.status === 'confirmed' ? 'bg-green-500/10 text-green-400' :
@@ -1712,7 +2216,7 @@ export default function AdminDashboard() {
               {/* Header */}
               <div>
                 <h1 className="text-3xl font-serif font-bold text-white mb-2">Withdrawal Approvals</h1>
-                <p className="text-gray-text text-sm">Approve payout settlements. Check banking accounts details prior to confirming GTBank ACH/Zelle/Crypto transfers.</p>
+                <p className="text-gray-text text-sm">Approve payout settlements. Check banking accounts details prior to confirming Bank, Opay, or Crypto transfers.</p>
               </div>
 
               {/* Filters & Bulk Actions Row */}
@@ -1861,111 +2365,254 @@ export default function AdminDashboard() {
           {/* ==========================================
               TAB VIEW: DEPOSITS
               ========================================== */}
-          {activeTab === 'deposits' && (
-            <div className="space-y-6 animate-in fade-in duration-300">
-              
-              {/* Header */}
-              <div>
-                <h1 className="text-3xl font-serif font-bold text-white mb-2">Deposit Confirmations</h1>
-                <p className="text-gray-text text-sm">Verify wire deposits and bank receipt proof uploads. Approve to update account balances.</p>
-              </div>
+          {activeTab === 'deposits' && (() => {
+            const getRelativeTime = (dateStr: string) => {
+              try {
+                const date = new Date(dateStr);
+                const now = new Date();
+                const diffMs = now.getTime() - date.getTime();
+                const diffMins = Math.floor(diffMs / 60000);
+                if (diffMins < 1) return 'Just now';
+                if (diffMins < 60) return `${diffMins} minutes ago`;
+                const diffHours = Math.floor(diffMins / 60);
+                if (diffHours < 24) return `${diffHours} hours ago`;
+                const diffDays = Math.floor(diffHours / 24);
+                return `${diffDays} days ago`;
+              } catch (e) {
+                return 'recently';
+              }
+            };
 
-              {/* Filters */}
-              <div className="flex bg-navy-mid border border-border-subtle rounded-xl p-4">
-                <div className="flex gap-1.5">
-                  {['Pending', 'Confirmed', 'Failed', 'All'].map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setDepositFilter(s)}
-                      className={`px-4 py-2 rounded-lg text-xs font-semibold transition ${
-                        depositFilter === s ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/30'
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
+            const pendingCount = deposits.filter(d => d.status?.toLowerCase() === 'pending').length;
+            const confirmedTodayCount = deposits.filter(d => d.status?.toLowerCase() === 'confirmed' && (d.created_at ? new Date(d.created_at).toDateString() === new Date().toDateString() : true)).length;
+            const rejectedCount = deposits.filter(d => d.status?.toLowerCase() === 'rejected' || d.status?.toLowerCase() === 'failed').length;
+
+            return (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                
+                {/* Header */}
+                <div>
+                  <h1 className="text-3xl font-serif font-bold text-white mb-2">Deposit Confirmations</h1>
+                  <p className="text-gray-text text-sm">Verify wire deposits and bank receipt proof uploads. Approve to update account balances.</p>
                 </div>
-              </div>
 
-              {/* Table */}
-              <div className="bg-navy-mid border border-border-subtle rounded-xl overflow-hidden shadow-xl">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm border-collapse">
-                    <thead>
-                      <tr className="bg-navy-light/40 text-gray-text text-xs uppercase tracking-wider">
-                        <th className="p-4 font-semibold">ID</th>
-                        <th className="p-4 font-semibold">Investor Name</th>
-                        <th className="p-4 font-semibold">Amount</th>
-                        <th className="p-4 font-semibold">Method</th>
-                        <th className="p-4 font-semibold">Reference code</th>
-                        <th className="p-4 font-semibold font-mono">Date</th>
-                        <th className="p-4 font-semibold text-center">Receipt Proof</th>
-                        <th className="p-4 font-semibold">Status</th>
-                        <th className="p-4 font-semibold text-center">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border-subtle">
-                      {filteredDeposits.map((d) => (
-                        <tr key={d.id} className="hover:bg-navy-light/20 transition-colors">
-                          <td className="p-4 font-mono text-xs text-gray-text">{d.id}</td>
-                          <td className="p-4 font-semibold text-white">{d.investorName}</td>
-                          <td className="p-4 font-mono font-bold text-gold">₦{d.amount.toLocaleString()}</td>
-                          <td className="p-4 text-xs">{d.method}</td>
-                          <td className="p-4 font-mono text-xs text-gray-300">{d.reference}</td>
-                          <td className="p-4 text-xs text-gray-text font-mono">{d.date}</td>
-                          <td className="p-4">
-                            <div className="flex justify-center">
+                {/* Filters */}
+                <div className="flex bg-navy-mid border border-border-subtle rounded-xl p-4">
+                  <div className="flex gap-1.5 flex-wrap">
+                    {[
+                      { id: 'Pending', label: `🔴 Pending (${pendingCount})` },
+                      { id: 'Confirmed Today', label: `✅ Confirmed Today (${confirmedTodayCount})` },
+                      { id: 'Rejected', label: `❌ Rejected (${rejectedCount})` },
+                      { id: 'All', label: 'All' }
+                    ].map((f) => (
+                      <button
+                        key={f.id}
+                        onClick={() => setDepositFilter(f.id)}
+                        className={`px-4 py-2 rounded-lg text-xs font-semibold transition ${
+                          depositFilter === f.id ? 'bg-[#C9A84C] text-[#04091A] font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/30'
+                        }`}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block bg-navy-mid border border-border-subtle rounded-xl overflow-hidden shadow-xl">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm border-collapse">
+                      <thead>
+                        <tr className="bg-navy-light/40 text-gray-text text-xs uppercase tracking-wider font-sans">
+                          <th className="p-4 font-semibold">ID</th>
+                          <th className="p-4 font-semibold">Investor Name</th>
+                          <th className="p-4 font-semibold">Amount</th>
+                          <th className="p-4 font-semibold">Method</th>
+                          <th className="p-4 font-semibold">Reference code</th>
+                          <th className="p-4 font-semibold font-mono">Date</th>
+                          <th className="p-4 font-semibold text-center">Receipt Proof</th>
+                          <th className="p-4 font-semibold">Status</th>
+                          <th className="p-4 font-semibold text-center">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border-subtle font-sans">
+                        {filteredDeposits.map((d) => (
+                          <tr key={d.id} className="hover:bg-navy-light/20 transition-colors">
+                            <td className="p-4 font-mono text-xs text-gray-text">{d.id.substring(0, 8)}</td>
+                            <td className="p-4 font-semibold text-white">
+                              <div>{d.investorName}</div>
+                              {d.phone && (
+                                <div className="flex flex-col gap-0.5 mt-0.5">
+                                  <a href={`tel:${d.phone}`} className="text-gold text-xs font-mono hover:underline block">
+                                    📞 {d.phone}
+                                  </a>
+                                  <a 
+                                    href={`https://wa.me/${d.phone.replace(/[\s\-\+]/g, '')}?text=${encodeURIComponent(`Hello ${d.investorName}, we received your deposit request of ₦${d.amount.toLocaleString()} (${d.email}). We are confirming it now and will notify you shortly.`)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-green-400 text-[10px] hover:underline flex items-center gap-0.5 font-bold"
+                                  >
+                                    💬 WhatsApp Chat
+                                  </a>
+                                </div>
+                              )}
+                            </td>
+                            <td className="p-4 font-mono font-bold text-gold">₦{d.amount.toLocaleString()}</td>
+                            <td className="p-4 text-xs">{d.method === 'bank_transfer' ? 'OPay Transfer' : d.method}</td>
+                            <td className="p-4 font-mono text-xs text-gray-300">{d.reference}</td>
+                            <td className="p-4 text-xs text-gray-text font-mono">{d.date}</td>
+                            <td className="p-4">
+                              <div className="flex justify-center">
+                                {d.receipt ? (
+                                  <button 
+                                    onClick={() => setViewingReceipt(d)}
+                                    className="px-2.5 py-1 bg-navy border border-border-subtle hover:border-gold rounded text-[10px] transition flex items-center gap-1 text-gold"
+                                  >
+                                    <Eye size={10} /> View Proof
+                                  </button>
+                                ) : (
+                                  <span className="text-[10px] text-gray-text italic">No Proof</span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="p-4">
+                              <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider ${
+                                d.status?.toLowerCase() === 'confirmed' ? 'bg-green-500/10 text-green-400' :
+                                d.status?.toLowerCase() === 'pending' ? 'bg-amber-500/10 text-amber-400' :
+                                'bg-red-500/10 text-red-400'
+                              }`}>{d.status}</span>
+                            </td>
+                            <td className="p-4">
+                              <div className="flex items-center justify-center gap-2">
+                                {d.status?.toLowerCase() === 'pending' ? (
+                                  <>
+                                    <button 
+                                      onClick={() => setConfirmDepositTarget(d)} 
+                                      className="px-2.5 py-1 bg-green-600 hover:bg-green-500 text-white rounded text-[10px] font-bold transition flex items-center gap-1"
+                                    >
+                                      <Check size={10} /> Confirm
+                                    </button>
+                                    <button 
+                                      onClick={() => setRejectDepositTarget(d)} 
+                                      className="px-2.5 py-1 bg-red-600 hover:bg-red-500 text-white rounded text-[10px] font-bold transition flex items-center gap-1"
+                                    >
+                                      <X size={10} /> Reject
+                                    </button>
+                                  </>
+                                ) : (
+                                  <span className="text-[10px] text-gray-text/50 font-mono italic">Audited</span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {filteredDeposits.length === 0 && (
+                          <tr>
+                            <td colSpan={9} className="p-8 text-center text-gray-text text-sm">No deposits found matching the filter query.</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Mobile Cards View */}
+                <div className="block md:hidden space-y-4">
+                  {filteredDeposits.map((d) => {
+                    const statusLower = d.status?.toLowerCase();
+                    const relativeTime = d.created_at ? getRelativeTime(d.created_at) : 'recently';
+                    const cleanPhone = d.phone ? d.phone.replace(/[\s\-\+]/g, '') : '';
+                    const waTextMsg = `Hello ${d.investorName}, we received your deposit request of ₦${d.amount.toLocaleString()} (${d.email}). We are confirming it now and will notify you shortly.`;
+                    
+                    return (
+                      <div key={d.id} className="bg-navy-mid border border-border-subtle rounded-xl p-5 space-y-4 shadow-xl font-sans">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="text-[10px] text-gray-text uppercase tracking-wider font-bold mb-0.5">Amount</p>
+                            <p className="text-2xl font-bold text-[#C9A84C] font-mono">₦{d.amount.toLocaleString()}</p>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider ${
+                            statusLower === 'confirmed' ? 'bg-green-500/10 text-green-400' :
+                            statusLower === 'pending' ? 'bg-amber-500/10 text-amber-400' :
+                            'bg-red-500/10 text-red-400'
+                          }`}>{d.status}</span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-xs border-t border-b border-border-subtle/50 py-3">
+                          <div>
+                            <p className="text-gray-text text-[10px] uppercase font-bold mb-0.5">User</p>
+                            <p className="text-white font-semibold">{d.investorName}</p>
+                            {d.phone && (
+                              <a href={`tel:${d.phone}`} className="text-[#C9A84C] font-mono hover:underline block mt-0.5">
+                                📞 Call user
+                              </a>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-gray-text text-[10px] uppercase font-bold mb-0.5">Method</p>
+                            <p className="text-gray-300 font-semibold">{d.method === 'bank_transfer' ? 'OPay Transfer' : d.method}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-text text-[10px] uppercase font-bold mb-0.5">Submitted</p>
+                            <p className="text-gray-text font-mono">{relativeTime}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-text text-[10px] uppercase font-bold mb-0.5">Reference</p>
+                            <p className="text-gray-300 font-mono break-all">{d.reference}</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 pt-1">
+                          {d.receipt && (
+                            <button 
+                              onClick={() => setViewingReceipt(d)}
+                              className="w-full py-2 bg-navy border border-border-subtle hover:border-gold rounded-lg text-xs transition flex items-center justify-center gap-1.5 text-gold font-bold"
+                            >
+                              <Eye size={12} /> View Proof
+                            </button>
+                          )}
+
+                          {d.phone && (
+                            <a
+                              href={`https://wa.me/${cleanPhone}?text=${encodeURIComponent(waTextMsg)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full py-2 bg-navy border border-border-subtle hover:border-gold rounded-lg text-xs transition flex items-center justify-center gap-1.5 text-green-400 font-bold"
+                            >
+                              📲 Message User on WhatsApp
+                            </a>
+                          )}
+
+                          {statusLower === 'pending' && (
+                            <div className="flex flex-col gap-2 pt-2">
                               <button 
-                                onClick={() => setViewingReceipt(d)}
-                                className="px-2.5 py-1 bg-navy border border-border-subtle hover:border-gold rounded text-[10px] transition flex items-center gap-1 text-gold"
+                                onClick={() => setConfirmDepositTarget(d)} 
+                                className="w-full py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 shadow-lg"
                               >
-                                <Eye size={10} /> View Proof
+                                <Check size={16} /> Confirm
+                              </button>
+                              <button 
+                                onClick={() => setRejectDepositTarget(d)} 
+                                className="w-full py-2.5 bg-navy border border-red-500/50 hover:bg-red-950/20 text-red-400 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2"
+                              >
+                                <X size={14} /> Reject
                               </button>
                             </div>
-                          </td>
-                          <td className="p-4">
-                            <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider ${
-                              d.status === 'Confirmed' ? 'bg-green-500/10 text-green-400' :
-                              d.status === 'Pending' ? 'bg-amber-500/10 text-amber-400' :
-                              'bg-red-500/10 text-red-400'
-                            }`}>{d.status}</span>
-                          </td>
-                          <td className="p-4">
-                            <div className="flex items-center justify-center gap-2">
-                              {d.status === 'Pending' ? (
-                                <>
-                                  <button 
-                                    onClick={() => handleConfirmDeposit(d)} 
-                                    className="px-2.5 py-1 bg-green-600 hover:bg-green-500 text-white rounded text-[10px] font-bold transition flex items-center gap-1"
-                                  >
-                                    <Check size={10} /> Confirm
-                                  </button>
-                                  <button 
-                                    onClick={() => handleRejectDeposit(d)} 
-                                    className="px-2.5 py-1 bg-red-600 hover:bg-red-500 text-white rounded text-[10px] font-bold transition flex items-center gap-1"
-                                  >
-                                    <X size={10} /> Reject
-                                  </button>
-                                </>
-                              ) : (
-                                <span className="text-[10px] text-gray-text/50 font-mono italic">Audited</span>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                      {filteredDeposits.length === 0 && (
-                        <tr>
-                          <td colSpan={9} className="p-8 text-center text-gray-text text-sm">No deposits found matching the filter query.</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {filteredDeposits.length === 0 && (
+                    <div className="bg-navy-mid border border-border-subtle rounded-xl p-8 text-center text-gray-text text-sm">
+                      No deposits found matching the filter query.
+                    </div>
+                  )}
                 </div>
-              </div>
 
-            </div>
-          )}
+              </div>
+            );
+          })()}
 
           {/* ==========================================
               TAB VIEW: TRANSACTIONS (FULL LEDGER)
@@ -2065,13 +2712,13 @@ export default function AdminDashboard() {
           {/* ==========================================
               TAB VIEW: BROADCAST NOTIFICATIONS
               ========================================== */}
-          {activeTab === 'notifications' && (
+          {activeTab === 'announcements' && (
             <div className="space-y-6 animate-in fade-in duration-300">
               
               {/* Header */}
               <div>
                 <h1 className="text-3xl font-serif font-bold text-white mb-2">Broadcast Center</h1>
-                <p className="text-gray-text text-sm">Send bulk communications to investors via multiple delivery channels.</p>
+                <p className="text-gray-text text-sm">Send bulk communications to investors via targeted notifications feeds.</p>
               </div>
 
               {broadcastAlert && (
@@ -2088,7 +2735,7 @@ export default function AdminDashboard() {
                 <div className="lg:col-span-2 bg-navy-mid border border-border-subtle rounded-xl p-6 shadow-xl">
                   <form onSubmit={handleBroadcastSubmit} className="space-y-5">
                     
-                    {/* Target & Channel */}
+                    {/* Target & Type */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-xs uppercase tracking-wider text-gray-text font-bold mb-2">Target Group</label>
@@ -2097,25 +2744,27 @@ export default function AdminDashboard() {
                           onChange={(e) => setNotifTarget(e.target.value)}
                           className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2.5 text-xs text-white focus:outline-none focus:border-gold"
                         >
-                          <option>All Investors</option>
-                          <option>Foundation Plan Investors</option>
-                          <option>Prosperity Plan Investors</option>
-                          <option>Diaspora (US/UK) Investors</option>
-                          <option>Single Investor (Custom ID)</option>
+                          <option value="all">All Users</option>
+                          <option value="active investors">Active Investors</option>
+                          <option value="pending kyc">Pending KYC</option>
+                          <option value="starter">Starter Plan Investors</option>
+                          <option value="growth">Growth Plan Investors</option>
+                          <option value="premium">Premium Plan Investors</option>
+                          <option value="elite">Elite Plan Investors</option>
                         </select>
                       </div>
 
                       <div>
-                        <label className="block text-xs uppercase tracking-wider text-gray-text font-bold mb-2">Delivery Channels</label>
+                        <label className="block text-xs uppercase tracking-wider text-gray-text font-bold mb-2">Type</label>
                         <select 
-                          value={notifChannel} 
-                          onChange={(e) => setNotifChannel(e.target.value)}
+                          value={notifType} 
+                          onChange={(e) => setNotifType(e.target.value)}
                           className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2.5 text-xs text-white focus:outline-none focus:border-gold"
                         >
-                          <option value="All">All Channels (Email + SMS + In-App)</option>
-                          <option value="Email">Email Message Only</option>
-                          <option value="SMS">SMS Message Only</option>
-                          <option value="In-App">In-App Notification Only</option>
+                          <option value="info">Info (blue)</option>
+                          <option value="success">Success (green)</option>
+                          <option value="warning">Warning (amber)</option>
+                          <option value="error">Alert (red)</option>
                         </select>
                       </div>
                     </div>
@@ -2149,7 +2798,7 @@ export default function AdminDashboard() {
                       />
                     </div>
 
-                    {/* Body */}
+                    {/* Message Textarea */}
                     <div>
                       <label className="block text-xs uppercase tracking-wider text-gray-text font-bold mb-2">Message Body</label>
                       <textarea 
@@ -2162,24 +2811,13 @@ export default function AdminDashboard() {
                       />
                     </div>
 
-                    {/* Schedule Picker */}
-                    <div>
-                      <label className="block text-xs uppercase tracking-wider text-gray-text font-bold mb-2">Schedule Dispatch (Optional)</label>
-                      <input 
-                        type="datetime-local"
-                        value={scheduledDateTime}
-                        onChange={(e) => setScheduledDateTime(e.target.value)}
-                        className="bg-navy border border-border-subtle rounded-lg px-4 py-2.5 text-xs text-white focus:outline-none focus:border-gold"
-                      />
-                    </div>
-
                     {/* Buttons */}
                     <div className="flex gap-4 pt-2">
                       <button 
                         type="submit" 
                         className="px-6 py-3 bg-gold hover:bg-gold-light text-navy font-bold rounded-xl transition text-xs shadow-lg shadow-gold/5"
                       >
-                        {scheduledDateTime ? 'Schedule Broadcast' : 'Send Broadcast Now'}
+                        Send Announcement
                       </button>
                     </div>
 
@@ -2233,10 +2871,9 @@ export default function AdminDashboard() {
                 {/* Side tabs */}
                 <div className="bg-navy-mid border border-border-subtle rounded-xl p-4 flex flex-col gap-1.5 h-fit shadow-lg">
                   {[
-                    { id: 'general', label: 'General Info' },
-                    { id: 'exchange', label: 'Exchange Rates' },
-                    { id: 'payments', label: 'Payment Accounts' },
-                    { id: 'security', label: 'Admin Security' }
+                    { id: 'payment_details', label: 'Payment Details' },
+                    { id: 'plans', label: 'Plans' },
+                    { id: 'exchange_rate', label: 'Exchange Rate' }
                   ].map((sub) => (
                     <button
                       key={sub.id}
@@ -2253,197 +2890,219 @@ export default function AdminDashboard() {
                 {/* Sub Tab Panel */}
                 <div className="lg:col-span-3 bg-navy-mid border border-border-subtle rounded-xl p-6 shadow-lg">
                   
-                  {/* General settings tab */}
-                  {settingsTab === 'general' && (
-                    <div className="space-y-4">
-                      <h3 className="text-sm uppercase tracking-wider text-gold font-bold mb-4">Platform General Information</h3>
+                  {/* Payment Details tab */}
+                  {settingsTab === 'payment_details' && (
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSaveSettings({
+                        bank_name: settingsBankName,
+                        bank_account_number: settingsAccountNumber,
+                        bank_account_name: settingsAccountName,
+                        bank_whatsapp: settingsBankWhatsapp,
+                        bank_ussd: settingsBankUssd,
+                        payment_btc_address: settingsBTC,
+                        payment_usdt_address: settingsUSDT,
+                        payment_eth_address: settingsETH
+                      });
+                    }} className="space-y-4">
+                      <h3 className="text-sm uppercase tracking-wider text-gold font-bold mb-4 font-serif">Payment details settings</h3>
+                      <p className="text-[11px] text-gray-text leading-relaxed font-sans mb-4">
+                        Update the bank details, WhatsApp contact, USSD code, and crypto addresses where users send funds.
+                      </p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs text-gray-text mb-2">Site Title</label>
+                          <label className="block text-xs text-gray-text mb-2 font-bold uppercase tracking-wider">Bank Name</label>
                           <input 
                             type="text" 
-                            value={settingsGeneral.siteName}
-                            onChange={(e) => setSettingsGeneral({ ...settingsGeneral, siteName: e.target.value })}
+                            required
+                            value={settingsBankName}
+                            onChange={(e) => setSettingsBankName(e.target.value)}
                             className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold"
+                            placeholder="Zenith Bank, GTBank, OPay etc."
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-text mb-2">Contact Email</label>
+                          <label className="block text-xs text-gray-text mb-2 font-bold uppercase tracking-wider">Account Number</label>
                           <input 
-                            type="email" 
-                            value={settingsGeneral.email}
-                            onChange={(e) => setSettingsGeneral({ ...settingsGeneral, email: e.target.value })}
+                            type="text" 
+                            required
+                            value={settingsAccountNumber}
+                            onChange={(e) => setSettingsAccountNumber(e.target.value)}
                             className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold"
+                            placeholder="10-digit account number"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-text mb-2">Contact Phone</label>
+                          <label className="block text-xs text-gray-text mb-2 font-bold uppercase tracking-wider">Account Name</label>
                           <input 
                             type="text" 
-                            value={settingsGeneral.phone}
-                            onChange={(e) => setSettingsGeneral({ ...settingsGeneral, phone: e.target.value })}
+                            required
+                            value={settingsAccountName}
+                            onChange={(e) => setSettingsAccountName(e.target.value)}
                             className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold"
+                            placeholder="Account name"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-text mb-2">HQ Address</label>
+                          <label className="block text-xs text-gray-text mb-2 font-bold uppercase tracking-wider">WhatsApp Contact</label>
                           <input 
                             type="text" 
-                            value={settingsGeneral.address}
-                            onChange={(e) => setSettingsGeneral({ ...settingsGeneral, address: e.target.value })}
+                            required
+                            value={settingsBankWhatsapp}
+                            onChange={(e) => setSettingsBankWhatsapp(e.target.value)}
                             className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold"
+                            placeholder="WhatsApp number e.g. +2349167455410"
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="block text-xs text-gray-text mb-2 font-bold uppercase tracking-wider">USSD Transfer Code</label>
+                          <input 
+                            type="text" 
+                            required
+                            value={settingsBankUssd}
+                            onChange={(e) => setSettingsBankUssd(e.target.value)}
+                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold"
+                            placeholder="USSD transfer code e.g. *955#"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-text mb-2 font-bold uppercase tracking-wider">BTC Wallet Address</label>
+                          <input 
+                            type="text" 
+                            required
+                            value={settingsBTC}
+                            onChange={(e) => setSettingsBTC(e.target.value)}
+                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold font-mono"
+                            placeholder="Bitcoin Address"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-text mb-2 font-bold uppercase tracking-wider">USDT TRC20 Address</label>
+                          <input 
+                            type="text" 
+                            required
+                            value={settingsUSDT}
+                            onChange={(e) => setSettingsUSDT(e.target.value)}
+                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold font-mono"
+                            placeholder="USDT TRC20 Address"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-text mb-2 font-bold uppercase tracking-wider">ETH Address</label>
+                          <input 
+                            type="text" 
+                            required
+                            value={settingsETH}
+                            onChange={(e) => setSettingsETH(e.target.value)}
+                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold font-mono"
+                            placeholder="ETH Address"
                           />
                         </div>
                       </div>
-                      <button className="px-4 py-2 bg-gold hover:bg-gold-light text-navy text-xs font-bold rounded-lg transition mt-4">Save General Info</button>
+                      <button type="submit" className="px-4 py-2.5 bg-gold hover:bg-gold-light text-navy text-xs font-bold rounded-lg transition mt-4">Save Payment Accounts</button>
+                    </form>
+                  )}
+
+                  {/* Plans settings tab */}
+                  {settingsTab === 'plans' && (
+                    <div className="space-y-4">
+                      <h3 className="text-sm uppercase tracking-wider text-gold font-bold mb-4 font-serif">Investment Plans Configuration</h3>
+                      <p className="text-[11px] text-gray-text leading-relaxed font-sans mb-4">
+                        Edit minimum deposit thresholds, cycle return percentages, and enable/disable investment programs.
+                      </p>
+                      
+                      <div className="bg-navy border border-border-subtle rounded-xl overflow-hidden shadow-lg">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                              <tr className="bg-navy-light/40 text-gray-text uppercase tracking-wider">
+                                <th className="p-3 font-semibold">Plan Name</th>
+                                <th className="p-3 font-semibold">Minimum Deposit</th>
+                                <th className="p-3 font-semibold">Annual ROI %</th>
+                                <th className="p-3 font-semibold text-center">Status</th>
+                                <th className="p-3 font-semibold text-center">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border-subtle">
+                              {plans.map((p) => {
+                                const planMin = p.min_deposit !== undefined ? p.min_deposit : p.minAmount || 0;
+                                const planRoi = p.roi_percent !== undefined ? p.roi_percent : p.roi || 0;
+                                const isActive = p.is_active !== undefined ? p.is_active : p.enabled;
+                                
+                                return (
+                                  <tr key={p.id} className={`hover:bg-navy-light/20 transition-colors ${!isActive ? 'opacity-50' : ''}`}>
+                                    <td className="p-3 font-bold text-white uppercase">{p.name}</td>
+                                    <td className="p-3 font-mono text-gold font-bold">₦{planMin.toLocaleString()}</td>
+                                    <td className="p-3 font-mono text-green-400 font-bold">{planRoi}%</td>
+                                    <td className="p-3 text-center">
+                                      <button
+                                        onClick={() => handleTogglePlanActive(p)}
+                                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                          isActive ? 'bg-gold' : 'bg-gray-700'
+                                        }`}
+                                      >
+                                        <span
+                                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-navy shadow ring-0 transition duration-200 ease-in-out ${
+                                            isActive ? 'translate-x-5' : 'translate-x-0'
+                                          }`}
+                                        />
+                                      </button>
+                                    </td>
+                                    <td className="p-3 text-center">
+                                      <button
+                                        onClick={() => {
+                                          setEditingPlan({
+                                            id: p.id,
+                                            name: p.name,
+                                            minAmount: planMin,
+                                            roi: planRoi,
+                                            duration_days: p.duration_days,
+                                            max_deposit: p.max_deposit,
+                                            is_active: isActive
+                                          });
+                                        }}
+                                        className="px-2.5 py-1 bg-navy border border-border-subtle rounded hover:border-gold hover:text-gold transition text-[10px] font-bold"
+                                      >
+                                        Edit Config
+                                      </button>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
                     </div>
                   )}
 
                   {/* Exchange Rates tab */}
-                  {settingsTab === 'exchange' && (
-                    <div className="space-y-4">
-                      <h3 className="text-sm uppercase tracking-wider text-gold font-bold mb-4">Currency Exchange Rates (Manual Entry)</h3>
-                      <p className="text-[11px] text-gray-text leading-relaxed font-normal">Update exchange rates manual values applied across the platform for NGN equivalents.</p>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                        <div>
-                          <label className="block text-xs text-gray-text mb-2">USD to NGN (₦)</label>
-                          <input 
-                            type="number" 
-                            value={settingsExchangeRates.usd}
-                            onChange={(e) => setSettingsExchangeRates({ ...settingsExchangeRates, usd: Number(e.target.value) })}
-                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white font-mono focus:outline-none focus:border-gold"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-gray-text mb-2">GBP to NGN (₦)</label>
-                          <input 
-                            type="number" 
-                            value={settingsExchangeRates.gbp}
-                            onChange={(e) => setSettingsExchangeRates({ ...settingsExchangeRates, gbp: Number(e.target.value) })}
-                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white font-mono focus:outline-none focus:border-gold"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-gray-text mb-2">EUR to NGN (₦)</label>
-                          <input 
-                            type="number" 
-                            value={settingsExchangeRates.eur}
-                            onChange={(e) => setSettingsExchangeRates({ ...settingsExchangeRates, eur: Number(e.target.value) })}
-                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white font-mono focus:outline-none focus:border-gold"
-                          />
-                        </div>
-                      </div>
-                      <button className="px-4 py-2 bg-gold hover:bg-gold-light text-navy text-xs font-bold rounded-lg transition mt-4">Save Exchange Rates</button>
-                    </div>
-                  )}
-
-                  {/* Payments Account settings */}
-                  {settingsTab === 'payments' && (
-                    <div className="space-y-4">
-                      <h3 className="text-sm uppercase tracking-wider text-gold font-bold mb-4">Platform Deposit Bank Account</h3>
-                      <p className="text-[11px] text-gray-text leading-relaxed font-normal font-sans">This bank account details are displayed directly to users on their deposit panel during checkout wire transfer uploads.</p>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                        <div>
-                          <label className="block text-xs text-gray-text mb-2">Bank Name</label>
-                          <input 
-                            type="text" 
-                            value={settingsPayments.bankName}
-                            onChange={(e) => setSettingsPayments({ ...settingsPayments, bankName: e.target.value })}
-                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-gray-text mb-2">Account Name</label>
-                          <input 
-                            type="text" 
-                            value={settingsPayments.accountName}
-                            onChange={(e) => setSettingsPayments({ ...settingsPayments, accountName: e.target.value })}
-                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-gray-text mb-2">Account Number</label>
-                          <input 
-                            type="text" 
-                            value={settingsPayments.accountNo}
-                            onChange={(e) => setSettingsPayments({ ...settingsPayments, accountNo: e.target.value })}
-                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white font-mono focus:outline-none focus:border-gold"
-                          />
-                        </div>
-                      </div>
-                      <button className="px-4 py-2 bg-gold hover:bg-gold-light text-navy text-xs font-bold rounded-lg transition mt-4">Save Payment Accounts</button>
-                    </div>
-                  )}
-
-                  {/* Security configurations */}
-                  {settingsTab === 'security' && (
-                    <form className="space-y-4">
-                      <h3 className="text-sm uppercase tracking-wider text-gold font-bold mb-4">Admin Credentials & Security</h3>
+                  {settingsTab === 'exchange_rate' && (
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSaveSettings({
+                        exchange_rate_usd_ngn: settingsUsdToNgn
+                      });
+                    }} className="space-y-4">
+                      <h3 className="text-sm uppercase tracking-wider text-gold font-bold mb-4 font-serif">USD to NGN Exchange Rate</h3>
+                      <p className="text-[11px] text-gray-text leading-relaxed font-sans mb-4">
+                        Update the conversion rate for US Dollars to Nigerian Naira. This is used when displaying manual conversion rates on the website.
+                      </p>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs text-gray-text mb-2">New Password</label>
+                          <label className="block text-xs text-gray-text mb-2 font-bold uppercase tracking-wider">USD to NGN (₦)</label>
                           <input 
-                            type="password" 
-                            value={settingsSecurity.newPassword}
-                            onChange={(e) => setSettingsSecurity({ ...settingsSecurity, newPassword: e.target.value })}
-                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold"
-                            placeholder="Enter new admin password"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-gray-text mb-2">Confirm Password</label>
-                          <input 
-                            type="password" 
-                            value={settingsSecurity.confirmPassword}
-                            onChange={(e) => setSettingsSecurity({ ...settingsSecurity, confirmPassword: e.target.value })}
-                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold"
-                            placeholder="Confirm new admin password"
+                            type="number" 
+                            required
+                            value={settingsUsdToNgn}
+                            onChange={(e) => setSettingsUsdToNgn(Number(e.target.value))}
+                            className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white font-mono focus:outline-none focus:border-gold"
+                            placeholder="1550"
                           />
                         </div>
                       </div>
-
-                      <div className="border-t border-border-subtle/50 pt-4 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="text-xs font-bold text-white">Enable Multi-Factor (2FA) Code Gate</div>
-                            <div className="text-[10px] text-gray-500">Require secondary OTP check at admin authentication</div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => setSettingsSecurity({ ...settingsSecurity, twoFactor: !settingsSecurity.twoFactor })}
-                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                              settingsSecurity.twoFactor ? 'bg-gold' : 'bg-gray-700'
-                            }`}
-                          >
-                            <span
-                              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-navy shadow ring-0 transition duration-200 ease-in-out ${
-                                settingsSecurity.twoFactor ? 'translate-x-5' : 'translate-x-0'
-                              }`}
-                            />
-                          </button>
-                        </div>
-
-                        <div className="flex items-center justify-between border-t border-border-subtle/50 pt-4">
-                          <div>
-                            <div className="text-xs font-bold text-white">Session Timeout Interval</div>
-                            <div className="text-[10px] text-gray-500">Auto log out administrator after inactive minutes</div>
-                          </div>
-                          <select 
-                            value={settingsSecurity.sessionTimeout}
-                            onChange={(e) => setSettingsSecurity({ ...settingsSecurity, sessionTimeout: Number(e.target.value) })}
-                            className="bg-navy border border-border-subtle rounded-lg px-3 py-1 text-xs text-white focus:outline-none focus:border-gold"
-                          >
-                            <option value="15">15 Minutes</option>
-                            <option value="30">30 Minutes</option>
-                            <option value="60">1 Hour</option>
-                          </select>
-                        </div>
-                      </div>
-                      
-                      <button className="px-4 py-2 bg-gold hover:bg-gold-light text-navy text-xs font-bold rounded-lg transition mt-4">Save Security Configs</button>
+                      <button type="submit" className="px-4 py-2.5 bg-gold hover:bg-gold-light text-navy text-xs font-bold rounded-lg transition mt-4">Update Rate</button>
                     </form>
                   )}
 
@@ -2461,26 +3120,43 @@ export default function AdminDashboard() {
           MODALS & FLYOUT DETAILS PANELS
           ========================================== */}
 
-      {/* 1. Modal: Confirmation Approve Withdrawal (GTBank specific) */}
+      {/* 1. Modal: Confirmation Approve Withdrawal (Mark as Paid) */}
       {confirmApproveWD && (
         <div className="fixed inset-0 bg-navy/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-navy-light border border-border-gold rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center gap-3 text-gold mb-4">
               <CheckCircle size={24} />
-              <h3 className="text-lg font-serif font-bold text-white">Confirm Transfer</h3>
+              <h3 className="text-lg font-serif font-bold text-white">Confirm Payout</h3>
             </div>
             
-            <p className="text-sm text-gray-300 leading-relaxed mb-6">
-              Confirm you have sent <strong className="text-gold">₦{confirmApproveWD.amount.toLocaleString()}</strong> to:
-              <br />
+            <div className="text-sm text-gray-300 leading-relaxed mb-6 font-sans">
+              Confirm you have manually sent <strong className="text-gold">₦{confirmApproveWD.amount.toLocaleString()}</strong> to:
               <span className="block bg-navy/50 p-3 border border-border-subtle rounded-lg mt-3 text-xs font-mono text-white leading-relaxed">
-                Bank: <strong className="text-white">{confirmApproveWD.bank}</strong>
-                <br />
-                Account No: <strong className="text-white">{confirmApproveWD.accountNo}</strong>
+                Method: <strong className="text-gold uppercase">{confirmApproveWD.method}</strong>
+                {(confirmApproveWD.method === 'Crypto' || confirmApproveWD.method === 'Bitcoin' || confirmApproveWD.method === 'USDT' || confirmApproveWD.method === 'ETH' || confirmApproveWD.method === 'bitcoin' || confirmApproveWD.method === 'usdt') && (
+                  <>
+                    <br />
+                    Crypto Address: <strong className="text-white">{confirmApproveWD.walletAddress}</strong>
+                  </>
+                )}
+                {(confirmApproveWD.method === 'Bank Transfer' || confirmApproveWD.method === 'bank_transfer') && (
+                  <>
+                    <br />
+                    Bank/Wallet: <strong className="text-white">{confirmApproveWD.bank}</strong>
+                    <br />
+                    Account/Phone No: <strong className="text-white">{confirmApproveWD.accountNo}</strong>
+                  </>
+                )}
+                {confirmApproveWD.method !== 'Crypto' && confirmApproveWD.method !== 'Bitcoin' && confirmApproveWD.method !== 'USDT' && confirmApproveWD.method !== 'ETH' && confirmApproveWD.method !== 'bitcoin' && confirmApproveWD.method !== 'usdt' && confirmApproveWD.method !== 'Bank Transfer' && confirmApproveWD.method !== 'bank_transfer' && (
+                  <>
+                    <br />
+                    Details: <strong className="text-white">{confirmApproveWD.accountNo || confirmApproveWD.walletAddress || 'N/A'}</strong>
+                  </>
+                )}
                 <br />
                 Beneficiary: <strong className="text-white">{confirmApproveWD.investorName}</strong>
               </span>
-            </p>
+            </div>
 
             <div className="flex gap-3 justify-end">
               <button 
@@ -2506,29 +3182,36 @@ export default function AdminDashboard() {
           <div className="w-full max-w-md bg-navy-light border border-red-500/30 rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center gap-3 text-red-400 mb-4">
               <AlertCircle size={24} />
-              <h3 className="text-lg font-serif font-bold text-white font-normal">Reject Withdrawal Request</h3>
+              <h3 className="text-lg font-serif font-bold text-white font-normal font-sans">Reject Withdrawal Request</h3>
             </div>
             
-            <p className="text-sm text-gray-300 leading-relaxed mb-6">
-              Are you sure you want to reject the withdrawal request of <strong className="text-gold">₦{confirmRejectWD.amount.toLocaleString()}</strong> by <strong className="text-white">{confirmRejectWD.investorName}</strong>? 
-              This will return the status as Rejected in the investor's audit list.
-            </p>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-300 leading-relaxed font-sans">
+                Enter the reason for rejecting the withdrawal request of <strong className="text-gold">₦{confirmRejectWD.amount.toLocaleString()}</strong> by <strong className="text-white">{confirmRejectWD.investorName}</strong>:
+              </p>
+              
+              <textarea
+                value={withdrawalRejectionReason}
+                onChange={(e) => setWithdrawalRejectionReason(e.target.value)}
+                required
+                placeholder="e.g. Account details mismatch, insufficient verified balance..."
+                className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold font-sans"
+                rows={3}
+              />
+            </div>
 
-            <div className="flex gap-3 justify-end">
+            <div className="flex gap-3 justify-end mt-6">
               <button 
-                onClick={() => setConfirmRejectWD(null)} 
+                onClick={() => { setConfirmRejectWD(null); setWithdrawalRejectionReason(''); }} 
                 className="px-4 py-2 bg-navy border border-border-subtle rounded-lg text-xs transition text-gray-text hover:text-white"
               >
                 Cancel
               </button>
               <button 
-                onClick={() => {
-                  setWithdrawals(prev => prev.map(w => w.id === confirmRejectWD.id ? { ...w, status: 'Rejected' } : w));
-                  setConfirmRejectWD(null);
-                }}
+                onClick={() => handleRejectWithdrawalAction(confirmRejectWD, withdrawalRejectionReason)}
                 className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg transition"
               >
-                Yes, Reject Payout
+                Reject & Refund
               </button>
             </div>
           </div>
@@ -2552,7 +3235,7 @@ export default function AdminDashboard() {
                 alt="Uploaded bank receipt transaction proof" 
                 className="max-h-[400px] object-contain rounded-lg border border-border-subtle shadow"
               />
-              <div className="w-full bg-navy p-3 border border-border-subtle rounded-lg mt-4 space-y-1 text-xs">
+              <div className="w-full bg-navy p-3 border border-border-subtle rounded-lg mt-4 space-y-1 text-xs font-sans">
                 <div>Reference Code: <strong className="text-gold font-mono">{viewingReceipt.reference}</strong></div>
                 <div>Amount: <strong className="text-white">₦{viewingReceipt.amount.toLocaleString()}</strong></div>
                 <div>Requested Date: <strong className="text-white">{viewingReceipt.date}</strong></div>
@@ -2570,19 +3253,92 @@ export default function AdminDashboard() {
               {viewingReceipt.status === 'Pending' && (
                 <>
                   <button 
-                    onClick={() => { handleConfirmDeposit(viewingReceipt); setViewingReceipt(null); }}
+                    onClick={() => { setConfirmDepositTarget(viewingReceipt); setViewingReceipt(null); }}
                     className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-xs font-bold rounded-lg"
                   >
                     Confirm Deposit
                   </button>
                   <button 
-                    onClick={() => { handleRejectDeposit(viewingReceipt); setViewingReceipt(null); }}
+                    onClick={() => { setRejectDepositTarget(viewingReceipt); setViewingReceipt(null); }}
                     className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg"
                   >
                     Reject
                   </button>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3a. Modal: Confirm Deposit */}
+      {confirmDepositTarget && (
+        <div className="fixed inset-0 bg-navy/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-navy-light border border-border-gold rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 text-gold mb-4">
+              <CheckCircle size={24} />
+              <h3 className="text-lg font-serif font-bold text-white font-normal">Confirm Deposit</h3>
+            </div>
+            
+            <p className="text-sm text-gray-300 leading-relaxed mb-6 font-sans">
+              Confirm you received <strong className="text-gold">₦{confirmDepositTarget.amount.toLocaleString()}</strong> in your <strong className="text-white">{confirmDepositTarget.method === 'opay' || confirmDepositTarget.method === 'OPay Transfer' || confirmDepositTarget.method === 'OPay Bank Transfer' ? 'OPay' : 'bank'}</strong> account from <strong className="text-white">{confirmDepositTarget.investorName}</strong>?
+            </p>
+
+            <div className="flex gap-3 justify-end">
+              <button 
+                onClick={() => setConfirmDepositTarget(null)} 
+                className="px-4 py-2 bg-navy border border-border-subtle hover:border-gold rounded-lg text-xs transition text-gray-text hover:text-white"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => handleConfirmDepositAction(confirmDepositTarget)}
+                className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-xs font-bold rounded-lg transition"
+              >
+                Yes, Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3b. Modal: Reject Deposit */}
+      {rejectDepositTarget && (
+        <div className="fixed inset-0 bg-navy/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-navy-light border border-red-500/30 rounded-2xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 text-red-400 mb-4">
+              <AlertCircle size={24} />
+              <h3 className="text-lg font-serif font-bold text-white font-normal">Reject Deposit Request</h3>
+            </div>
+            
+            <div className="space-y-4">
+              <p className="text-sm text-gray-300 leading-relaxed font-sans">
+                Enter the reason for rejecting the deposit of <strong className="text-gold">₦{rejectDepositTarget.amount.toLocaleString()}</strong> by <strong className="text-white">{rejectDepositTarget.investorName}</strong>:
+              </p>
+              
+              <textarea
+                value={depositRejectionReason}
+                onChange={(e) => setDepositRejectionReason(e.target.value)}
+                required
+                placeholder="e.g. Reference code invalid, transaction not found..."
+                className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold font-sans"
+                rows={3}
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end mt-6">
+              <button 
+                onClick={() => { setRejectDepositTarget(null); setDepositRejectionReason(''); }} 
+                className="px-4 py-2 bg-navy border border-border-subtle rounded-lg text-xs transition text-gray-text hover:text-white"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => handleRejectDepositAction(rejectDepositTarget, depositRejectionReason)}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg transition"
+              >
+                Reject
+              </button>
             </div>
           </div>
         </div>
@@ -2596,7 +3352,7 @@ export default function AdminDashboard() {
             
             <form onSubmit={handleSavePlanSettings} className="space-y-4">
               <div>
-                <label className="block text-xs text-gray-text mb-2">Minimum Investment Amount ($)</label>
+                <label className="block text-xs text-gray-text mb-2">Minimum Investment Amount (₦)</label>
                 <input 
                   type="number"
                   required
@@ -2834,7 +3590,6 @@ export default function AdminDashboard() {
 
             </div>
 
-            {/* Drawer Footer */}
             <div className="p-6 border-t border-border-subtle bg-[#060D1A] flex justify-end gap-3">
               <button 
                 onClick={() => { setEditingInvestor({ ...selectedInvestor }); }} 
@@ -2850,6 +3605,98 @@ export default function AdminDashboard() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+      {/* 8. KYC Review Modal */}
+      {kycReviewUser && (
+        <div className="fixed inset-0 bg-navy/80 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
+          <div className="w-full max-w-4xl bg-navy-light border border-border-gold rounded-2xl p-6 shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-serif font-bold text-gold">Verify KYC: {kycReviewUser.name}</h3>
+              <button onClick={() => setKycReviewUser(null)} className="text-gray-text hover:text-white"><X size={20} /></button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              {/* ID Document Preview */}
+              <div className="flex flex-col">
+                <span className="text-xs uppercase tracking-wider text-gray-text font-bold mb-2">ID Document</span>
+                <div className="bg-navy rounded-xl border border-border-subtle p-2 flex items-center justify-center min-h-[300px] overflow-hidden font-sans">
+                  {kycReviewUser.kycIdUrl ? (
+                    <img 
+                      src={kycReviewUser.kycIdUrl} 
+                      alt="KYC ID Document" 
+                      className="max-h-[300px] object-contain rounded-lg"
+                    />
+                  ) : (
+                    <div className="text-xs text-gray-text italic">No ID document uploaded</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Selfie Preview */}
+              <div className="flex flex-col">
+                <span className="text-xs uppercase tracking-wider text-gray-text font-bold mb-2">Selfie Photo</span>
+                <div className="bg-navy rounded-xl border border-border-subtle p-2 flex items-center justify-center min-h-[300px] overflow-hidden font-sans">
+                  {kycReviewUser.kycSelfieUrl ? (
+                    <img 
+                      src={kycReviewUser.kycSelfieUrl} 
+                      alt="KYC Selfie Photo" 
+                      className="max-h-[300px] object-contain rounded-lg"
+                    />
+                  ) : (
+                    <div className="text-xs text-gray-text italic">No selfie photo uploaded</div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Rejection Reason */}
+            <div className="mb-6 font-sans">
+              <label className="block text-xs uppercase tracking-wider text-gray-text font-bold mb-2">Rejection Reason (Required only for Reject)</label>
+              <textarea
+                value={kycRejectionReason}
+                onChange={(e) => setKycRejectionReason(e.target.value)}
+                placeholder="Enter rejection reason if you decide to reject this KYC..."
+                className="w-full bg-navy border border-border-subtle rounded-lg px-4 py-2 text-xs text-white focus:outline-none focus:border-gold font-sans"
+                rows={3}
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end pt-4 border-t border-border-subtle">
+              <button 
+                onClick={() => setKycReviewUser(null)} 
+                className="px-4 py-2 bg-navy border border-border-subtle rounded-lg text-xs text-gray-text hover:text-white"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  handleKYCReview(kycReviewUser.id, 'rejected', kycRejectionReason);
+                  setKycReviewUser(null);
+                  setKycRejectionReason('');
+                }}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg transition"
+              >
+                Reject KYC
+              </button>
+              <button 
+                onClick={() => {
+                  handleKYCReview(kycReviewUser.id, 'approved');
+                  setKycReviewUser(null);
+                }}
+                className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-xs font-bold rounded-lg transition"
+              >
+                Approve KYC
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toastMsg && (
+        <div className="fixed top-5 right-5 z-[1000] bg-[#C9A84C] text-[#04091A] px-6 py-4 rounded-xl shadow-2xl border border-[#C9A84C]/30 flex items-center gap-3 font-semibold text-sm animate-in fade-in slide-in-from-top-4 duration-300">
+          <span>{toastMsg}</span>
+          <button onClick={() => setToastMsg('')} className="text-[#04091A]/70 hover:text-[#04091A] font-bold ml-2">×</button>
         </div>
       )}
 

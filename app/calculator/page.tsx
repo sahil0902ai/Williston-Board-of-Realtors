@@ -9,70 +9,126 @@ import { FadeUp } from '@/components/FadeUp';
 
 interface Plan {
   name: string;
-  roi: number;
-  minMonths: number;
-  maxMonths: number;
+  roi: number; // annual or flat
+  isFlat: boolean;
+  minDuration: number;
+  maxDuration: number;
+  durationUnit: 'days' | 'months';
   description: string;
+  minAmount: number;
+  maxAmount: number;
 }
 
 const plans: Record<string, Plan> = {
+  quick7: {
+    name: '7-Day Quick',
+    roi: 8,
+    isFlat: true,
+    minDuration: 7,
+    maxDuration: 7,
+    durationUnit: 'days',
+    description: 'Quick Returns (8% in 7 days)',
+    minAmount: 20000,
+    maxAmount: 200000,
+  },
+  standard30: {
+    name: '30-Day Standard',
+    roi: 15,
+    isFlat: true,
+    minDuration: 30,
+    maxDuration: 30,
+    durationUnit: 'days',
+    description: '15% in 30 days',
+    minAmount: 50000,
+    maxAmount: 1000000,
+  },
   foundation: {
     name: 'Foundation',
-    roi: 18,
-    minMonths: 12,
-    maxMonths: 12,
-    description: 'Secure, entry-level plan'
+    roi: 15,
+    isFlat: false,
+    minDuration: 1, // 30 days
+    maxDuration: 6, // 180 days
+    durationUnit: 'months',
+    description: '15% p.a. Secure Entry',
+    minAmount: 50000,
+    maxAmount: 500000,
   },
-  prosperity: {
-    name: 'Prosperity',
-    roi: 24,
-    minMonths: 12,
-    maxMonths: 18,
-    description: 'Popular growth allocation'
+  growth: {
+    name: 'Growth',
+    roi: 20,
+    isFlat: false,
+    minDuration: 3, // 90 days
+    maxDuration: 6, // 180 days
+    durationUnit: 'months',
+    description: '20% p.a. Wealth Growth',
+    minAmount: 100000,
+    maxAmount: 2000000,
   },
-  legacy: {
-    name: 'Legacy',
-    roi: 30,
-    minMonths: 6,
-    maxMonths: 24,
-    description: 'High-yield wealth builder'
+  premium: {
+    name: 'Premium',
+    roi: 28,
+    isFlat: false,
+    minDuration: 6, // 180 days
+    maxDuration: 12, // 365 days
+    durationUnit: 'months',
+    description: '28% p.a. Premium Yield',
+    minAmount: 500000,
+    maxAmount: 10000000,
   },
-  dynasty: {
-    name: 'Dynasty',
+  elite: {
+    name: 'Elite',
     roi: 35,
-    minMonths: 6,
-    maxMonths: 24,
-    description: 'Bespoke co-developer opportunity'
+    isFlat: false,
+    minDuration: 12, // 365 days
+    maxDuration: 24, // custom
+    durationUnit: 'months',
+    description: '35% p.a. Elite Wealth',
+    minAmount: 2000000,
+    maxAmount: 50000000,
   }
 };
 
 export default function CalculatorPage() {
-  const [amount, setAmount] = useState<number>(5000);
-  const [selectedPlanKey, setSelectedPlanKey] = useState<string>('prosperity');
-  const [months, setMonths] = useState<number>(12);
-
+  const [selectedPlanKey, setSelectedPlanKey] = useState<string>('growth');
   const activePlan = plans[selectedPlanKey];
 
-  // Adjust duration if it falls outside the selected plan bounds
+  const [amount, setAmount] = useState<number>(100000);
+  const [duration, setDuration] = useState<number>(3);
+
+  // Sync duration and amount when activePlan changes
   useEffect(() => {
-    if (months < activePlan.minMonths) {
-      setMonths(activePlan.minMonths);
-    } else if (months > activePlan.maxMonths) {
-      setMonths(activePlan.maxMonths);
+    if (duration < activePlan.minDuration) {
+      setDuration(activePlan.minDuration);
+    } else if (duration > activePlan.maxDuration) {
+      setDuration(activePlan.maxDuration);
+    }
+
+    if (amount < activePlan.minAmount) {
+      setAmount(activePlan.minAmount);
+    } else if (amount > activePlan.maxAmount) {
+      setAmount(activePlan.maxAmount);
     }
   }, [selectedPlanKey, activePlan]);
 
   // Calculations
   const roi = activePlan.roi;
-  const monthlyReturn = (amount * (roi / 100)) / 12;
-  const totalProfit = amount * (roi / 100) * (months / 12);
+  const isDays = activePlan.durationUnit === 'days';
+  
+  const totalProfit = activePlan.isFlat
+    ? amount * (roi / 100)
+    : amount * (roi / 100) * (duration / 12);
+
   const totalReturn = amount + totalProfit;
   const profitPercentage = (totalProfit / amount) * 100;
+
+  const monthlyReturn = activePlan.isFlat
+    ? totalProfit / (duration / 30) // average monthly for flat
+    : (amount * (roi / 100)) / 12;
 
   const principalRatio = (amount / totalReturn) * 100;
   const profitRatio = (totalProfit / totalReturn) * 100;
 
-  const quickAmounts = [500, 1000, 2000, 5000, 10000];
+  const quickAmounts = [50000, 100000, 200000, 500000, 1000000];
 
   return (
     <>
@@ -111,15 +167,15 @@ export default function CalculatorPage() {
                     Investment Amount
                   </label>
                   <span className="text-2xl font-serif text-gold font-bold">
-                    ${amount.toLocaleString('en-US')}
+                    ₦{amount.toLocaleString('en-NG')}
                   </span>
                 </div>
 
                 <input 
                   type="range" 
-                  min={500} 
-                  max={100000} 
-                  step={500} 
+                  min={activePlan.minAmount} 
+                  max={activePlan.maxAmount} 
+                  step={activePlan.minAmount >= 500000 ? 50000 : 10000} 
                   value={amount} 
                   onChange={(e) => setAmount(Number(e.target.value))} 
                   className="w-full h-1 bg-navy-mid border-0 rounded-lg appearance-none cursor-pointer accent-gold"
@@ -127,28 +183,30 @@ export default function CalculatorPage() {
 
                 {/* Quick select buttons */}
                 <div className="flex flex-wrap gap-2 pt-1">
-                  {quickAmounts.map((amt) => (
-                    <button
-                      key={amt}
-                      onClick={() => setAmount(amt)}
-                      className={`text-xs px-3.5 py-2 rounded-lg font-semibold border transition ${
-                        amount === amt 
-                          ? 'bg-gold text-navy border-gold' 
-                          : 'bg-[#04091A]/60 text-gray-300 border-white/5 hover:border-gold/30 hover:text-white'
-                      }`}
-                    >
-                      ${amt.toLocaleString()}
-                    </button>
-                  ))}
+                  {quickAmounts
+                    .filter(amt => amt >= activePlan.minAmount && amt <= activePlan.maxAmount)
+                    .map((amt) => (
+                      <button
+                        key={amt}
+                        onClick={() => setAmount(amt)}
+                        className={`text-xs px-3.5 py-2 rounded-lg font-semibold border transition ${
+                          amount === amt 
+                            ? 'bg-gold text-navy border-gold' 
+                            : 'bg-[#04091A]/60 text-gray-300 border-white/5 hover:border-gold/30 hover:text-white'
+                        }`}
+                      >
+                        ₦{(amt / 1000).toFixed(0)}K
+                      </button>
+                    ))}
                   <button
                     onClick={() => {
-                      const customVal = window.prompt('Enter custom investment amount ($):', amount.toString());
+                      const customVal = window.prompt(`Enter custom investment amount (₦) between ₦${activePlan.minAmount.toLocaleString()} and ₦${activePlan.maxAmount.toLocaleString()}:`, amount.toString());
                       if (customVal) {
                         const parsed = parseInt(customVal.replace(/\D/g, ''), 10);
-                        if (!isNaN(parsed) && parsed >= 500) {
+                        if (!isNaN(parsed) && parsed >= activePlan.minAmount && parsed <= activePlan.maxAmount) {
                           setAmount(parsed);
                         } else if (!isNaN(parsed)) {
-                          alert('Minimum investment amount is $500.');
+                          alert(`Please enter a valid amount within plan limits.`);
                         }
                       }
                     }}
@@ -171,17 +229,19 @@ export default function CalculatorPage() {
                     onChange={(e) => setSelectedPlanKey(e.target.value)}
                     className="w-full px-4 py-3.5 bg-[#04091A] rounded-xl border border-white/5 text-sm text-white focus:outline-none focus:border-gold appearance-none cursor-pointer"
                   >
-                    <option value="foundation">Foundation — 18% ROI (12 months)</option>
-                    <option value="prosperity">Prosperity — 24% ROI (12-18 months)</option>
-                    <option value="legacy">Legacy — 30% ROI (6-24 months)</option>
-                    <option value="dynasty">Dynasty — 35% ROI (Bespoke)</option>
+                    <option value="quick7">7-Day Quick Plan — 8% ROI (7 Days)</option>
+                    <option value="standard30">30-Day Standard Plan — 15% ROI (30 Days)</option>
+                    <option value="foundation">Foundation Plan — 15% p.a. ROI</option>
+                    <option value="growth">Growth Plan — 20% p.a. ROI</option>
+                    <option value="premium">Premium Plan — 28% p.a. ROI</option>
+                    <option value="elite">Elite Plan — 35% p.a. ROI</option>
                   </select>
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
                     ▼
                   </div>
                 </div>
                 <p className="text-[11px] text-gray-text italic">
-                  * Plan type is asset-backed. Current Selection: {activePlan.name} ({activePlan.roi}% Annual ROI).
+                  * Plan type is asset-backed. Current Selection: {activePlan.name} ({activePlan.roi}% {activePlan.isFlat ? 'Flat' : 'Annual'} ROI).
                 </p>
               </div>
 
@@ -193,23 +253,24 @@ export default function CalculatorPage() {
                     Lock Duration
                   </label>
                   <span className="text-lg font-semibold text-white">
-                    {months} Months
+                    {duration} {activePlan.durationUnit === 'days' ? 'Days' : 'Months'}
                   </span>
                 </div>
 
                 <input 
                   type="range" 
-                  min={activePlan.minMonths} 
-                  max={activePlan.maxMonths} 
+                  min={activePlan.minDuration} 
+                  max={activePlan.maxDuration} 
                   step={1} 
-                  value={months} 
-                  onChange={(e) => setMonths(Number(e.target.value))} 
+                  value={duration} 
+                  onChange={(e) => setDuration(Number(e.target.value))} 
                   className="w-full h-1 bg-navy-mid border-0 rounded-lg appearance-none cursor-pointer accent-gold"
+                  disabled={activePlan.minDuration === activePlan.maxDuration}
                 />
 
                 <div className="flex justify-between text-[10px] font-bold text-gray-text uppercase tracking-wider">
-                  <span>Min: {activePlan.minMonths} Months</span>
-                  <span>Max: {activePlan.maxMonths} Months</span>
+                  <span>Min: {activePlan.minDuration} {activePlan.durationUnit}</span>
+                  <span>Max: {activePlan.maxDuration} {activePlan.durationUnit}</span>
                 </div>
               </div>
 
@@ -228,22 +289,26 @@ export default function CalculatorPage() {
                 {/* Outputs Cards Grid */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   
-                  {/* Card 1: Monthly Return */}
+                  {/* Card 1: Periodic Return */}
                   <div className="bg-[#04091A]/60 border border-white/5 rounded-xl p-4">
-                    <div className="text-[10px] text-gray-text uppercase tracking-wider mb-1 font-bold">Monthly Return</div>
-                    <div className="text-lg font-bold text-white">${monthlyReturn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    <div className="text-[10px] text-gray-text uppercase tracking-wider mb-1 font-bold">
+                      {activePlan.isFlat ? 'Daily Equiv.' : 'Monthly Return'}
+                    </div>
+                    <div className="text-lg font-bold text-white">
+                      ₦{((activePlan.isFlat ? totalProfit / duration : monthlyReturn)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
                   </div>
 
                   {/* Card 2: Total Profit */}
                   <div className="bg-[#04091A]/60 border border-white/5 rounded-xl p-4">
                     <div className="text-[10px] text-gray-text uppercase tracking-wider mb-1 font-bold">Total Profit</div>
-                    <div className="text-lg font-bold text-gold">${totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    <div className="text-lg font-bold text-gold">₦{totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                   </div>
 
                   {/* Card 3: Total at Maturity */}
                   <div className="bg-[#04091A]/60 border border-white/5 rounded-xl p-4">
                     <div className="text-[10px] text-gray-text uppercase tracking-wider mb-1 font-bold">At Maturity</div>
-                    <div className="text-lg font-bold text-white">${totalReturn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    <div className="text-lg font-bold text-white">₦{totalReturn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                   </div>
 
                   {/* Card 4: Profit Percentage */}
@@ -259,8 +324,8 @@ export default function CalculatorPage() {
                 {/* Visual Bar Indicator */}
                 <div className="space-y-2 mb-8">
                   <div className="flex justify-between text-[10px] font-bold text-gray-text uppercase tracking-wider">
-                    <span>Principal (${amount.toLocaleString()})</span>
-                    <span>Profit (${totalProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })})</span>
+                    <span>Principal (₦{amount.toLocaleString()})</span>
+                    <span>Profit (₦{totalProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })})</span>
                   </div>
                   <div className="w-full h-3 bg-[#04091A] rounded-full overflow-hidden flex border border-white/5">
                     <div className="bg-navy-light h-full" style={{ width: `${principalRatio}%` }} title="Principal"></div>

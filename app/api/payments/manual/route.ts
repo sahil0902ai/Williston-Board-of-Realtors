@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { getAuthenticatedUser } from '@/lib/auth-helper';
-import { sendDepositPendingEmail } from '@/lib/email';
+import { sendDepositSubmittedEmail } from '@/lib/emails';
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -19,6 +19,7 @@ export async function POST(request: Request) {
     const method = formData.get('method');
     const reference = formData.get('reference');
     const proof = formData.get('proof') as File | null;
+    const planName = formData.get('planName') || 'Investment Deposit';
 
     if (!rawAmount || !method) {
       return NextResponse.json({ error: 'Amount and method are required' }, { status: 400 });
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
     }
 
     if (amount < 500) {
-      return NextResponse.json({ error: 'Minimum deposit amount is $500' }, { status: 400 });
+      return NextResponse.json({ error: 'Minimum deposit amount is ₦500' }, { status: 400 });
     }
 
     let proofUrl = null;
@@ -129,14 +130,40 @@ export async function POST(request: Request) {
     await supabaseAdmin.from('notifications').insert({
       user_id: user.id,
       title: 'Deposit Received — Verification Pending',
-      message: `Your deposit request of $${amount.toLocaleString()} via ${method} has been received. Reference: ${refNumber}. We are verifying details.`,
+      message: `Your deposit request of ₦${amount.toLocaleString()} via ${method} has been received. Reference: ${refNumber}. We are verifying details.`,
       type: 'info',
       is_read: false,
     });
 
-    // Send Deposit Pending Email
     if (email) {
-      await sendDepositPendingEmail(fullName, email, amount, method as string);
+      await sendDepositSubmittedEmail({
+        name: fullName,
+        email,
+        amount,
+        method: method as string,
+        reference: refNumber
+      });
+    }
+
+    // Trigger Telegram Notification to Admin
+    try {
+      const host = request.headers.get('host') || 'localhost:3000';
+      const protocol = host.includes('localhost') ? 'http' : 'https';
+      const origin = `${protocol}://${host}`;
+      await fetch(`${origin}/api/notify-admin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user: `${fullName} (${email})`,
+          amount: amount,
+          method: method === 'OPay Bank Transfer' ? 'OPay Transfer' : (method as string),
+          plan: planName as string,
+          reference: refNumber,
+          adminUrl: `${origin}/admin`
+        })
+      });
+    } catch (tgError) {
+      console.error('Failed to trigger notify-admin bot:', tgError);
     }
 
     return NextResponse.json({

@@ -11,16 +11,21 @@ interface WithdrawTabProps {
 export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: WithdrawTabProps) {
   const [step, setStep] = useState(1);
   const [amount, setAmount] = useState('');
-  const [payoutMethod, setPayoutMethod] = useState<'cashapp' | 'zelle' | 'crypto' | 'ach'>('cashapp');
+  const [payoutMethod, setPayoutMethod] = useState<'bank' | 'opay' | 'crypto'>('bank');
   
-  const [cashappTag, setCashappTag] = useState('');
-  const [zelleInfo, setZelleInfo] = useState('');
-  const [cryptoCoin, setCryptoCoin] = useState('BTC');
+  // Bank details
+  const [bankName, setBankName] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [sortCode, setSortCode] = useState('');
+  const [accountName, setAccountName] = useState('');
+  
+  // Opay details
+  const [opayPhone, setOpayPhone] = useState('');
+  const [opayName, setOpayName] = useState('');
+
+  // Crypto details
+  const [cryptoCoin, setCryptoCoin] = useState<'BTC' | 'USDT'>('USDT');
   const [cryptoAddress, setCryptoAddress] = useState('');
-  const [achBankName, setAchBankName] = useState('');
-  const [achRouting, setAchRouting] = useState('');
-  const [achAccount, setAchAccount] = useState('');
-  const [achType, setAchType] = useState('Checking');
 
   const [pin, setPin] = useState(['', '', '', '']);
   const [rulesExpanded, setRulesExpanded] = useState(false);
@@ -63,17 +68,18 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
     setErrorMsg('');
 
     try {
-      const res = await fetch('/api/withdrawals/create', {
+      const res = await fetch('/api/withdrawals/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           amount: parseFloat(amount),
-          method: payoutMethod,
-          walletAddress: payoutMethod === 'crypto' ? `${cryptoCoin}:${cryptoAddress}` : undefined,
-          bankName: payoutMethod === 'ach' ? achBankName : undefined,
-          accountNumber: payoutMethod === 'ach' ? achAccount : undefined,
-          cashappTag: payoutMethod === 'cashapp' ? cashappTag : undefined,
-          zelleEmail: payoutMethod === 'zelle' ? zelleInfo : undefined
+          method: payoutMethod === 'crypto' ? (cryptoCoin === 'BTC' ? 'bitcoin' : 'usdt') : payoutMethod,
+          bankName: payoutMethod === 'bank' ? bankName : (payoutMethod === 'opay' ? 'Opay' : undefined),
+          accountNumber: payoutMethod === 'bank' ? accountNumber : (payoutMethod === 'opay' ? opayPhone : undefined),
+          routingNumber: payoutMethod === 'bank' ? sortCode : (payoutMethod === 'opay' ? 'Opay' : undefined),
+          accountName: payoutMethod === 'bank' ? accountName : (payoutMethod === 'opay' ? opayName : undefined),
+          btcAddress: payoutMethod === 'crypto' && cryptoCoin === 'BTC' ? cryptoAddress : undefined,
+          usdtAddress: payoutMethod === 'crypto' && cryptoCoin === 'USDT' ? cryptoAddress : undefined,
         })
       });
 
@@ -145,11 +151,11 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
         <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-full blur-[40px] pointer-events-none"></div>
         <div>
            <div className="text-gray-text text-sm mb-1">Available Balance</div>
-           <div className="text-4xl font-serif text-gold">${availableBalance.toLocaleString()}</div>
+           <div className="text-4xl font-serif text-gold">₦{availableBalance.toLocaleString()}</div>
         </div>
         <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg px-4 py-3 flex flex-col items-center md:items-end w-full md:w-auto">
           <div className="text-xs text-gray-text flex items-center gap-1.5"><ArrowUpRight size={14} className="text-yellow-500" /> Secure platform</div>
-          <div className="text-yellow-500 font-medium">FinCEN Audited <span className="text-[10px] text-gray-text font-normal">(Verified)</span></div>
+          <div className="text-yellow-500 font-medium">CBN Compliant <span className="text-[10px] text-gray-text font-normal">(Verified)</span></div>
         </div>
       </div>
 
@@ -184,68 +190,68 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
 
           {step === 1 && (
             <div className="space-y-6">
-              <div>
-                <h3 className="text-xl font-serif mb-1">Enter Withdrawal Amount</h3>
-                <p className="text-sm text-gray-text">How much would you like to withdraw?</p>
-              </div>
+               <div>
+                 <h3 className="text-xl font-serif mb-1">Enter Withdrawal Amount</h3>
+                 <p className="text-sm text-gray-text">How much would you like to withdraw?</p>
+               </div>
 
-              <div className="space-y-3">
-                <label className="text-sm text-gray-text font-medium block">Amount ($)</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-text text-lg">$</span>
-                  <input 
-                    type="number" 
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    className="w-full bg-navy border border-border-subtle rounded-xl py-4 pl-10 pr-4 text-white text-lg focus:outline-none focus:border-gold transition-colors font-medium"
-                    placeholder="Enter amount"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-sm text-gray-text font-medium block">Quick Amounts</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {[
-                     { label: '$500', val: '500' }, 
-                     { label: '$1,000', val: '1000' }, 
-                     { label: '$5,000', val: '5000' }, 
-                     { label: 'Withdraw All', val: availableBalance.toString() }
-                  ].map(btn => (
-                    <button 
-                      key={btn.val}
-                      onClick={() => handleAmountSelect(btn.val)}
-                      className={`py-3 px-2 rounded-lg border text-sm font-medium transition-colors ${amount === btn.val ? 'bg-gold/10 border-gold text-gold' : 'bg-navy border-border-subtle text-gray-text hover:text-white hover:border-gray-500'}`}
-                    >
-                      {btn.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 flex gap-3 text-sm">
-                 <AlertTriangle size={20} className="text-yellow-500 shrink-0" />
-                 <div className="text-yellow-500 space-y-1">
-                    <p className="font-medium">Minimum withdrawal: $100</p>
-                    <p className="text-xs opacity-80">Processing time varies by payout method</p>
+               <div className="space-y-3">
+                 <label className="text-sm text-gray-text font-medium block">Amount (₦)</label>
+                 <div className="relative">
+                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-text text-lg">₦</span>
+                   <input 
+                     type="number" 
+                     value={amount}
+                     onChange={(e) => setAmount(e.target.value)}
+                     className="w-full bg-navy border border-border-subtle rounded-xl py-4 pl-10 pr-4 text-white text-lg focus:outline-none focus:border-gold transition-colors font-medium"
+                     placeholder="Enter amount"
+                   />
                  </div>
-              </div>
+               </div>
 
-              <div className="pt-2">
-                <button 
-                  onClick={handleNext}
-                  disabled={!amount || parseInt(amount) < 100 || parseInt(amount) > availableBalance || parseInt(amount) > 50000}
-                  className="w-full py-4 bg-gold text-navy rounded-xl font-bold text-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  Continue <ArrowRight size={20} />
-                </button>
-                {parseInt(amount) > availableBalance && (
-                   <p className="text-red-400 text-xs text-center mt-2">Insufficient balance</p>
-                )}
-                {parseInt(amount) > 50000 && (
-                   <p className="text-red-400 text-xs text-center mt-2">Maximum single withdrawal is $50,000</p>
-                )}
-              </div>
+               <div className="space-y-3">
+                 <label className="text-sm text-gray-text font-medium block">Quick Amounts</label>
+                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                   {[
+                      { label: '₦10,000', val: '10000' }, 
+                      { label: '₦50,000', val: '50000' }, 
+                      { label: '₦100,000', val: '100000' }, 
+                      { label: 'Withdraw All', val: availableBalance.toString() }
+                   ].map(btn => (
+                     <button 
+                       key={btn.val}
+                       onClick={() => handleAmountSelect(btn.val)}
+                       className={`py-3 px-2 rounded-lg border text-sm font-medium transition-colors ${amount === btn.val ? 'bg-gold/10 border-gold text-gold' : 'bg-navy border-border-subtle text-gray-text hover:text-white hover:border-gray-500'}`}
+                     >
+                       {btn.label}
+                     </button>
+                   ))}
+                 </div>
+               </div>
+
+               <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 flex gap-3 text-sm">
+                  <AlertTriangle size={20} className="text-yellow-500 shrink-0" />
+                  <div className="text-yellow-500 space-y-1">
+                     <p className="font-medium">Minimum withdrawal: ₦5,000</p>
+                     <p className="text-xs opacity-80">Processing time varies by payout method</p>
+                  </div>
+               </div>
+
+               <div className="pt-2">
+                 <button 
+                   onClick={handleNext}
+                   disabled={!amount || parseInt(amount) < 5000 || parseInt(amount) > availableBalance || parseInt(amount) > 10000000}
+                   className="w-full py-4 bg-gold text-navy rounded-xl font-bold text-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                 >
+                   Continue <ArrowRight size={20} />
+                 </button>
+                 {parseInt(amount) > availableBalance && (
+                    <p className="text-red-400 text-xs text-center mt-2">Insufficient balance</p>
+                 )}
+                 {parseInt(amount) > 10000000 && (
+                    <p className="text-red-400 text-xs text-center mt-2">Maximum single withdrawal is ₦10,000,000</p>
+                 )}
+               </div>
             </div>
           )}
 
@@ -263,64 +269,111 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
 
               <div className="space-y-4">
                  
-                 {/* Cash App */}
+                 {/* Local Bank Transfer */}
                  <div 
-                   className={`border rounded-xl p-5 cursor-pointer transition ${payoutMethod === 'cashapp' ? 'bg-gold/5 border-gold shadow-[0_0_15px_rgba(201,168,76,0.1)]' : 'bg-navy border-border-subtle hover:border-gray-500'}`}
-                   onClick={() => setPayoutMethod('cashapp')}
+                   className={`border rounded-xl p-5 cursor-pointer transition ${payoutMethod === 'bank' ? 'bg-gold/5 border-gold shadow-[0_0_15px_rgba(201,168,76,0.1)]' : 'bg-navy border-border-subtle hover:border-gray-500'}`}
+                   onClick={() => setPayoutMethod('bank')}
                  >
                    <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-full bg-navy-light flex items-center justify-center border border-border-subtle shrink-0">
-                         <span className="text-white font-bold text-xl">$</span>
+                         <Building size={20} className="text-white" />
                       </div>
                       <div>
-                         <h4 className="font-medium text-white mb-1 flex items-center gap-2">Cash App Payout <span className="bg-green-500/20 text-green-400 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Fastest</span></h4>
-                         <p className="text-xs text-gray-text">Processing: Within 2 hours</p>
+                         <h4 className="font-medium text-white mb-1 flex items-center gap-2">Local Bank Transfer</h4>
+                         <p className="text-xs text-gray-text">Processing: 1-2 business days</p>
                       </div>
                       <div className="ml-auto w-5 h-5 rounded-full border border-border-subtle flex items-center justify-center transition-colors">
-                         {payoutMethod === 'cashapp' && <div className="w-3 h-3 bg-gold rounded-full"></div>}
+                         {payoutMethod === 'bank' && <div className="w-3 h-3 bg-gold rounded-full"></div>}
                       </div>
                    </div>
-                   {payoutMethod === 'cashapp' && (
-                     <div className="mt-4 pt-4 border-t border-border-subtle animate-in fade-in slide-in-from-top-2" onClick={(e) => e.stopPropagation()}>
-                       <label className="text-xs text-gray-text block mb-1.5">Your Cash App $Cashtag</label>
-                       <input 
-                         type="text" 
-                         value={cashappTag}
-                         onChange={(e) => setCashappTag(e.target.value)}
-                         className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:outline-none focus:border-gold"
-                         placeholder="e.g. $johndoe"
-                       />
+                   {payoutMethod === 'bank' && (
+                     <div className="mt-4 pt-4 border-t border-border-subtle space-y-4 animate-in fade-in slide-in-from-top-2" onClick={(e) => e.stopPropagation()}>
+                       <div className="space-y-1.5">
+                         <label className="text-xs text-gray-text">Bank Name</label>
+                         <input 
+                           type="text" 
+                           value={bankName}
+                           onChange={(e) => setBankName(e.target.value)}
+                           className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:outline-none focus:border-gold"
+                           placeholder="e.g. GTBank, Access Bank, Zenith Bank"
+                         />
+                       </div>
+                       <div className="grid grid-cols-2 gap-4">
+                         <div className="space-y-1.5">
+                           <label className="text-xs text-gray-text">Account Number</label>
+                           <input 
+                             type="text" 
+                             value={accountNumber}
+                             onChange={(e) => setAccountNumber(e.target.value)}
+                             className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:outline-none focus:border-gold font-mono"
+                             placeholder="10 digits"
+                             maxLength={10}
+                           />
+                         </div>
+                         <div className="space-y-1.5">
+                           <label className="text-xs text-gray-text">Sort Code / Routing</label>
+                           <input 
+                             type="text" 
+                             value={sortCode}
+                             onChange={(e) => setSortCode(e.target.value)}
+                             className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:outline-none focus:border-gold font-mono"
+                             placeholder="Sort Code"
+                           />
+                         </div>
+                       </div>
+                       <div className="space-y-1.5">
+                         <label className="text-xs text-gray-text">Account Name</label>
+                         <input 
+                           type="text" 
+                           value={accountName}
+                           onChange={(e) => setAccountName(e.target.value)}
+                           className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:outline-none focus:border-gold"
+                           placeholder="Full name on account"
+                         />
+                       </div>
                      </div>
                    )}
                  </div>
 
-                 {/* Zelle */}
+                 {/* Opay Payout */}
                  <div 
-                   className={`border rounded-xl p-5 cursor-pointer transition ${payoutMethod === 'zelle' ? 'bg-gold/5 border-gold shadow-[0_0_15px_rgba(201,168,76,0.1)]' : 'bg-navy border-border-subtle hover:border-gray-500'}`}
-                   onClick={() => setPayoutMethod('zelle')}
+                   className={`border rounded-xl p-5 cursor-pointer transition ${payoutMethod === 'opay' ? 'bg-gold/5 border-gold shadow-[0_0_15px_rgba(201,168,76,0.1)]' : 'bg-navy border-border-subtle hover:border-gray-500'}`}
+                   onClick={() => setPayoutMethod('opay')}
                  >
                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-navy-light flex items-center justify-center border border-border-subtle shrink-0 font-serif italic text-xl text-purple-400">
-                         Z
+                      <div className="w-12 h-12 rounded-full bg-navy-light flex items-center justify-center border border-border-subtle shrink-0 font-serif italic text-xl text-green-400">
+                         OP
                       </div>
                       <div>
-                         <h4 className="font-medium text-white mb-1">Zelle Transfer</h4>
-                         <p className="text-xs text-gray-text">Processing: Same business day</p>
+                         <h4 className="font-medium text-white mb-1">Opay Transfer</h4>
+                         <p className="text-xs text-gray-text">Processing: Within 2 hours</p>
                       </div>
                       <div className="ml-auto w-5 h-5 rounded-full border border-border-subtle flex items-center justify-center transition-colors">
-                         {payoutMethod === 'zelle' && <div className="w-3 h-3 bg-gold rounded-full"></div>}
+                         {payoutMethod === 'opay' && <div className="w-3 h-3 bg-gold rounded-full"></div>}
                       </div>
                    </div>
-                   {payoutMethod === 'zelle' && (
-                     <div className="mt-4 pt-4 border-t border-border-subtle animate-in fade-in slide-in-from-top-2" onClick={(e) => e.stopPropagation()}>
-                       <label className="text-xs text-gray-text block mb-1.5">Zelle Email or Phone Number</label>
-                       <input 
-                         type="text" 
-                         value={zelleInfo}
-                         onChange={(e) => setZelleInfo(e.target.value)}
-                         className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:outline-none focus:border-gold"
-                         placeholder="Email or phone linked to your bank"
-                       />
+                   {payoutMethod === 'opay' && (
+                     <div className="mt-4 pt-4 border-t border-border-subtle space-y-4 animate-in fade-in slide-in-from-top-2" onClick={(e) => e.stopPropagation()}>
+                       <div className="space-y-1.5">
+                         <label className="text-xs text-gray-text block mb-1.5">Opay Account / Phone Number</label>
+                         <input 
+                           type="text" 
+                           value={opayPhone}
+                           onChange={(e) => setOpayPhone(e.target.value)}
+                           className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:outline-none focus:border-gold"
+                           placeholder="Opay account number"
+                         />
+                       </div>
+                       <div className="space-y-1.5">
+                         <label className="text-xs text-gray-text block mb-1.5">Account Name</label>
+                         <input 
+                           type="text" 
+                           value={opayName}
+                           onChange={(e) => setOpayName(e.target.value)}
+                           className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:outline-none focus:border-gold"
+                           placeholder="Account owner's name"
+                         />
+                       </div>
                      </div>
                    )}
                  </div>
@@ -345,19 +398,21 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
                    {payoutMethod === 'crypto' && (
                      <div className="mt-4 pt-4 border-t border-border-subtle space-y-4 animate-in fade-in slide-in-from-top-2" onClick={(e) => e.stopPropagation()}>
                        {amount && !isNaN(parseFloat(amount)) && parseFloat(amount) > 0 && cryptoCoin === 'BTC' && (
-                         <div className="text-xs text-green-400 font-medium">Estimated payout: {(parseFloat(amount) / 64300).toFixed(6)} BTC</div>
+                         <div className="text-xs text-green-400 font-medium">Estimated payout: {(parseFloat(amount) / 1600 / 64300).toFixed(6)} BTC (at ₦1,600/$)</div>
+                       )}
+                       {amount && !isNaN(parseFloat(amount)) && parseFloat(amount) > 0 && cryptoCoin === 'USDT' && (
+                         <div className="text-xs text-green-400 font-medium">Estimated payout: {(parseFloat(amount) / 1600).toFixed(2)} USDT (at ₦1,600/$)</div>
                        )}
                        <div className="space-y-1.5">
                          <label className="text-xs text-gray-text">Select Asset</label>
                          <div className="relative">
                             <select 
                               value={cryptoCoin} 
-                              onChange={(e) => setCryptoCoin(e.target.value)}
+                              onChange={(e) => setCryptoCoin(e.target.value as any)}
                               className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:outline-none focus:border-gold appearance-none"
                             >
-                               <option value="BTC">Bitcoin (BTC)</option>
                                <option value="USDT">Tether (USDT TRC20)</option>
-                               <option value="ETH">Ethereum (ETH)</option>
+                               <option value="BTC">Bitcoin (BTC)</option>
                             </select>
                             <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-text pointer-events-none" />
                          </div>
@@ -376,96 +431,22 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
                    )}
                  </div>
 
-                 {/* ACH */}
-                 <div 
-                   className={`border rounded-xl p-5 cursor-pointer transition ${payoutMethod === 'ach' ? 'bg-gold/5 border-gold shadow-[0_0_15px_rgba(201,168,76,0.1)]' : 'bg-navy border-border-subtle hover:border-gray-500'}`}
-                   onClick={() => setPayoutMethod('ach')}
-                 >
-                   <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-navy-light flex items-center justify-center border border-border-subtle shrink-0">
-                         <Building size={20} className="text-white" />
-                      </div>
-                      <div>
-                         <h4 className="font-medium text-white mb-1">Bank Account (ACH)</h4>
-                         <p className="text-xs text-gray-text">Processing: 2-3 business days</p>
-                      </div>
-                      <div className="ml-auto w-5 h-5 rounded-full border border-border-subtle flex items-center justify-center transition-colors">
-                         {payoutMethod === 'ach' && <div className="w-3 h-3 bg-gold rounded-full"></div>}
-                      </div>
-                   </div>
-                   {payoutMethod === 'ach' && (
-                     <div className="mt-4 pt-4 border-t border-border-subtle space-y-4 animate-in fade-in slide-in-from-top-2" onClick={(e) => e.stopPropagation()}>
-                       <div className="space-y-1.5">
-                         <label className="text-xs text-gray-text">Bank Name</label>
-                         <input 
-                           type="text" 
-                           value={achBankName}
-                           onChange={(e) => setAchBankName(e.target.value)}
-                           className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:outline-none focus:border-gold"
-                           placeholder="e.g. Chase, Bank of America"
-                         />
-                       </div>
-                       <div className="grid grid-cols-2 gap-4">
-                         <div className="space-y-1.5">
-                           <label className="text-xs text-gray-text">Account Type</label>
-                           <div className="relative">
-                              <select 
-                                value={achType}
-                                onChange={(e) => setAchType(e.target.value)}
-                                className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:outline-none focus:border-gold appearance-none"
-                              >
-                                 <option value="Checking">Checking</option>
-                                 <option value="Savings">Savings</option>
-                              </select>
-                              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-text pointer-events-none" />
-                           </div>
-                         </div>
-                         <div className="space-y-1.5">
-                           <label className="text-xs text-gray-text">Routing Number</label>
-                           <input 
-                             type="text" 
-                             value={achRouting}
-                             onChange={(e) => setAchRouting(e.target.value)}
-                             className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:outline-none focus:border-gold font-mono"
-                             placeholder="9 digits"
-                             maxLength={9}
-                           />
-                         </div>
-                       </div>
-                       <div className="space-y-1.5">
-                         <label className="text-xs text-gray-text">Account Number</label>
-                         <input 
-                           type="text" 
-                           value={achAccount}
-                           onChange={(e) => setAchAccount(e.target.value)}
-                           className="w-full bg-navy border border-border-subtle rounded-lg py-3 px-4 text-white text-sm focus:outline-none focus:border-gold font-mono"
-                           placeholder="Account Number"
-                         />
-                       </div>
-                     </div>
-                   )}
-                 </div>
-
               </div>
 
               <div className="pt-4">
                 <button 
                   onClick={handleNext}
                   disabled={
-                    (payoutMethod === 'cashapp' && !cashappTag) ||
-                    (payoutMethod === 'zelle' && !zelleInfo) ||
-                    (payoutMethod === 'crypto' && (!cryptoAddress || parseFloat(amount) < 200)) ||
-                    (payoutMethod === 'ach' && (!achBankName || !achRouting || !achAccount || parseFloat(amount) < 500))
+                    (payoutMethod === 'bank' && (!bankName || !accountNumber || !sortCode || !accountName)) ||
+                    (payoutMethod === 'opay' && (!opayPhone || !opayName)) ||
+                    (payoutMethod === 'crypto' && (!cryptoAddress || parseFloat(amount) < 5000))
                   }
                   className="w-full py-4 bg-gold text-navy rounded-xl font-bold text-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   Continue <ArrowRight size={20} />
                 </button>
-                {payoutMethod === 'crypto' && parseFloat(amount) < 200 && (
-                   <p className="text-red-400 text-xs text-center mt-2">Minimum crypto withdrawal is $200</p>
-                )}
-                {payoutMethod === 'ach' && parseFloat(amount) < 500 && (
-                   <p className="text-red-400 text-xs text-center mt-2">Minimum ACH withdrawal is $500</p>
+                {payoutMethod === 'crypto' && parseFloat(amount) < 5000 && (
+                   <p className="text-red-400 text-xs text-center mt-2">Minimum crypto withdrawal is ₦5,000</p>
                 )}
               </div>
             </div>
@@ -534,43 +515,40 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
                  <div className="p-6 space-y-4">
                     <div className="flex justify-between items-center pb-4 border-b border-border-subtle">
                        <span className="text-gray-text text-sm">Withdrawal Amount</span>
-                       <span className="font-serif text-2xl text-white">${parseInt(amount).toLocaleString()}</span>
+                       <span className="font-serif text-2xl text-white">₦{parseInt(amount).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center">
                        <span className="text-gray-text text-sm">Method</span>
                        <span className="text-white text-sm font-medium">
-                         {payoutMethod === 'cashapp' ? 'Cash App' : 
-                          payoutMethod === 'zelle' ? 'Zelle' : 
-                          payoutMethod === 'crypto' ? `Crypto (${cryptoCoin})` : 
-                          'Bank Transfer (ACH)'}
+                         {payoutMethod === 'bank' ? 'Bank Transfer' : 
+                          payoutMethod === 'opay' ? 'Opay Transfer' : 
+                          `Crypto (${cryptoCoin})`}
                        </span>
                     </div>
                     <div className="flex justify-between items-center pb-4 border-b border-border-subtle bg">
                        <span className="text-gray-text text-sm">Destination</span>
                        <span className="text-white text-sm font-medium truncate max-w-[200px] text-right font-mono text-xs">
-                         {payoutMethod === 'cashapp' ? cashappTag :
-                          payoutMethod === 'zelle' ? zelleInfo :
-                          payoutMethod === 'crypto' ? cryptoAddress :
-                          achBankName + (achAccount ? ' - ' + achAccount.slice(-4) : '')}
+                         {payoutMethod === 'bank' ? `${bankName} (${accountNumber})` :
+                          payoutMethod === 'opay' ? `Opay (${opayPhone})` :
+                          cryptoAddress}
                        </span>
                     </div>
                     <div className="flex justify-between items-center">
                        <span className="text-gray-text text-sm">Processing Fee</span>
-                       <span className="text-green-400 text-sm font-medium">$0 (Free)</span>
+                       <span className="text-green-400 text-sm font-medium">₦0 (Free)</span>
                     </div>
                     <div className="flex justify-between items-center pt-2">
                        <span className="text-gray-text text-sm">Expected Arrival</span>
                        <span className="text-gold text-sm font-medium">
-                         {payoutMethod === 'cashapp' ? 'Within 2 hours' : 
-                          payoutMethod === 'zelle' ? 'Same business day' : 
-                          payoutMethod === 'crypto' ? '30-60 minutes' : 
-                          '2-3 business days'}
+                         {payoutMethod === 'bank' ? '1-2 business days' : 
+                          payoutMethod === 'opay' ? 'Within 2 hours' : 
+                          '30-60 minutes'}
                        </span>
                     </div>
                  </div>
                  <div className="bg-navy-light/50 p-6 border-t border-border-subtle flex justify-between items-center">
                     <span className="text-white font-medium uppercase tracking-wider text-xs">You Receive</span>
-                    <span className="font-serif text-3xl text-gold">${parseInt(amount).toLocaleString()}</span>
+                    <span className="font-serif text-3xl text-gold">₦{parseInt(amount).toLocaleString()}</span>
                  </div>
               </div>
 
@@ -620,12 +598,12 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
          {rulesExpanded && (
             <div className="p-5 pt-0 text-sm text-gray-text border-t border-border-subtle bg-navy/30">
                <ul className="space-y-3 mt-4 ml-2">
-                  <li className="flex gap-3 isolate"><div className="w-1.5 h-1.5 rounded-full bg-gold/50 shrink-0 mt-1.5"></div> Minimum withdrawal: $100</li>
-                  <li className="flex gap-3 isolate"><div className="w-1.5 h-1.5 rounded-full bg-gold/50 shrink-0 mt-1.5"></div> Maximum single withdrawal: $50,000</li>
-                  <li className="flex gap-3 isolate"><div className="w-1.5 h-1.5 rounded-full bg-gold/50 shrink-0 mt-1.5"></div> Withdrawals processed Monday–Friday, 9am–5pm CST</li>
+                  <li className="flex gap-3 isolate"><div className="w-1.5 h-1.5 rounded-full bg-gold/50 shrink-0 mt-1.5"></div> Minimum withdrawal: ₦5,000</li>
+                  <li className="flex gap-3 isolate"><div className="w-1.5 h-1.5 rounded-full bg-gold/50 shrink-0 mt-1.5"></div> Maximum single withdrawal: ₦10,000,000</li>
+                  <li className="flex gap-3 isolate"><div className="w-1.5 h-1.5 rounded-full bg-gold/50 shrink-0 mt-1.5"></div> Withdrawals processed Monday–Friday, 9am–5pm WAT</li>
                   <li className="flex gap-3 isolate"><div className="w-1.5 h-1.5 rounded-full bg-gold/50 shrink-0 mt-1.5"></div> Crypto withdrawals: 24/7</li>
-                  <li className="flex gap-3 isolate"><div className="w-1.5 h-1.5 rounded-full bg-gold/50 shrink-0 mt-1.5"></div> Cash App &amp; Zelle: business hours only</li>
-                  <li className="flex gap-3 isolate"><div className="w-1.5 h-1.5 rounded-full bg-gold/50 shrink-0 mt-1.5"></div> Bank wire: 2–3 business days</li>
+                  <li className="flex gap-3 isolate"><div className="w-1.5 h-1.5 rounded-full bg-gold/50 shrink-0 mt-1.5"></div> Opay: business hours only</li>
+                  <li className="flex gap-3 isolate"><div className="w-1.5 h-1.5 rounded-full bg-gold/50 shrink-0 mt-1.5"></div> Local Bank Transfer: 1–2 business days</li>
                   <li className="flex gap-3 isolate"><div className="w-1.5 h-1.5 rounded-full bg-gold/50 shrink-0 mt-1.5"></div> Early exit from active plan: 10% penalty applies</li>
                </ul>
             </div>

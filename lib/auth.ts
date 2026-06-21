@@ -1,10 +1,25 @@
-import { supabase } from './supabase'
+import { supabase } from './supabase';
+
+interface RegisterParams {
+  fullName: string;
+  email: string;
+  password?: string;
+  phone?: string;
+  country?: string;
+  referralCode?: string;
+}
+
+interface LoginParams {
+  email: string;
+  password?: string;
+  totpToken?: string;
+}
 
 /**
  * Register a new user profile via the backend API.
  * This runs on the client-side and invokes the backend rate-limit-bypassing registration flow.
  */
-export async function registerUser({ fullName, email, password, phone, country, referralCode }) {
+export async function registerUser({ fullName, email, password, phone, country, referralCode }: RegisterParams) {
   const response = await fetch('/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -30,7 +45,7 @@ export async function registerUser({ fullName, email, password, phone, country, 
  * Log in a user via the backend API (verifies TOTP 2FA if enabled and logs IP/timestamps)
  * and then sets the session in the client-side Supabase Auth instance.
  */
-export async function loginUser({ email, password, totpToken }) {
+export async function loginUser({ email, password, totpToken }: LoginParams) {
   const response = await fetch('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

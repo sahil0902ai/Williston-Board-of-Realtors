@@ -63,9 +63,9 @@ export default function Chatbot() {
       let replyText = '';
 
       if (userQuery.includes('payout') || userQuery.includes('withdraw') || userQuery.includes('method')) {
-        replyText = 'Williston supports secure US-based payout methods: \n• Cash App (Minimum $100)\n• Zelle Transfer (Minimum $100)\n• Crypto Withdrawal (BTC/USDT/ETH, Minimum $200)\n• Bank Account ACH (Minimum $500). Payouts are requested through the Wallet tab.';
+        replyText = 'Williston supports secure payout methods: \n• Local Bank Transfer (Minimum ₦5,000)\n• Opay / Mobile Money (Minimum ₦5,000)\n• Crypto Withdrawal (BTC/USDT, Minimum ₦5,000). Payouts are requested through the Wallet tab.';
       } else if (userQuery.includes('minimum') || userQuery.includes('limit') || userQuery.includes('price')) {
-        replyText = 'Investment minimums:\n• Financial packages (Foundation plan): $500\n• Commercial House investments: $40,000\n• Standard House investments: $80,000\n• Luxury House properties: $300,000.';
+        replyText = 'Investment minimums:\n• Financial packages (Foundation plan): ₦20,000\n• Property co-ownership shares: from ₦20,000.';
       } else if (userQuery.includes('referral') || userQuery.includes('commission') || userQuery.includes('partner')) {
         replyText = 'Our Partner Program pays a 5% to 10% instant commission deposited directly into your withdrawable wallet on your invitee\'s first investment cycle.';
       } else if (userQuery.includes('contact') || userQuery.includes('email') || userQuery.includes('telegram') || userQuery.includes('support')) {
@@ -94,11 +94,11 @@ export default function Chatbot() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[998] flex flex-col items-end">
+    <div className="fixed bottom-20 md:bottom-6 right-6 z-[970] flex flex-col items-end">
       {/* Chat Window */}
       <div
         id="chatWindow"
-        className={`w-[340px] sm:w-[380px] h-[500px] bg-navy-mid border border-border-gold rounded-2xl shadow-2xl flex flex-col overflow-hidden mb-4 transition-all duration-300 transform origin-bottom-right ${
+        className={`chatbot-window w-[340px] sm:w-[380px] h-[500px] bg-navy-mid border border-border-gold rounded-2xl shadow-2xl flex flex-col overflow-hidden mb-4 transition-all duration-300 transform origin-bottom-right ${
           isOpen ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-90 translate-y-4 pointer-events-none'
         }`}
       >
@@ -106,7 +106,7 @@ export default function Chatbot() {
         <div className="bg-navy p-4 border-b border-border-subtle flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-gold/10 border border-gold flex items-center justify-center text-gold">
-              <Bot size={18} />
+              <Bot size={18} style={{ pointerEvents: 'none' }} />
             </div>
             <div>
               <div className="text-sm font-semibold text-white">Williston AI Advisor</div>
@@ -117,11 +117,18 @@ export default function Chatbot() {
           </div>
           <button
             onClick={handleToggle}
-            className="text-gray-text hover:text-white transition-colors"
+            className="text-gray-text hover:text-white transition-colors flex items-center justify-center"
             aria-label="Close Chat"
             suppressHydrationWarning
+            style={{
+              minHeight: '44px',
+              minWidth: '44px',
+              cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
+            }}
           >
-            <X size={20} />
+            <X size={20} style={{ pointerEvents: 'none' }} />
           </button>
         </div>
 
@@ -180,7 +187,7 @@ export default function Chatbot() {
         </div>
 
         {/* Input Form */}
-        <div className="p-4 bg-navy border-t border-border-subtle flex gap-2">
+        <div className="chatbot-input-area p-4 bg-navy border-t border-border-subtle flex gap-2">
           <input
             id="chatInput"
             type="text"
@@ -196,8 +203,15 @@ export default function Chatbot() {
             className="w-11 h-11 bg-gold hover:bg-gold-light text-navy rounded-xl flex items-center justify-center shrink-0 transition-colors"
             aria-label="Send Message"
             suppressHydrationWarning
+            style={{
+              minHeight: '44px',
+              minWidth: '44px',
+              cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
+            }}
           >
-            <Send size={16} />
+            <Send size={16} style={{ pointerEvents: 'none' }} />
           </button>
         </div>
       </div>
@@ -206,11 +220,20 @@ export default function Chatbot() {
       <button
         id="chatToggle"
         onClick={handleToggle}
-        className="w-14 h-14 bg-gold hover:bg-gold-light text-navy rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-105"
+        className="chatbot-toggle-btn w-14 h-14 bg-gold hover:bg-gold-light text-navy rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-105"
         aria-label="Open chat assistant"
         suppressHydrationWarning
+        style={{
+          minHeight: '56px',
+          minWidth: '56px',
+          cursor: 'pointer',
+          WebkitTapHighlightColor: 'transparent',
+          touchAction: 'manipulation',
+          position: 'relative',
+          zIndex: 1,
+        }}
       >
-        {isOpen ? <X size={24} /> : <MessageCircle size={28} />}
+        {isOpen ? <X size={24} style={{ pointerEvents: 'none' }} /> : <MessageCircle size={28} style={{ pointerEvents: 'none' }} />}
       </button>
     </div>
   );

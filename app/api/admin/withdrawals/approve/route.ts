@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { isAdminRequest, getAuthenticatedUser } from '@/lib/auth-helper';
-import { sendWithdrawalApprovedEmail } from '@/lib/email';
+import { sendWithdrawalEmail } from '@/lib/emails';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,13 +84,18 @@ export async function POST(request: Request) {
       await supabaseAdmin.from('notifications').insert({
         user_id: userId,
         title: 'Withdrawal Request Approved 💸',
-        message: `Your withdrawal request of $${amount.toLocaleString()} has been approved and sent to your ${withdrawal.method}.`,
+        message: `Your withdrawal request of ₦${amount.toLocaleString()} has been approved and sent to your ${withdrawal.method}.`,
         type: 'success',
         is_read: false,
       });
 
       // Send email
-      await sendWithdrawalApprovedEmail(profile.full_name, profile.email, amount, withdrawal.method);
+      await sendWithdrawalEmail({
+        name: profile.full_name,
+        email: profile.email,
+        amount,
+        method: withdrawal.method
+      });
 
     } else if (action === 'reject') {
       // Reject Withdrawal Flow - Refund held amount
@@ -127,7 +132,7 @@ export async function POST(request: Request) {
       await supabaseAdmin.from('notifications').insert({
         user_id: userId,
         title: 'Withdrawal Request Rejected ❌',
-        message: `Your withdrawal of $${amount.toLocaleString()} was rejected and refunded. Reason: ${reason}.`,
+        message: `Your withdrawal of ₦${amount.toLocaleString()} was rejected and refunded. Reason: ${reason}.`,
         type: 'error',
         is_read: false,
       });

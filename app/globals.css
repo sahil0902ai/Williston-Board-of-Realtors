@@ -1,9 +1,57 @@
-@import "tailwindcss" source(none);
+@import "tailwindcss";
 
-@source "../components/**/*.{ts,tsx,js,jsx}";
-@source "../hooks/**/*.{ts,tsx,js,jsx}";
-@source "../lib/**/*.{ts,tsx,js,jsx}";
-@source "./**/*.{ts,tsx,js,jsx}";
+/* === STEP 1 — GLOBAL MOBILE FOUNDATION === */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+img, video, svg, canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Prevent iOS zoom on input focus */
+input, select, textarea, button {
+  font-size: 16px !important;
+}
+
+/* Minimum tap target size — Apple/Google guideline is 44px */
+button, a, [role="button"], input[type="checkbox"], 
+input[type="radio"], .clickable {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Fix sticky hover states stuck on mobile after tap */
+@media (hover: hover) {
+  .hover-only:hover { /* hover effects only apply on devices that support hover */ }
+}
+
+/* === STEP 4 — STANDARD Z-INDEX VARIABLES === */
+:root {
+  --z-base: 1;
+  --z-dropdown: 100;
+  --z-sticky-nav: 500;
+  --z-floating-buttons: 900;
+  --z-mobile-menu: 950;
+  --z-chatbot: 970;
+  --z-modal-overlay: 980;
+  --z-modal: 990;
+  --z-toast: 999;
+  --z-loading-screen: 9999;
+}
 
 @theme {
   --font-sans: var(--font-outfit), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -23,21 +71,8 @@
     scroll-behavior: smooth;
   }
 
-  html, body {
-    overflow-x: hidden;
-    max-width: 100%;
-  }
-
   body {
     @apply bg-navy text-white antialiased;
-  }
-
-  * {
-    touch-action: manipulation;
-  }
-
-  input, select, textarea {
-    font-size: 16px !important;
   }
 }
 
@@ -55,3 +90,102 @@
 .map-container .gm-style-iw-tc::after {
   background-color: #0A1433 !important;
 }
+
+/* Mobile Bottom Nav styles */
+@media (min-width: 769px) {
+  .mobile-bottom-nav {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 80px !important;
+  }
+}
+
+/* === STEP 5 — MOBILE NAV LINKS === */
+@media (max-width: 1024px) {
+  .desktop-nav-links { display: none !important; }
+}
+@media (min-width: 1025px) {
+  .mobile-menu-btn, .mobile-menu-panel { display: none !important; }
+}
+
+/* === STEP 6 — FORM INPUTS & RANGE SLIDERS === */
+input:not([type="range"]):not([type="checkbox"]):not([type="radio"]), 
+select, 
+textarea {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 16px !important; /* stop iOS auto-zoom */
+  min-height: 48px;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 0;
+}
+
+input[type="range"] {
+  height: 44px; /* full touch target */
+  -webkit-appearance: none;
+  background: transparent;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #C9A84C;
+  cursor: pointer;
+  margin-top: -12px;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+}
+
+/* === STEP 11 — CHATBOT MOBILE OVERRIDES === */
+@media (max-width: 640px) {
+  .chatbot-window {
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important; /* dynamic viewport for mobile browsers */
+    bottom: 0 !important;
+    right: 0 !important;
+    border-radius: 0 !important;
+  }
+  .chatbot-toggle-btn {
+    bottom: 16px !important;
+    right: 16px !important;
+  }
+}
+.chatbot-input-area {
+  position: sticky;
+  bottom: 0;
+  background: #0A1628;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* === STEP 12 — FLOATING BUTTONS OVERLAP === */
+.floating-buttons-container {
+  position: fixed;
+  bottom: 80px; /* above bottom nav if present */
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: var(--z-floating-buttons);
+}
+
+@media (max-width: 640px) {
+  .floating-buttons-container {
+    bottom: 90px; /* clearance for bottom nav */
+    right: 12px;
+  }
+  .floating-button {
+    width: 52px;
+    height: 52px;
+  }
+}
+

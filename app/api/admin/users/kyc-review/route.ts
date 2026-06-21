@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { isAdminRequest, getAuthenticatedUser } from '@/lib/auth-helper';
-import { sendKYCApprovedEmail } from '@/lib/email';
+import { sendKYCApprovedEmail } from '@/lib/emails';
 
 export const dynamic = 'force-dynamic';
 

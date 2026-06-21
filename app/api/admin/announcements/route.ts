@@ -55,6 +55,60 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: `Failed to create announcement: ${error?.message}` }, { status: 500 });
     }
 
+    // Propagate to targeted users' notification feeds
+    try {
+      let userIds: string[] = [];
+      const targetStr = String(target).toLowerCase();
+
+      if (targetStr === 'all' || targetStr === 'all users') {
+        // Fetch all user IDs
+        const { data: users } = await supabaseAdmin.from('users').select('id');
+        userIds = users?.map(u => u.id) || [];
+      } else if (targetStr === 'active investors') {
+        // Fetch users with active investments
+        const { data: investments } = await supabaseAdmin
+          .from('investments')
+          .select('user_id')
+          .eq('status', 'active');
+        userIds = [...new Set(investments?.map(i => i.user_id) || [])];
+      } else if (targetStr === 'pending kyc') {
+        // Fetch users whose KYC status is not approved
+        const { data: users } = await supabaseAdmin
+          .from('users')
+          .select('id')
+          .neq('kyc_status', 'approved');
+        userIds = users?.map(u => u.id) || [];
+      } else {
+        // Specific plan (e.g., "Growth Plan", "Starter Plan", etc.)
+        const { data: investments } = await supabaseAdmin
+          .from('investments')
+          .select('user_id')
+          .eq('status', 'active')
+          .ilike('plan_name', `%${target}%`);
+        userIds = [...new Set(investments?.map(i => i.user_id) || [])];
+      }
+
+      if (userIds.length > 0) {
+        const notificationsToInsert = userIds.map(uid => ({
+          user_id: uid,
+          title,
+          message,
+          type: type || 'info',
+          is_read: false,
+          is_broadcast: true
+        }));
+
+        // Insert notifications in batches of 100 to avoid query payload limits
+        const batchSize = 100;
+        for (let i = 0; i < notificationsToInsert.length; i += batchSize) {
+          const batch = notificationsToInsert.slice(i, i + batchSize);
+          await supabaseAdmin.from('notifications').insert(batch);
+        }
+      }
+    } catch (propagationError) {
+      console.error('Failed to propagate announcement to user feeds:', propagationError);
+    }
+
     return NextResponse.json({
       success: true,
       announcement,
