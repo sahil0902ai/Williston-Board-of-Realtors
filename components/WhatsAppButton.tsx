@@ -26,10 +26,18 @@ export default function WhatsAppButton() {
         }`}
         onMouseEnter={() => setIsWaHovered(true)}
         onMouseLeave={() => setIsWaHovered(false)}
-        style={{ height: "3rem" }}
+        style={{
+          height: "3rem",
+          cursor: "pointer",
+          WebkitTapHighlightColor: "transparent",
+          touchAction: "manipulation",
+          position: "relative",
+          zIndex: 1,
+        }}
         title="Chat on WhatsApp"
       >
         <div
+          style={{ pointerEvents: "none" }}
           className={`flex items-center justify-center min-w-[3rem] h-[3rem] ${isWaHovered ? "" : "-ml-1"} transition duration-300`}
         >
           <MessageCircle
@@ -41,6 +49,7 @@ export default function WhatsAppButton() {
         </div>
 
         <div
+          style={{ pointerEvents: "none" }}
           className={`whitespace-nowrap font-medium text-xs md:text-sm transition duration-300 ${
             isWaHovered ? "opacity-100" : "opacity-0 w-0"
           }`}
@@ -59,10 +68,18 @@ export default function WhatsAppButton() {
         }`}
         onMouseEnter={() => setIsTgHovered(true)}
         onMouseLeave={() => setIsTgHovered(false)}
-        style={{ height: "3rem" }}
+        style={{
+          height: "3rem",
+          cursor: "pointer",
+          WebkitTapHighlightColor: "transparent",
+          touchAction: "manipulation",
+          position: "relative",
+          zIndex: 1,
+        }}
         title="Chat on Telegram"
       >
         <div
+          style={{ pointerEvents: "none" }}
           className={`flex items-center justify-center min-w-[3rem] h-[3rem] ${isTgHovered ? "" : "-ml-1"} transition duration-300`}
         >
           <Send
@@ -74,6 +91,7 @@ export default function WhatsAppButton() {
         </div>
 
         <div
+          style={{ pointerEvents: "none" }}
           className={`whitespace-nowrap font-medium text-xs md:text-sm transition duration-300 ${
             isTgHovered ? "opacity-100" : "opacity-0 w-0"
           }`}

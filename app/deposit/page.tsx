@@ -440,9 +440,17 @@ export default function DepositPage() {
                       cursor: 'pointer',
                       fontSize: '13px',
                       fontWeight: 600,
+                      minHeight: '44px',
+                      minWidth: '44px',
+                      WebkitTapHighlightColor: 'transparent',
+                      touchAction: 'manipulation',
+                      position: 'relative',
+                      zIndex: 1,
                     }}
                   >
-                    ₦{q.toLocaleString()}
+                    <span style={{ pointerEvents: 'none' }}>
+                      ₦{q.toLocaleString()}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -473,9 +481,17 @@ export default function DepositPage() {
                 fontSize: '15px',
                 border: 'none',
                 cursor: 'pointer',
+                minHeight: '48px',
+                minWidth: '48px',
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation',
+                position: 'relative',
+                zIndex: 1,
               }}
             >
-              Continue →
+              <span style={{ pointerEvents: 'none' }}>
+                Continue →
+              </span>
             </button>
           </div>
         )}
@@ -640,9 +656,17 @@ export default function DepositPage() {
                   color: '#8A9BB5',
                   cursor: 'pointer',
                   fontSize: '14px',
+                  minHeight: '48px',
+                  minWidth: '48px',
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation',
+                  position: 'relative',
+                  zIndex: 1,
                 }}
               >
-                ← Back
+                <span style={{ pointerEvents: 'none' }}>
+                  ← Back
+                </span>
               </button>
               <button
                 suppressHydrationWarning
@@ -656,9 +680,17 @@ export default function DepositPage() {
                   border: 'none',
                   cursor: 'pointer',
                   fontSize: '14px',
+                  minHeight: '48px',
+                  minWidth: '48px',
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation',
+                  position: 'relative',
+                  zIndex: 1,
                 }}
               >
-                Continue →
+                <span style={{ pointerEvents: 'none' }}>
+                  Continue →
+                </span>
               </button>
             </div>
           </div>
@@ -751,9 +783,17 @@ export default function DepositPage() {
                         fontWeight: 600,
                         flexShrink: 0,
                         marginLeft: '12px',
+                        minHeight: '44px',
+                        minWidth: '44px',
+                        WebkitTapHighlightColor: 'transparent',
+                        touchAction: 'manipulation',
+                        position: 'relative',
+                        zIndex: 1,
                       }}
                     >
-                      Copy
+                      <span style={{ pointerEvents: 'none' }}>
+                        Copy
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -881,9 +921,17 @@ export default function DepositPage() {
                       color: '#8A9BB5',
                       cursor: 'pointer',
                       fontSize: '14px',
+                      minHeight: '48px',
+                      minWidth: '48px',
+                      WebkitTapHighlightColor: 'transparent',
+                      touchAction: 'manipulation',
+                      position: 'relative',
+                      zIndex: 1,
                     }}
                   >
-                    ← Back
+                    <span style={{ pointerEvents: 'none' }}>
+                      ← Back
+                    </span>
                   </button>
                   <button
                     suppressHydrationWarning
@@ -898,9 +946,17 @@ export default function DepositPage() {
                       border: 'none',
                       cursor: loading ? 'not-allowed' : 'pointer',
                       fontSize: '14px',
+                      minHeight: '48px',
+                      minWidth: '48px',
+                      WebkitTapHighlightColor: 'transparent',
+                      touchAction: 'manipulation',
+                      position: 'relative',
+                      zIndex: 1,
                     }}
                   >
-                    {loading ? 'Submitting...' : '✓ Submit Deposit'}
+                    <span style={{ pointerEvents: 'none' }}>
+                      {loading ? 'Submitting...' : '✓ Submit Deposit'}
+                    </span>
                   </button>
                 </div>
               </>

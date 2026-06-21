@@ -146,13 +146,40 @@ export default function Header() {
         </button>
       </div>
 
-      {/* Mobile Menu Overlay */}
+      {/* Overlay backdrop */}
       <div
-        className={`fixed inset-0 bg-[#04091A] z-[999] md:hidden flex flex-col px-6 pt-[100px] pb-32 overflow-y-auto transition-[opacity,visibility,transform] duration-300 ease-in-out ${
-          isMobileMenuOpen 
-            ? 'opacity-100 visible translate-y-0' 
-            : 'opacity-0 invisible -translate-y-4'
-        }`}
+        onClick={() => setIsMobileMenuOpen(false)}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.6)',
+          zIndex: 980,
+          opacity: isMobileMenuOpen ? 1 : 0,
+          visibility: isMobileMenuOpen ? 'visible' : 'hidden',
+          transition: 'opacity 0.3s, visibility 0.3s',
+        }}
+        className="md:hidden"
+      />
+
+      {/* Menu panel */}
+      <div 
+        style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          width: '280px',
+          maxWidth: '85vw',
+          background: '#0A1628',
+          borderLeft: '1px solid rgba(201,168,76,0.2)',
+          zIndex: 990,
+          transform: isMobileMenuOpen ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 0.3s ease',
+          padding: '80px 24px 24px',
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
+        }}
+        className="md:hidden flex flex-col"
       >
         <div className="text-[10px] font-bold text-gold uppercase tracking-widest mb-4">Invest</div>
         <Link href="/#invest" style={{ minHeight: '48px', display: 'flex', alignItems: 'center', touchAction: 'manipulation' }} className="text-2xl font-serif text-white hover:text-gold py-3 pl-4 border-l border-gold/10 transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Investment Plans</Link>

@@ -33,8 +33,20 @@ export default function CTA() {
             suppressHydrationWarning
             href="/register" 
             className="px-8 py-4 bg-[#04091A] text-[#C9A84C] hover:bg-[#0A1433] hover:text-white font-bold uppercase text-xs tracking-widest transition duration-300 rounded-lg shadow-xl shadow-black/10 text-center flex items-center justify-center gap-2"
+            style={{
+              minHeight: '48px',
+              minWidth: '48px',
+              padding: '14px 24px',
+              cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
+              position: 'relative',
+              zIndex: 1,
+            }}
           >
-            Create Free Account <ArrowRight size={14} className="stroke-[2.5]" />
+            <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-2">
+              Create Free Account <ArrowRight size={14} className="stroke-[2.5]" />
+            </span>
           </Link>
           <a 
             suppressHydrationWarning
@@ -42,8 +54,20 @@ export default function CTA() {
             target="_blank" 
             rel="noopener noreferrer"
             className="px-8 py-4 border-2 border-[#04091A] text-[#04091A] hover:bg-[#04091A] hover:text-white font-bold uppercase text-xs tracking-widest transition duration-300 rounded-lg text-center flex items-center justify-center gap-2 cursor-pointer"
+            style={{
+              minHeight: '48px',
+              minWidth: '48px',
+              padding: '14px 24px',
+              cursor: 'pointer',
+              WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
+              position: 'relative',
+              zIndex: 1,
+            }}
           >
-            Talk to an Advisor <MessageCircle size={14} />
+            <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-2">
+              Talk to an Advisor <MessageCircle size={14} />
+            </span>
           </a>
         </FadeUp>
 

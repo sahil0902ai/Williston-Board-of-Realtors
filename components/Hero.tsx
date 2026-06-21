@@ -79,15 +79,39 @@ export default function Hero() {
               suppressHydrationWarning
               href={isLoggedIn ? "/dashboard" : "/register"} 
               className="px-8 py-4 bg-gold text-navy font-bold uppercase text-xs tracking-widest shadow-xl shadow-gold/10 hover:bg-gold-light transition duration-300 text-center rounded-lg"
+              style={{
+                minHeight: '48px',
+                minWidth: '48px',
+                padding: '14px 24px',
+                cursor: 'pointer',
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation',
+                position: 'relative',
+                zIndex: 1,
+              }}
             >
-              Start Investing Today
+              <span style={{ pointerEvents: 'none' }}>
+                Start Investing Today
+              </span>
             </Link>
             <Link 
               suppressHydrationWarning
               href="#how-it-works" 
               className="px-8 py-4 border border-gold/30 hover:border-gold text-gold font-bold uppercase text-xs tracking-widest hover:bg-gold/5 transition duration-300 text-center rounded-lg flex items-center justify-center gap-2"
+              style={{
+                minHeight: '48px',
+                minWidth: '48px',
+                padding: '14px 24px',
+                cursor: 'pointer',
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation',
+                position: 'relative',
+                zIndex: 1,
+              }}
             >
-              Watch How It Works <Play size={12} className="fill-current" />
+              <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-2">
+                Watch How It Works <Play size={12} className="fill-current" />
+              </span>
             </Link>
           </div>
 

@@ -300,8 +300,24 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
                   Explore asset-backed real estate projects across Nigeria. Start building your portfolio through fractional property co-ownership.
                 </p>
               </div>
-              <Link suppressHydrationWarning href="/properties" className="border-b border-gold text-gold hover:text-white hover:border-white transition-colors pb-1.5 uppercase tracking-widest text-xs font-bold shrink-0">
-                View All Properties &rarr;
+              <Link 
+                suppressHydrationWarning 
+                href="/properties" 
+                className="border-b border-gold text-gold hover:text-white hover:border-white transition-colors pb-1.5 uppercase tracking-widest text-xs font-bold shrink-0 flex items-center justify-center"
+                style={{
+                  minHeight: '48px',
+                  minWidth: '48px',
+                  padding: '14px 24px',
+                  cursor: 'pointer',
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation',
+                  position: 'relative',
+                  zIndex: 1,
+                }}
+              >
+                <span style={{ pointerEvents: 'none' }}>
+                  View All Properties &rarr;
+                </span>
               </Link>
             </FadeUp>
           </div>
@@ -351,8 +367,20 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
                 <button
                   type="submit"
                   className="px-8 py-3.5 bg-gold hover:bg-gold-light text-navy font-bold rounded-xl text-sm transition-all shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                  style={{
+                    minHeight: '48px',
+                    minWidth: '48px',
+                    padding: '14px 24px',
+                    cursor: 'pointer',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
                 >
-                  <Search size={16} /> Search
+                  <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-2">
+                    <Search size={16} /> Search
+                  </span>
                 </button>
               </form>
             </FadeUp>
@@ -368,8 +396,20 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
                       ? 'bg-gold border-gold text-navy shadow-md shadow-gold/10'
                       : 'bg-[#0A1433]/60 border-white/5 text-gray-text hover:text-white hover:border-white/10'
                   }`}
+                  style={{
+                    minHeight: '48px',
+                    minWidth: '48px',
+                    padding: '10px 20px',
+                    cursor: 'pointer',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
                 >
-                  {pill}
+                  <span style={{ pointerEvents: 'none' }}>
+                    {pill}
+                  </span>
                 </button>
               ))}
             </FadeUp>
@@ -429,8 +469,20 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
                           setQuickViewProperty(prop);
                         }}
                         className="px-6 py-3 bg-gold/10 border border-gold text-gold hover:bg-gold hover:text-navy font-semibold uppercase tracking-wider text-xs rounded transition duration-300 flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 shadow-[0_0_20px_rgba(201,168,76,0.15)] cursor-pointer"
+                        style={{
+                          minHeight: '48px',
+                          minWidth: '48px',
+                          padding: '14px 24px',
+                          cursor: 'pointer',
+                          WebkitTapHighlightColor: 'transparent',
+                          touchAction: 'manipulation',
+                          position: 'relative',
+                          zIndex: 1,
+                        }}
                       >
-                        <Eye size={16} /> Quick View
+                        <span style={{ pointerEvents: 'none' }} className="flex items-center gap-2">
+                          <Eye size={16} /> Quick View
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -498,8 +550,20 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
                           }
                         }}
                         className="w-full py-3 bg-gold hover:bg-gold-light text-navy text-center font-bold rounded-xl text-xs uppercase tracking-wider transition duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-gold/10 cursor-pointer"
+                        style={{
+                          minHeight: '48px',
+                          minWidth: '48px',
+                          padding: '14px 24px',
+                          cursor: 'pointer',
+                          WebkitTapHighlightColor: 'transparent',
+                          touchAction: 'manipulation',
+                          position: 'relative',
+                          zIndex: 1,
+                        }}
                       >
-                        Invest Now
+                        <span style={{ pointerEvents: 'none' }}>
+                          Invest Now
+                        </span>
                       </button>
                     </div>
 
@@ -524,9 +588,20 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
           <div className="bg-navy-mid border border-border-gold rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto relative animate-in fade-in zoom-in-95 duration-200">
             <button 
               onClick={() => setSelectedProperty(null)}
-              className="absolute top-4 right-4 text-gray-text hover:text-white bg-navy border border-border-subtle rounded-full p-1"
+              className="absolute top-4 right-4 text-gray-text hover:text-white bg-navy border border-border-subtle rounded-full p-1 flex items-center justify-center"
+              style={{
+                minHeight: '48px',
+                minWidth: '48px',
+                cursor: 'pointer',
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation',
+                position: 'absolute',
+                zIndex: 1,
+              }}
             >
-              <X size={20} />
+              <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+                <X size={20} />
+              </span>
             </button>
 
             <div className="p-8">
@@ -547,8 +622,20 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
                       window.location.href = '/dashboard';
                     }}
                     className="w-full mt-6 py-4 bg-gold text-navy font-bold rounded-xl hover:bg-white transition-colors"
+                    style={{
+                      minHeight: '48px',
+                      minWidth: '48px',
+                      padding: '14px 24px',
+                      cursor: 'pointer',
+                      WebkitTapHighlightColor: 'transparent',
+                      touchAction: 'manipulation',
+                      position: 'relative',
+                      zIndex: 1,
+                    }}
                   >
-                    Go to Dashboard
+                    <span style={{ pointerEvents: 'none' }}>
+                      Go to Dashboard
+                    </span>
                   </button>
                 </div>
               ) : (
@@ -596,8 +683,20 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
                         type="submit" 
                         disabled={purchaseStatus === 'loading'}
                         className="w-full py-4 bg-gold text-navy font-bold rounded-xl hover:bg-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                        style={{
+                          minHeight: '48px',
+                          minWidth: '48px',
+                          padding: '14px 24px',
+                          cursor: 'pointer',
+                          WebkitTapHighlightColor: 'transparent',
+                          touchAction: 'manipulation',
+                          position: 'relative',
+                          zIndex: 1,
+                        }}
                       >
-                        {purchaseStatus === 'loading' ? 'Processing Purchase...' : 'Confirm Purchase'}
+                        <span style={{ pointerEvents: 'none' }}>
+                          {purchaseStatus === 'loading' ? 'Processing Purchase...' : 'Confirm Purchase'}
+                        </span>
                       </button>
                       <p className="text-center text-xs text-gray-400 mt-4">Funds will be immediately deducted from your primary wallet balance.</p>
                     </div>
@@ -616,9 +715,20 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
             <button 
               suppressHydrationWarning
               onClick={() => setQuickViewProperty(null)}
-              className="absolute top-4 right-4 text-gray-text hover:text-white bg-navy border border-border-subtle rounded-full p-1"
+              className="absolute top-4 right-4 text-gray-text hover:text-white bg-navy border border-border-subtle rounded-full p-1 flex items-center justify-center"
+              style={{
+                minHeight: '48px',
+                minWidth: '48px',
+                cursor: 'pointer',
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation',
+                position: 'absolute',
+                zIndex: 1,
+              }}
             >
-              <X size={20} />
+              <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+                <X size={20} />
+              </span>
             </button>
 
             <div className="p-8">
@@ -674,8 +784,20 @@ export default function RealEstateListings({ isPropertiesPage = false }: RealEst
                     }
                   }}
                   className="w-full py-4 bg-gold text-navy font-bold rounded-xl hover:bg-gold-light transition-colors text-center block"
+                  style={{
+                    minHeight: '48px',
+                    minWidth: '48px',
+                    padding: '14px 24px',
+                    cursor: 'pointer',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
                 >
-                  Invest In This Property Now
+                  <span style={{ pointerEvents: 'none' }}>
+                    Invest In This Property Now
+                  </span>
                 </button>
               </div>
             </div>

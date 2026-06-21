@@ -209,16 +209,40 @@ export default function InvestmentPackages({ hideHeader = false }: { hideHeader?
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full py-4 px-6 bg-gold text-navy font-bold text-center block rounded-xl uppercase tracking-widest text-xs shadow-lg shadow-gold/5 hover:bg-gold-light transition duration-300 cursor-pointer"
+                    style={{
+                      minHeight: '48px',
+                      minWidth: '48px',
+                      padding: '14px 24px',
+                      cursor: 'pointer',
+                      WebkitTapHighlightColor: 'transparent',
+                      touchAction: 'manipulation',
+                      position: 'relative',
+                      zIndex: 1,
+                    }}
                   >
-                    Schedule Consultation
+                    <span style={{ pointerEvents: 'none' }}>
+                      Schedule Consultation
+                    </span>
                   </a>
                 ) : (
                   <Link 
                     suppressHydrationWarning
                     href={isLoggedIn ? `/deposit?plan=${currentPlan.name.toLowerCase()}` : '/register'}
                     className="w-full py-4 px-6 bg-gold text-navy font-bold text-center block rounded-xl uppercase tracking-widest text-xs shadow-lg shadow-gold/5 hover:bg-gold-light transition duration-300"
+                    style={{
+                      minHeight: '48px',
+                      minWidth: '48px',
+                      padding: '14px 24px',
+                      cursor: 'pointer',
+                      WebkitTapHighlightColor: 'transparent',
+                      touchAction: 'manipulation',
+                      position: 'relative',
+                      zIndex: 1,
+                    }}
                   >
-                    Invest In {currentPlan.name}
+                    <span style={{ pointerEvents: 'none' }}>
+                      Invest In {currentPlan.name}
+                    </span>
                   </Link>
                 )}
               </div>

@@ -418,9 +418,17 @@ export default function WithdrawPage() {
                       cursor: 'pointer',
                       fontSize: '13px',
                       fontWeight: 600,
+                      minHeight: '44px',
+                      minWidth: '44px',
+                      WebkitTapHighlightColor: 'transparent',
+                      touchAction: 'manipulation',
+                      position: 'relative',
+                      zIndex: 1,
                     }}
                   >
-                    ₦{q.toLocaleString()}
+                    <span style={{ pointerEvents: 'none' }}>
+                      ₦{q.toLocaleString()}
+                    </span>
                   </button>
                 ))}
                 <button
@@ -434,9 +442,17 @@ export default function WithdrawPage() {
                     cursor: 'pointer',
                     fontSize: '13px',
                     fontWeight: 600,
+                    minHeight: '44px',
+                    minWidth: '44px',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    zIndex: 1,
                   }}
                 >
-                  Withdraw All
+                  <span style={{ pointerEvents: 'none' }}>
+                    Withdraw All
+                  </span>
                 </button>
               </div>
 
@@ -445,7 +461,15 @@ export default function WithdrawPage() {
                 width: '100%', padding: '14px',
                 background: '#C9A84C', color: '#04091A',
                 fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: '15px',
-              }}>Continue →</button>
+                minHeight: '48px', minWidth: '48px',
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation',
+                position: 'relative', zIndex: 1,
+              }}>
+                <span style={{ pointerEvents: 'none' }}>
+                  Continue →
+                </span>
+              </button>
             </div>
           )}
 
@@ -523,11 +547,27 @@ export default function WithdrawPage() {
                   flex: 1, padding: '13px', background: 'transparent',
                   border: '1px solid rgba(255,255,255,0.1)',
                   color: '#8A9BB5', cursor: 'pointer',
-                }}>← Back</button>
+                  minHeight: '48px', minWidth: '48px',
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation',
+                  position: 'relative', zIndex: 1,
+                }}>
+                  <span style={{ pointerEvents: 'none' }}>
+                    ← Back
+                  </span>
+                </button>
                 <button suppressHydrationWarning onClick={handleNext} style={{
                   flex: 2, padding: '13px', background: '#C9A84C',
                   color: '#04091A', fontWeight: 700, border: 'none', cursor: 'pointer',
-                }}>Continue →</button>
+                  minHeight: '48px', minWidth: '48px',
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation',
+                  position: 'relative', zIndex: 1,
+                }}>
+                  <span style={{ pointerEvents: 'none' }}>
+                    Continue →
+                  </span>
+                </button>
               </div>
             </div>
           )}
@@ -726,7 +766,15 @@ export default function WithdrawPage() {
                   flex: 1, padding: '13px', background: 'transparent',
                   border: '1px solid rgba(255,255,255,0.1)',
                   color: '#8A9BB5', cursor: 'pointer',
-                }}>← Back</button>
+                  minHeight: '48px', minWidth: '48px',
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation',
+                  position: 'relative', zIndex: 1,
+                }}>
+                  <span style={{ pointerEvents: 'none' }}>
+                    ← Back
+                  </span>
+                </button>
                 <button
                   suppressHydrationWarning
                   onClick={submitWithdrawal}
@@ -738,9 +786,15 @@ export default function WithdrawPage() {
                     border: 'none',
                     cursor: loading ? 'not-allowed' : 'pointer',
                     fontSize: '14px',
+                    minHeight: '48px', minWidth: '48px',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    position: 'relative', zIndex: 1,
                   }}
                 >
-                  {loading ? 'Submitting...' : '✓ Submit Withdrawal Request'}
+                  <span style={{ pointerEvents: 'none' }}>
+                    {loading ? 'Submitting...' : '✓ Submit Withdrawal Request'}
+                  </span>
                 </button>
               </div>
             </div>
