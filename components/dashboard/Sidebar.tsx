@@ -51,8 +51,20 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen, pr
         {/* Header */}
         <div className="h-20 flex items-center justify-between px-6 border-b border-border-subtle shrink-0">
           <Link href="/" className="font-serif text-2xl tracking-widest text-gold">WILLISTON</Link>
-          <button className="lg:hidden text-gray-text hover:text-white" onClick={() => setIsOpen(false)}>
-            <X size={24} />
+          <button 
+            className="lg:hidden text-gray-text hover:text-white flex items-center justify-center" 
+            onClick={() => setIsOpen(false)}
+            style={{
+              minHeight: '44px',
+              minWidth: '44px',
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <span style={{ pointerEvents: 'none' }}>
+              <X size={24} />
+            </span>
           </button>
         </div>
 
@@ -63,9 +75,17 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen, pr
               key={link.id}
               onClick={() => { setActiveTab(link.id); setIsOpen(false); }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${activeTab === link.id ? 'bg-gold/10 text-gold font-medium' : 'text-gray-text hover:bg-navy-light hover:text-white'}`}
+              style={{
+                minHeight: '48px',
+                cursor: 'pointer',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+              }}
             >
-              <span className={activeTab === link.id ? 'text-gold' : 'text-gray-text group-hover:text-white'}>{link.icon}</span>
-              {link.label}
+              <span style={{ pointerEvents: 'none' }} className="flex items-center gap-3 w-full">
+                <span className={activeTab === link.id ? 'text-gold' : 'text-gray-text group-hover:text-white'}>{link.icon}</span>
+                {link.label}
+              </span>
             </button>
           ))}
 
@@ -87,9 +107,17 @@ export default function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen, pr
                   }
                }}
                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${activeTab === link.id ? 'bg-gold/10 text-gold font-medium' : 'text-gray-text hover:bg-navy-light hover:text-white'}`}
+               style={{
+                 minHeight: '48px',
+                 cursor: 'pointer',
+                 touchAction: 'manipulation',
+                 WebkitTapHighlightColor: 'transparent',
+               }}
              >
-               <span className={activeTab === link.id ? 'text-gold' : 'text-gray-text group-hover:text-white'}>{link.icon}</span>
-               {link.label}
+               <span style={{ pointerEvents: 'none' }} className="flex items-center gap-3 w-full">
+                 <span className={activeTab === link.id ? 'text-gold' : 'text-gray-text group-hover:text-white'}>{link.icon}</span>
+                 {link.label}
+               </span>
              </button>
             ))}
           </div>

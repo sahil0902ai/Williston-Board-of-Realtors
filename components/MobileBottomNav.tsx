@@ -21,7 +21,8 @@ export default function MobileBottomNav() {
       bottom: 0,
       left: 0,
       right: 0,
-      height: '64px',
+      height: 'calc(64px + env(safe-area-inset-bottom))',
+      paddingBottom: 'env(safe-area-inset-bottom)',
       background: '#04091A',
       borderTop: '1px solid rgba(201,168,76,0.15)',
       display: 'flex',
@@ -50,6 +51,8 @@ export default function MobileBottomNav() {
               borderTop: isActive
                 ? '2px solid #C9A84C'
                 : '2px solid transparent',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
             }}
           >
             <span style={{
@@ -65,6 +68,7 @@ export default function MobileBottomNav() {
               marginTop: tab.primary ? '-12px' : '0',
               color: tab.primary ? '#04091A' : (isActive ? '#C9A84C' : '#8A9BB5'),
               boxShadow: tab.primary ? '0 4px 10px rgba(201,168,76,0.3)' : 'none',
+              pointerEvents: 'none',
             }}>
               <IconComponent size={tab.primary ? 22 : 18} />
             </span>
@@ -72,6 +76,7 @@ export default function MobileBottomNav() {
               fontSize: '10px',
               color: isActive ? '#C9A84C' : '#8A9BB5',
               fontWeight: isActive ? 600 : 400,
+              pointerEvents: 'none',
             }}>
               {tab.label}
             </span>

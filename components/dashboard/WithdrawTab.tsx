@@ -222,8 +222,16 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
                        key={btn.val}
                        onClick={() => handleAmountSelect(btn.val)}
                        className={`py-3 px-2 rounded-lg border text-sm font-medium transition-colors ${amount === btn.val ? 'bg-gold/10 border-gold text-gold' : 'bg-navy border-border-subtle text-gray-text hover:text-white hover:border-gray-500'}`}
+                       style={{
+                         minHeight: '44px',
+                         touchAction: 'manipulation',
+                         cursor: 'pointer',
+                         WebkitTapHighlightColor: 'transparent',
+                       }}
                      >
-                       {btn.label}
+                       <span style={{ pointerEvents: 'none' }}>
+                         {btn.label}
+                       </span>
                      </button>
                    ))}
                  </div>
@@ -242,8 +250,20 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
                    onClick={handleNext}
                    disabled={!amount || parseInt(amount) < 5000 || parseInt(amount) > availableBalance || parseInt(amount) > 10000000}
                    className="w-full py-4 bg-gold text-navy rounded-xl font-bold text-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                   style={{
+                     minHeight: '48px',
+                     minWidth: '48px',
+                     padding: '14px 24px',
+                     cursor: 'pointer',
+                     WebkitTapHighlightColor: 'transparent',
+                     touchAction: 'manipulation',
+                     position: 'relative',
+                     zIndex: 1,
+                   }}
                  >
-                   Continue <ArrowRight size={20} />
+                   <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-2">
+                     Continue <ArrowRight size={20} />
+                   </span>
                  </button>
                  {parseInt(amount) > availableBalance && (
                     <p className="text-red-400 text-xs text-center mt-2">Insufficient balance</p>
@@ -258,8 +278,22 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
           {step === 2 && (
             <div className="space-y-6">
               <div className="flex items-center gap-4 mb-6">
-                <button onClick={handleBack} className="p-2 bg-navy rounded-lg border border-border-subtle text-gray-text hover:text-white transition-colors">
-                  <ArrowLeft size={16} />
+                <button 
+                  onClick={handleBack} 
+                  className="p-2 bg-navy rounded-lg border border-border-subtle text-gray-text hover:text-white transition-colors flex items-center justify-center"
+                  style={{
+                    minHeight: '48px',
+                    minWidth: '48px',
+                    cursor: 'pointer',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
+                >
+                  <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+                    <ArrowLeft size={16} />
+                  </span>
                 </button>
                 <div>
                   <h3 className="text-xl font-serif mb-1">Payout Method</h3>
@@ -273,8 +307,20 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
                  <div 
                    className={`border rounded-xl p-5 cursor-pointer transition ${payoutMethod === 'bank' ? 'bg-gold/5 border-gold shadow-[0_0_15px_rgba(201,168,76,0.1)]' : 'bg-navy border-border-subtle hover:border-gray-500'}`}
                    onClick={() => setPayoutMethod('bank')}
+                   role="button"
+                   tabIndex={0}
+                   onKeyDown={(e) => {
+                     if (e.key === 'Enter' || e.key === ' ') {
+                       setPayoutMethod('bank');
+                     }
+                   }}
+                   style={{
+                     minHeight: '64px',
+                     WebkitTapHighlightColor: 'transparent',
+                     touchAction: 'manipulation',
+                   }}
                  >
-                   <div className="flex items-center gap-4">
+                   <div style={{ pointerEvents: 'none' }} className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-full bg-navy-light flex items-center justify-center border border-border-subtle shrink-0">
                          <Building size={20} className="text-white" />
                       </div>
@@ -339,8 +385,20 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
                  <div 
                    className={`border rounded-xl p-5 cursor-pointer transition ${payoutMethod === 'opay' ? 'bg-gold/5 border-gold shadow-[0_0_15px_rgba(201,168,76,0.1)]' : 'bg-navy border-border-subtle hover:border-gray-500'}`}
                    onClick={() => setPayoutMethod('opay')}
+                   role="button"
+                   tabIndex={0}
+                   onKeyDown={(e) => {
+                     if (e.key === 'Enter' || e.key === ' ') {
+                       setPayoutMethod('opay');
+                     }
+                   }}
+                   style={{
+                     minHeight: '64px',
+                     WebkitTapHighlightColor: 'transparent',
+                     touchAction: 'manipulation',
+                   }}
                  >
-                   <div className="flex items-center gap-4">
+                   <div style={{ pointerEvents: 'none' }} className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-full bg-navy-light flex items-center justify-center border border-border-subtle shrink-0 font-serif italic text-xl text-green-400">
                          OP
                       </div>
@@ -382,8 +440,20 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
                  <div 
                    className={`border rounded-xl p-5 cursor-pointer transition ${payoutMethod === 'crypto' ? 'bg-gold/5 border-gold shadow-[0_0_15px_rgba(201,168,76,0.1)]' : 'bg-navy border-border-subtle hover:border-gray-500'}`}
                    onClick={() => setPayoutMethod('crypto')}
+                   role="button"
+                   tabIndex={0}
+                   onKeyDown={(e) => {
+                     if (e.key === 'Enter' || e.key === ' ') {
+                       setPayoutMethod('crypto');
+                     }
+                   }}
+                   style={{
+                     minHeight: '64px',
+                     WebkitTapHighlightColor: 'transparent',
+                     touchAction: 'manipulation',
+                   }}
                  >
-                   <div className="flex items-center gap-4">
+                   <div style={{ pointerEvents: 'none' }} className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-full bg-navy-light flex items-center justify-center border border-border-subtle shrink-0">
                          <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-xs">₿</div>
                       </div>
@@ -442,8 +512,20 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
                     (payoutMethod === 'crypto' && (!cryptoAddress || parseFloat(amount) < 5000))
                   }
                   className="w-full py-4 bg-gold text-navy rounded-xl font-bold text-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  style={{
+                    minHeight: '48px',
+                    minWidth: '48px',
+                    padding: '14px 24px',
+                    cursor: 'pointer',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
                 >
-                  Continue <ArrowRight size={20} />
+                  <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-2">
+                    Continue <ArrowRight size={20} />
+                  </span>
                 </button>
                 {payoutMethod === 'crypto' && parseFloat(amount) < 5000 && (
                    <p className="text-red-400 text-xs text-center mt-2">Minimum crypto withdrawal is ₦5,000</p>
@@ -455,8 +537,22 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
           {step === 3 && (
             <div className="space-y-6">
               <div className="flex items-center gap-4 mb-6">
-                <button onClick={handleBack} className="p-2 bg-navy rounded-lg border border-border-subtle text-gray-text hover:text-white transition-colors">
-                  <ArrowLeft size={16} />
+                <button 
+                  onClick={handleBack} 
+                  className="p-2 bg-navy rounded-lg border border-border-subtle text-gray-text hover:text-white transition-colors flex items-center justify-center"
+                  style={{
+                    minHeight: '48px',
+                    minWidth: '48px',
+                    cursor: 'pointer',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
+                >
+                  <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+                    <ArrowLeft size={16} />
+                  </span>
                 </button>
                 <div>
                   <h3 className="text-xl font-serif mb-1">Security Verification</h3>
@@ -481,9 +577,34 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
               </div>
 
               <div className="text-center space-y-4">
-                 <button className="text-sm text-gold hover:underline">Forgot PIN?</button>
-                 <div className="text-xs text-gray-text">
-                    Alternative: <button className="text-white hover:text-gold transition-colors">Use OTP verification on file</button>
+                 <button 
+                   className="text-sm text-gold hover:underline"
+                   style={{
+                     minHeight: '44px',
+                     display: 'inline-flex',
+                     alignItems: 'center',
+                     justifyContent: 'center',
+                     touchAction: 'manipulation',
+                     cursor: 'pointer',
+                   }}
+                 >
+                   Forgot PIN?
+                 </button>
+                 <div className="text-xs text-gray-text flex flex-wrap items-center justify-center gap-1.5">
+                    Alternative: 
+                    <button 
+                      className="text-white hover:text-gold transition-colors"
+                      style={{
+                        minHeight: '44px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        touchAction: 'manipulation',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Use OTP verification on file
+                    </button>
                  </div>
               </div>
 
@@ -492,8 +613,20 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
                   onClick={handleNext}
                   disabled={pin.some(p => !p)}
                   className="w-full py-4 bg-gold text-navy rounded-xl font-bold text-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  style={{
+                    minHeight: '48px',
+                    minWidth: '48px',
+                    padding: '14px 24px',
+                    cursor: 'pointer',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
                 >
-                  Verify <CheckCircle2 size={20} />
+                  <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-2">
+                    Verify <CheckCircle2 size={20} />
+                  </span>
                 </button>
               </div>
             </div>
@@ -502,8 +635,22 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
           {step === 4 && (
             <div className="space-y-6">
               <div className="flex items-center gap-4 mb-6">
-                <button onClick={handleBack} className="p-2 bg-navy rounded-lg border border-border-subtle text-gray-text hover:text-white transition-colors">
-                  <ArrowLeft size={16} />
+                <button 
+                  onClick={handleBack} 
+                  className="p-2 bg-navy rounded-lg border border-border-subtle text-gray-text hover:text-white transition-colors flex items-center justify-center"
+                  style={{
+                    minHeight: '48px',
+                    minWidth: '48px',
+                    cursor: 'pointer',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
+                >
+                  <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+                    <ArrowLeft size={16} />
+                  </span>
                 </button>
                 <div>
                   <h3 className="text-xl font-serif mb-1">Confirm Withdrawal</h3>
@@ -557,24 +704,46 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
                   onClick={handleSubmitWithdrawal}
                   disabled={isSubmitting}
                   className="w-full py-4 bg-gold text-navy rounded-xl font-bold text-lg hover:bg-white transition-colors flex items-center justify-center gap-2 shadow-lg shadow-gold/20 disabled:opacity-50"
+                  style={{
+                    minHeight: '48px',
+                    minWidth: '48px',
+                    padding: '14px 24px',
+                    cursor: 'pointer',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
                 >
                   {isSubmitting ? (
-                    <>
+                    <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-2">
                       <Loader2 size={20} className="animate-spin" />
                       Submitting request...
-                    </>
+                    </span>
                   ) : (
-                    <>
+                    <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-2">
                       Confirm Withdrawal <ArrowUpRight size={20} />
-                    </>
+                    </span>
                   )}
                 </button>
                 <button 
                   onClick={() => setActiveTab('wallet')}
                   disabled={isSubmitting}
                   className="w-full py-4 bg-navy border border-border-subtle text-white rounded-xl font-bold hover:border-white transition-colors disabled:opacity-50"
+                  style={{
+                    minHeight: '48px',
+                    minWidth: '48px',
+                    padding: '14px 24px',
+                    cursor: 'pointer',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
                 >
-                  Cancel
+                  <span style={{ pointerEvents: 'none' }}>
+                    Cancel
+                  </span>
                 </button>
               </div>
             </div>
@@ -588,11 +757,19 @@ export default function WithdrawTab({ setActiveTab, profile, fetchProfile }: Wit
          <button 
             className="w-full p-5 flex items-center justify-between text-left hover:bg-navy-light/50 transition-colors"
             onClick={() => setRulesExpanded(!rulesExpanded)}
+            style={{
+              minHeight: '48px',
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+            }}
          >
-            <div className="flex items-center gap-2 text-white font-serif text-lg">
-               <Lock size={18} className="text-gold" /> Withdrawal Rules & Guidelines
-            </div>
-            {rulesExpanded ? <ChevronUp size={20} className="text-gray-text" /> : <ChevronDown size={20} className="text-gray-text" />}
+            <span style={{ pointerEvents: 'none' }} className="flex items-center justify-between w-full">
+              <span className="flex items-center gap-2 text-white font-serif text-lg">
+                 <Lock size={18} className="text-gold" /> Withdrawal Rules & Guidelines
+              </span>
+              {rulesExpanded ? <ChevronUp size={20} className="text-gray-text" /> : <ChevronDown size={20} className="text-gray-text" />}
+            </span>
          </button>
          
          {rulesExpanded && (

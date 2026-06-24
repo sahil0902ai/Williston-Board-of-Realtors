@@ -229,16 +229,34 @@ export default function Testimonials() {
                   <button 
                     suppressHydrationWarning
                     onClick={prevSlide}
-                    className="w-10 h-10 bg-navy border border-border-subtle rounded-full flex items-center justify-center text-gold hover:bg-gold hover:text-navy transition-colors focus:outline-none cursor-pointer"
+                    className="w-11 h-11 bg-navy border border-border-subtle rounded-full flex items-center justify-center text-gold hover:bg-gold hover:text-navy transition-colors focus:outline-none cursor-pointer"
+                    style={{
+                      minHeight: '44px',
+                      minWidth: '44px',
+                      cursor: 'pointer',
+                      WebkitTapHighlightColor: 'transparent',
+                      touchAction: 'manipulation',
+                    }}
                   >
-                    <ChevronLeft size={20} />
+                    <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+                      <ChevronLeft size={20} />
+                    </span>
                   </button>
                   <button 
                     suppressHydrationWarning
                     onClick={nextSlide}
-                    className="w-10 h-10 bg-navy border border-border-subtle rounded-full flex items-center justify-center text-gold hover:bg-gold hover:text-navy transition-colors focus:outline-none cursor-pointer"
+                    className="w-11 h-11 bg-navy border border-border-subtle rounded-full flex items-center justify-center text-gold hover:bg-gold hover:text-navy transition-colors focus:outline-none cursor-pointer"
+                    style={{
+                      minHeight: '44px',
+                      minWidth: '44px',
+                      cursor: 'pointer',
+                      WebkitTapHighlightColor: 'transparent',
+                      touchAction: 'manipulation',
+                    }}
                   >
-                    <ChevronRight size={20} />
+                    <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+                      <ChevronRight size={20} />
+                    </span>
                   </button>
                 </div>
               )}

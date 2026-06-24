@@ -125,9 +125,14 @@ export default function CryptoManualDeposit({ amountNgn, userId, planName }) {
                   fontWeight: 700,
                   cursor: 'pointer',
                   fontSize: '14px',
+                  minHeight: '48px',
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent',
                 }}
               >
-                {c.icon} {c.label}
+                <span style={{ pointerEvents: 'none' }}>
+                  {c.icon} {c.label}
+                </span>
               </button>
             ))}
           </div>
@@ -170,8 +175,14 @@ export default function CryptoManualDeposit({ amountNgn, userId, planName }) {
               background: copied ? 'rgba(39,197,116,0.15)' : `${coin.color}20`,
               color: copied ? '#27C574' : coin.color,
               border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 600,
+              minHeight: '44px',
+              minWidth: '44px',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
             }}>
-              {copied ? '✓ Copied' : 'Copy'}
+              <span style={{ pointerEvents: 'none' }}>
+                {copied ? '✓ Copied' : 'Copy'}
+              </span>
             </button>
           </div>
 
@@ -187,8 +198,13 @@ export default function CryptoManualDeposit({ amountNgn, userId, planName }) {
           <button onClick={() => setStep(2)} style={{
             width: '100%', padding: '15px', background: coin.color,
             color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer',
+            minHeight: '48px',
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent',
           }}>
-            I've Sent the Payment →
+            <span style={{ pointerEvents: 'none' }}>
+              I've Sent the Payment →
+            </span>
           </button>
         </div>
       )}
@@ -198,8 +214,16 @@ export default function CryptoManualDeposit({ amountNgn, userId, planName }) {
           <button onClick={() => setStep(1)} style={{
             background: 'none', border: 'none', color: '#8A9BB5',
             cursor: 'pointer', fontSize: '13px', marginBottom: '16px', padding: 0,
+            minHeight: '44px',
+            minWidth: '44px',
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent',
+            display: 'inline-flex',
+            alignItems: 'center',
           }}>
-            ← Back
+            <span style={{ pointerEvents: 'none' }}>
+              ← Back
+            </span>
           </button>
 
           <div style={{ marginBottom: '16px' }}>
@@ -214,7 +238,7 @@ export default function CryptoManualDeposit({ amountNgn, userId, planName }) {
               style={{
                 width: '100%', padding: '12px', background: 'rgba(255,255,255,0.04)',
                 border: '1px solid rgba(255,255,255,0.08)', color: '#fff',
-                fontSize: '13px', boxSizing: 'border-box',
+                fontSize: '16px', boxSizing: 'border-box',
               }}
             />
           </div>
@@ -231,6 +255,9 @@ export default function CryptoManualDeposit({ amountNgn, userId, planName }) {
               display: 'block', border: '2px dashed rgba(201,168,76,0.25)',
               padding: '24px', textAlign: 'center', cursor: 'pointer',
               background: proof ? 'rgba(39,197,116,0.04)' : 'transparent',
+              minHeight: '48px',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
             }}>
               <input type="file" accept="image/*" style={{ display: 'none' }}
                 onChange={e => setProof(e.target.files[0])} />
@@ -245,8 +272,13 @@ export default function CryptoManualDeposit({ amountNgn, userId, planName }) {
             background: loading ? 'rgba(201,168,76,0.5)' : '#C9A84C',
             color: '#04091A', fontWeight: 700, border: 'none',
             cursor: loading ? 'not-allowed' : 'pointer',
+            minHeight: '48px',
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent',
           }}>
-            {loading ? 'Submitting...' : 'Submit for Verification'}
+            <span style={{ pointerEvents: 'none' }}>
+              {loading ? 'Submitting...' : 'Submit for Verification'}
+            </span>
           </button>
         </div>
       )}

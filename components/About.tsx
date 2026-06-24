@@ -103,9 +103,16 @@ export default function About() {
               <Link 
                 suppressHydrationWarning
                 href="/investment-plans" 
-                className="inline-block border-b border-gold text-gold hover:text-white hover:border-white transition duration-300 pb-1.5 uppercase tracking-widest text-xs font-bold"
+                className="inline-flex border-b border-gold text-gold hover:text-white hover:border-white transition duration-300 pb-1.5 uppercase tracking-widest text-xs font-bold items-center"
+                style={{
+                  minHeight: '44px',
+                  touchAction: 'manipulation',
+                  cursor: 'pointer',
+                }}
               >
-                Learn more about us &rarr;
+                <span style={{ pointerEvents: 'none' }}>
+                  Learn more about us &rarr;
+                </span>
               </Link>
             </div>
 

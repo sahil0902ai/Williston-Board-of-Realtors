@@ -76,9 +76,16 @@ export default function ReferralTab({ profile }: ReferralTabProps) {
             <button 
               onClick={handleCopy}
               className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium transition-colors ${copied ? 'bg-green-500/20 text-green-400' : 'bg-gold text-navy hover:bg-white'}`}
+              style={{
+                minHeight: '44px',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+              }}
             >
-              {copied ? <CheckCircle2 size={16} /> : <Copy size={16} />} 
-              {copied ? 'Copied' : 'Copy'}
+              <span style={{ pointerEvents: 'none' }} className="flex items-center gap-2">
+                {copied ? <CheckCircle2 size={16} /> : <Copy size={16} />} 
+                {copied ? 'Copied' : 'Copy'}
+              </span>
             </button>
           </div>
 
@@ -89,31 +96,63 @@ export default function ReferralTab({ profile }: ReferralTabProps) {
                  href={`https://wa.me/?text=Join%20me%20on%20Williston%20Investments%20and%20earn%20steady%20returns.%20Register%20here%3A%20${encodeURIComponent(referralLink)}`}
                  target="_blank"
                  rel="noopener"
-                 className="w-10 h-10 rounded-full bg-[#25D366]/10 border border-[#25D366]/20 flex items-center justify-center text-[#25D366] hover:bg-[#25D366] hover:text-white transition-colors"
+                 className="w-11 h-11 rounded-full bg-[#25D366]/10 border border-[#25D366]/20 flex items-center justify-center text-[#25D366] hover:bg-[#25D366] hover:text-white transition-colors"
+                 style={{
+                    minWidth: '44px',
+                    minHeight: '44px',
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                 }}
                >
-                 <Share2 size={16} />
+                 <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+                    <Share2 size={16} />
+                 </span>
                </a>
                <a 
                  href={`https://twitter.com/intent/tweet?text=Join%20me%20on%20Williston%20Investments%20and%20earn%20steady%20returns.%20Register%20here%3A%20&url=${encodeURIComponent(referralLink)}`}
                  target="_blank"
                  rel="noopener"
-                 className="w-10 h-10 rounded-full bg-[#1DA1F2]/10 border border-[#1DA1F2]/20 flex items-center justify-center text-[#1DA1F2] hover:bg-[#1DA1F2] hover:text-white transition-colors"
+                 className="w-11 h-11 rounded-full bg-[#1DA1F2]/10 border border-[#1DA1F2]/20 flex items-center justify-center text-[#1DA1F2] hover:bg-[#1DA1F2] hover:text-white transition-colors"
+                 style={{
+                    minWidth: '44px',
+                    minHeight: '44px',
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                 }}
                >
-                 <Twitter size={16} />
+                 <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+                    <Twitter size={16} />
+                 </span>
                </a>
                <a 
                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`}
                  target="_blank"
                  rel="noopener"
-                 className="w-10 h-10 rounded-full bg-[#4267B2]/10 border border-[#4267B2]/20 flex items-center justify-center text-[#4267B2] hover:bg-[#4267B2] hover:text-white transition-colors"
+                 className="w-11 h-11 rounded-full bg-[#4267B2]/10 border border-[#4267B2]/20 flex items-center justify-center text-[#4267B2] hover:bg-[#4267B2] hover:text-white transition-colors"
+                 style={{
+                    minWidth: '44px',
+                    minHeight: '44px',
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                 }}
                >
-                 <Facebook size={16} />
+                 <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+                    <Facebook size={16} />
+                 </span>
                </a>
                <a 
                  href={`mailto:?subject=Investment%20Opportunity&body=Join%20me%20on%20Williston%20Investments%20and%20earn%20steady%20returns.%20Register%20using%20my%20referral%20link%3A%20${encodeURIComponent(referralLink)}`}
-                 className="w-10 h-10 rounded-full bg-gray-500/10 border border-gray-500/20 flex items-center justify-center text-gray-300 hover:bg-white hover:text-navy transition-colors"
+                 className="w-11 h-11 rounded-full bg-gray-500/10 border border-gray-500/20 flex items-center justify-center text-gray-300 hover:bg-white hover:text-navy transition-colors"
+                 style={{
+                    minWidth: '44px',
+                    minHeight: '44px',
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                 }}
                >
-                 <Mail size={16} />
+                 <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+                    <Mail size={16} />
+                 </span>
                </a>
             </div>
           </div>

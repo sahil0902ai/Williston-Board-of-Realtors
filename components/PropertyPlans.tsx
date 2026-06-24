@@ -56,8 +56,19 @@ export default function PropertyPlans() {
               ))}
             </ul>
 
-            <button suppressHydrationWarning className="w-full py-4 rounded-xl border border-border-subtle bg-navy text-white font-bold hover:border-gold hover:text-gold transition-colors mt-auto">
-              Invest in Commercial Property
+            <button 
+              suppressHydrationWarning 
+              className="w-full py-4 rounded-xl border border-border-subtle bg-navy text-white font-bold hover:border-gold hover:text-gold transition-colors mt-auto flex items-center justify-center"
+              style={{
+                minHeight: '48px',
+                cursor: 'pointer',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <span style={{ pointerEvents: 'none' }}>
+                Invest in Commercial Property
+              </span>
             </button>
           </FadeUpItem>
 
@@ -96,8 +107,19 @@ export default function PropertyPlans() {
               ))}
             </ul>
 
-            <button suppressHydrationWarning className="w-full py-4 rounded-xl bg-gold text-navy font-bold hover:bg-white transition-colors mt-auto">
-              Invest in Standard House
+            <button 
+              suppressHydrationWarning 
+              className="w-full py-4 rounded-xl bg-gold text-navy font-bold hover:bg-white transition-colors mt-auto flex items-center justify-center"
+              style={{
+                minHeight: '48px',
+                cursor: 'pointer',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <span style={{ pointerEvents: 'none' }}>
+                Invest in Standard House
+              </span>
             </button>
           </FadeUpItem>
 
@@ -137,8 +159,19 @@ export default function PropertyPlans() {
               ))}
             </ul>
 
-            <button suppressHydrationWarning className="w-full py-4 rounded-xl border border-[#1a2235] bg-transparent text-white font-bold hover:border-gold hover:text-gold transition-colors mt-auto">
-              Schedule Private Consultation
+            <button 
+              suppressHydrationWarning 
+              className="w-full py-4 rounded-xl border border-[#1a2235] bg-transparent text-white font-bold hover:border-gold hover:text-gold transition-colors mt-auto flex items-center justify-center"
+              style={{
+                minHeight: '48px',
+                cursor: 'pointer',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <span style={{ pointerEvents: 'none' }}>
+                Schedule Private Consultation
+              </span>
             </button>
           </FadeUpItem>
 

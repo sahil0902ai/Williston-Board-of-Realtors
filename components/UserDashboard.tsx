@@ -301,8 +301,20 @@ export default function UserDashboard({ initialTab }: { initialTab?: string }) {
         {/* Unified Top Header / Top Bar */}
         <header className="h-20 border-b border-border-subtle bg-navy flex items-center justify-between px-6 md:px-8 shrink-0 sticky top-0 z-30">
           <div className="flex items-center gap-4">
-            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden text-gray-text hover:text-white">
-              <Menu size={24} />
+            <button 
+              onClick={() => setIsSidebarOpen(true)} 
+              className="lg:hidden text-gray-text hover:text-white flex items-center justify-center"
+              style={{
+                minHeight: '44px',
+                minWidth: '44px',
+                cursor: 'pointer',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+                <Menu size={24} />
+              </span>
             </button>
             <div className="hidden lg:block">
               <h2 className="text-md font-serif font-bold text-white leading-tight">
@@ -318,14 +330,22 @@ export default function UserDashboard({ initialTab }: { initialTab?: string }) {
             <div className="relative">
               <button 
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="relative p-2.5 bg-[#0A1224] border border-border-subtle hover:border-gold/30 rounded-xl text-gray-text hover:text-white transition cursor-pointer"
+                className="relative p-2.5 bg-[#0A1224] border border-border-subtle hover:border-gold/30 rounded-xl text-gray-text hover:text-white transition cursor-pointer flex items-center justify-center"
+                style={{
+                  minHeight: '44px',
+                  minWidth: '44px',
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
               >
-                <Bell size={18} />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full flex items-center justify-center animate-bounce min-w-[16px] min-h-[16px] border border-navy">
-                    {unreadCount}
-                  </span>
-                )}
+                <span style={{ pointerEvents: 'none' }} className="relative flex items-center justify-center">
+                  <Bell size={18} />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-3.5 -right-3.5 bg-red-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full flex items-center justify-center animate-bounce min-w-[16px] min-h-[16px] border border-navy">
+                      {unreadCount}
+                    </span>
+                  )}
+                </span>
               </button>
 
               {/* Notification Dropdown Panel */}
@@ -339,9 +359,16 @@ export default function UserDashboard({ initialTab }: { initialTab?: string }) {
                     {unreadCount > 0 && (
                       <button 
                         onClick={handleMarkAllRead}
-                        className="text-[10px] text-gold hover:underline cursor-pointer uppercase font-bold tracking-wider"
+                        className="text-[10px] text-gold hover:underline cursor-pointer uppercase font-bold tracking-wider flex items-center justify-center"
+                        style={{
+                          minHeight: '44px',
+                          touchAction: 'manipulation',
+                          WebkitTapHighlightColor: 'transparent',
+                        }}
                       >
-                        Mark all read
+                        <span style={{ pointerEvents: 'none' }}>
+                          Mark all read
+                        </span>
                       </button>
                     )}
                   </div>
@@ -355,8 +382,18 @@ export default function UserDashboard({ initialTab }: { initialTab?: string }) {
                         className={`py-2 px-3 transition border-b-2 ${
                           notifFilter === tab ? 'border-gold text-gold bg-gold/5' : 'border-transparent hover:text-white cursor-pointer'
                         }`}
+                        style={{
+                          minHeight: '44px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          touchAction: 'manipulation',
+                          WebkitTapHighlightColor: 'transparent',
+                        }}
                       >
-                        {tab}
+                        <span style={{ pointerEvents: 'none' }}>
+                          {tab}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -370,6 +407,9 @@ export default function UserDashboard({ initialTab }: { initialTab?: string }) {
                         className={`p-4 flex gap-3 cursor-pointer transition-colors relative ${
                           !n.is_read ? 'bg-navy-light/10 hover:bg-navy-light/20' : 'hover:bg-navy/30'
                         }`}
+                        style={{
+                          touchAction: 'manipulation',
+                        }}
                       >
                         {/* Status Icon */}
                         {getNotifIcon(n.type)}
@@ -398,14 +438,29 @@ export default function UserDashboard({ initialTab }: { initialTab?: string }) {
             </div>
 
             {/* Profile Avatar */}
-            <div className="w-10 h-10 rounded-xl bg-gold flex items-center justify-center text-navy font-bold text-xs shrink-0 overflow-hidden cursor-pointer" onClick={() => setActiveTab('settings')}>
-              {profile?.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                getInitials()
-              )}
-            </div>
+            <button 
+              role="button"
+              className="w-11 h-11 rounded-xl bg-gold flex items-center justify-center text-navy font-bold text-xs shrink-0 overflow-hidden cursor-pointer" 
+              onClick={() => setActiveTab('settings')}
+              style={{
+                minHeight: '44px',
+                minWidth: '44px',
+                padding: 0,
+                border: 'none',
+                cursor: 'pointer',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <span style={{ pointerEvents: 'none' }} className="w-full h-full flex items-center justify-center">
+                {profile?.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  getInitials()
+                )}
+              </span>
+            </button>
           </div>
         </header>
 
@@ -431,9 +486,18 @@ export default function UserDashboard({ initialTab }: { initialTab?: string }) {
             </div>
             <button 
               onClick={() => setToasts(prev => prev.filter(t => t.toastId !== toast.toastId))}
-              className="text-gray-text hover:text-white p-0.5 shrink-0 self-start cursor-pointer"
+              className="text-gray-text hover:text-white p-0.5 shrink-0 self-start cursor-pointer flex items-center justify-center"
+              style={{
+                minHeight: '44px',
+                minWidth: '44px',
+                cursor: 'pointer',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+              }}
             >
-              <X size={14} />
+              <span style={{ pointerEvents: 'none' }}>
+                <X size={14} />
+              </span>
             </button>
           </div>
         ))}

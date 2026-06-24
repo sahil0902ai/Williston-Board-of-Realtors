@@ -113,8 +113,19 @@ export default function Rentals() {
                 <option value="yearly">Yearly</option>
               </select>
             </div>
-            <button className="bg-gold text-navy font-bold rounded-xl py-3 px-8 hover:bg-white transition-colors flex items-center justify-center gap-2">
-              <Search size={18} /> Search
+            <button 
+              className="bg-gold text-navy font-bold rounded-xl py-3 px-8 hover:bg-white transition-colors flex items-center justify-center gap-2"
+              style={{
+                minHeight: '48px',
+                minWidth: '48px',
+                cursor: 'pointer',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-2">
+                <Search size={18} /> Search
+              </span>
             </button>
           </div>
         </div>
@@ -131,8 +142,19 @@ export default function Rentals() {
                 key={d}
                 onClick={() => setDuration(d as selectedDuration)}
                 className={`px-6 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition ${duration === d ? 'bg-gold text-navy shadow-md shadow-gold/20' : 'text-gray-text hover:text-white'}`}
+                style={{
+                  minHeight: '44px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  touchAction: 'manipulation',
+                  cursor: 'pointer',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
               >
-                {d}
+                <span style={{ pointerEvents: 'none' }}>
+                  {d}
+                </span>
               </button>
             ))}
           </div>
@@ -192,16 +214,35 @@ export default function Rentals() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                <button onClick={() => openBooking('2 Bedroom Apartment')} className="flex-1 bg-gold text-navy font-bold py-3 px-4 rounded-xl hover:bg-white transition-colors text-sm text-center">
-                  Book This Apartment
+                <button 
+                  onClick={() => openBooking('2 Bedroom Apartment')} 
+                  className="flex-1 bg-gold text-navy font-bold py-3 px-4 rounded-xl hover:bg-white transition-colors text-sm text-center flex items-center justify-center"
+                  style={{
+                    minHeight: '48px',
+                    cursor: 'pointer',
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                  }}
+                >
+                  <span style={{ pointerEvents: 'none' }}>
+                    Book This Apartment
+                  </span>
                 </button>
                 <a 
                   href="https://t.me/willistonboardofrealtors"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 bg-transparent border border-green-500 text-green-400 font-bold py-3 px-4 rounded-xl hover:bg-green-500/10 transition-colors text-sm text-center flex items-center justify-center"
+                  style={{
+                    minHeight: '48px',
+                    cursor: 'pointer',
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                  }}
                 >
-                  Telegram Inquiry
+                  <span style={{ pointerEvents: 'none' }}>
+                    Telegram Inquiry
+                  </span>
                 </a>
               </div>
             </div>
@@ -263,16 +304,35 @@ export default function Rentals() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                <button onClick={() => openBooking('3 Bedroom Apartment')} className="flex-1 bg-gold text-navy font-bold py-3 px-4 rounded-xl hover:bg-white transition-colors text-sm text-center">
-                  Book This Apartment
+                <button 
+                  onClick={() => openBooking('3 Bedroom Apartment')} 
+                  className="flex-1 bg-gold text-navy font-bold py-3 px-4 rounded-xl hover:bg-white transition-colors text-sm text-center flex items-center justify-center"
+                  style={{
+                    minHeight: '48px',
+                    cursor: 'pointer',
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                  }}
+                >
+                  <span style={{ pointerEvents: 'none' }}>
+                    Book This Apartment
+                  </span>
                 </button>
                 <a 
                   href="https://t.me/willistonboardofrealtors"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 bg-transparent border border-green-500 text-green-400 font-bold py-3 px-4 rounded-xl hover:bg-green-500/10 transition-colors text-sm text-center flex items-center justify-center"
+                  style={{
+                    minHeight: '48px',
+                    cursor: 'pointer',
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                  }}
                 >
-                  Telegram Inquiry
+                  <span style={{ pointerEvents: 'none' }}>
+                    Telegram Inquiry
+                  </span>
                 </a>
               </div>
             </div>
@@ -392,9 +452,18 @@ export default function Rentals() {
           <div className="bg-navy-mid border border-border-gold rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto relative animate-in fade-in zoom-in-95 duration-200">
             <button 
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-text hover:text-white bg-navy border border-border-subtle rounded-full p-1"
+              className="absolute top-4 right-4 text-gray-text hover:text-white bg-navy border border-border-subtle rounded-full p-1 flex items-center justify-center"
+              style={{
+                minHeight: '44px',
+                minWidth: '44px',
+                cursor: 'pointer',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+              }}
             >
-              <X size={20} />
+              <span style={{ pointerEvents: 'none' }}>
+                <X size={20} />
+              </span>
             </button>
             
             <div className="p-8">
@@ -411,9 +480,17 @@ export default function Rentals() {
                   </p>
                   <button 
                     onClick={() => setIsModalOpen(false)}
-                    className="w-full mt-6 py-4 bg-gold text-navy font-bold rounded-xl hover:bg-white transition-colors"
+                    className="w-full mt-6 py-4 bg-gold text-navy font-bold rounded-xl hover:bg-white transition-colors flex items-center justify-center"
+                    style={{
+                      minHeight: '48px',
+                      cursor: 'pointer',
+                      touchAction: 'manipulation',
+                      WebkitTapHighlightColor: 'transparent',
+                    }}
                   >
-                    Close
+                    <span style={{ pointerEvents: 'none' }}>
+                      Close
+                    </span>
                   </button>
                 </div>
               ) : (
@@ -479,8 +556,19 @@ export default function Rentals() {
                     )}
 
                     <div className="pt-4">
-                      <button type="submit" className="w-full py-4 bg-gold text-navy font-bold rounded-xl hover:bg-white transition-colors">
-                        Send Booking Request
+                      <button 
+                        type="submit" 
+                        className="w-full py-4 bg-gold text-navy font-bold rounded-xl hover:bg-white transition-colors flex items-center justify-center"
+                        style={{
+                          minHeight: '48px',
+                          cursor: 'pointer',
+                          touchAction: 'manipulation',
+                          WebkitTapHighlightColor: 'transparent',
+                        }}
+                      >
+                        <span style={{ pointerEvents: 'none' }}>
+                          Send Booking Request
+                        </span>
                       </button>
                       <p className="text-center text-xs text-gray-400 mt-4">We&apos;ll confirm availability within 2 hours via WhatsApp or Telegram</p>
                       <p className="text-center text-xs mt-2 text-gray-400">

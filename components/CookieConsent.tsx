@@ -57,17 +57,33 @@ export default function CookieConsent() {
             <div className="flex items-center gap-3 w-full md:w-auto flex-shrink-0 relative z-10">
               <button
                 onClick={handleDecline}
-                className="flex-1 md:flex-none px-6 py-2.5 border border-border-subtle text-gray-text hover:text-white hover:border-border-gold rounded font-semibold text-xs tracking-widest uppercase transition-colors"
+                className="flex-1 md:flex-none px-6 py-2.5 border border-border-subtle text-gray-text hover:text-white hover:border-border-gold rounded font-semibold text-xs tracking-widest uppercase transition-colors flex items-center justify-center"
                 suppressHydrationWarning
+                style={{
+                  minHeight: '44px',
+                  touchAction: 'manipulation',
+                  cursor: 'pointer',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
               >
-                Decline
+                <span style={{ pointerEvents: 'none' }}>
+                  Decline
+                </span>
               </button>
               <button
                 onClick={handleAccept}
-                className="flex-1 md:flex-none px-6 py-2.5 bg-gold hover:bg-gold-light text-navy rounded font-bold text-xs tracking-widest uppercase transition-colors"
+                className="flex-1 md:flex-none px-6 py-2.5 bg-gold hover:bg-gold-light text-navy rounded font-bold text-xs tracking-widest uppercase transition-colors flex items-center justify-center"
                 suppressHydrationWarning
+                style={{
+                  minHeight: '44px',
+                  touchAction: 'manipulation',
+                  cursor: 'pointer',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
               >
-                Accept All
+                <span style={{ pointerEvents: 'none' }}>
+                  Accept All
+                </span>
               </button>
             </div>
           </div>

@@ -83,8 +83,16 @@ export default function WalletTab({ setActiveTab, profile, fetchProfile }: Walle
                  key={f}
                  onClick={() => setFilter(f)}
                  className={`px-3 py-1 text-xs rounded-full border transition-colors ${filter === f ? 'bg-gold/10 border-gold text-gold font-medium' : 'bg-navy border-border-subtle text-gray-text hover:text-white'}`}
+                 style={{
+                   minHeight: '44px',
+                   touchAction: 'manipulation',
+                   cursor: 'pointer',
+                   WebkitTapHighlightColor: 'transparent',
+                 }}
                >
-                 {f}
+                 <span style={{ pointerEvents: 'none' }}>
+                   {f}
+                 </span>
                </button>
             ))}
           </div>

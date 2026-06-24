@@ -9,7 +9,7 @@ import {
   Settings, LogOut, Search, Shield, Eye, Check, X, ShieldAlert, 
   ArrowUpRight, ArrowDownRight, Edit, Trash2, Mail, Phone, 
   Calendar, User, FileUp, CheckCircle, RefreshCw, ChevronRight, 
-  Download, Plus, AlertCircle, Lock, MapPin
+  Download, Plus, AlertCircle, Lock, MapPin, Menu
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
@@ -151,6 +151,9 @@ export default function AdminDashboard({ adminSecret }: { adminSecret?: string }
 
   // Active Tab
   const [activeTab, setActiveTab] = useState('overview');
+
+  // Mobile responsive sidebar state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Core Data States
   const [investors, setInvestors] = useState<any[]>([]);
@@ -1177,10 +1180,18 @@ export default function AdminDashboard({ adminSecret }: { adminSecret?: string }
 
   return (
     <div className="min-h-screen bg-navy text-white flex">
+      {/* Mobile Backdrop */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-[rgba(4,9,26,0.97)] z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar - Dark Charcoal Sidebar #060D1A */}
-      <aside className="w-64 bg-[#060D1A] border-r border-border-subtle flex flex-col shrink-0">
+      <aside className={`fixed lg:relative top-0 left-0 h-full w-64 bg-[#060D1A] border-r border-border-subtle flex flex-col shrink-0 z-50 transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         {/* Sidebar Header */}
-        <div className="p-6 border-b border-border-subtle">
+        <div className="p-6 border-b border-border-subtle flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-gold/10 border border-gold flex items-center justify-center text-gold font-serif font-bold text-lg">W</div>
             <div>
@@ -1190,6 +1201,21 @@ export default function AdminDashboard({ adminSecret }: { adminSecret?: string }
               </div>
             </div>
           </div>
+          <button 
+            onClick={() => setIsSidebarOpen(false)} 
+            className="lg:hidden text-gray-text hover:text-white flex items-center justify-center"
+            style={{
+              minHeight: '44px',
+              minWidth: '44px',
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <span style={{ pointerEvents: 'none' }}>
+              <X size={20} />
+            </span>
+          </button>
         </div>
 
         {/* Admin profile detail card */}
@@ -1207,85 +1233,149 @@ export default function AdminDashboard({ adminSecret }: { adminSecret?: string }
         {/* Navigation list */}
         <nav className="flex-1 overflow-y-auto px-4 space-y-1">
           <button 
-            onClick={() => setActiveTab('overview')} 
+            onClick={() => { setActiveTab('overview'); setIsSidebarOpen(false); }} 
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
               activeTab === 'overview' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
             }`}
+            style={{
+              minHeight: '44px',
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+            }}
           >
-            <LayoutDashboard size={18} /> Overview
+            <span style={{ pointerEvents: 'none' }} className="flex items-center gap-3 w-full">
+              <LayoutDashboard size={18} /> Overview
+            </span>
           </button>
 
           <button 
-            onClick={() => setActiveTab('deposits')} 
+            onClick={() => { setActiveTab('deposits'); setIsSidebarOpen(false); }} 
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
               activeTab === 'deposits' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
             }`}
+            style={{
+              minHeight: '44px',
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+            }}
           >
-            <ArrowDownToLine size={18} /> Deposits 
-            {pendingDepositsCount > 0 && (
-              <span className={`ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                activeTab === 'deposits' ? 'bg-navy text-gold' : 'bg-red-500 text-white'
-              }`}>{pendingDepositsCount}</span>
-            )}
+            <span style={{ pointerEvents: 'none' }} className="flex items-center gap-3 w-full">
+              <ArrowDownToLine size={18} /> Deposits 
+              {pendingDepositsCount > 0 && (
+                <span className={`ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                  activeTab === 'deposits' ? 'bg-navy text-gold' : 'bg-red-500 text-white'
+                }`}>{pendingDepositsCount}</span>
+              )}
+            </span>
           </button>
 
           <button 
-            onClick={() => setActiveTab('withdrawals')} 
+            onClick={() => { setActiveTab('withdrawals'); setIsSidebarOpen(false); }} 
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
               activeTab === 'withdrawals' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
             }`}
+            style={{
+              minHeight: '44px',
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+            }}
           >
-            <ArrowUpFromLine size={18} /> Withdrawals 
-            {pendingWithdrawalsCount > 0 && (
-              <span className={`ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                activeTab === 'withdrawals' ? 'bg-navy text-gold' : 'bg-amber-500 text-navy'
-              }`}>{pendingWithdrawalsCount}</span>
-            )}
+            <span style={{ pointerEvents: 'none' }} className="flex items-center gap-3 w-full">
+              <ArrowUpFromLine size={18} /> Withdrawals 
+              {pendingWithdrawalsCount > 0 && (
+                <span className={`ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                  activeTab === 'withdrawals' ? 'bg-navy text-gold' : 'bg-amber-500 text-navy'
+                }`}>{pendingWithdrawalsCount}</span>
+              )}
+            </span>
           </button>
           
           <button 
-            onClick={() => setActiveTab('users')} 
+            onClick={() => { setActiveTab('users'); setIsSidebarOpen(false); }} 
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
               activeTab === 'users' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
             }`}
+            style={{
+              minHeight: '44px',
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+            }}
           >
-            <Users size={18} /> Users
+            <span style={{ pointerEvents: 'none' }} className="flex items-center gap-3 w-full">
+              <Users size={18} /> Users
+            </span>
           </button>
 
           <button 
-            onClick={() => setActiveTab('investments')} 
+            onClick={() => { setActiveTab('investments'); setIsSidebarOpen(false); }} 
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
               activeTab === 'investments' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
             }`}
+            style={{
+              minHeight: '44px',
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+            }}
           >
-            <Layers size={18} /> Investments
+            <span style={{ pointerEvents: 'none' }} className="flex items-center gap-3 w-full">
+              <Layers size={18} /> Investments
+            </span>
           </button>
 
           <button 
-            onClick={() => setActiveTab('properties')} 
+            onClick={() => { setActiveTab('properties'); setIsSidebarOpen(false); }} 
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
               activeTab === 'properties' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
             }`}
+            style={{
+              minHeight: '44px',
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+            }}
           >
-            <Building size={18} /> Properties
+            <span style={{ pointerEvents: 'none' }} className="flex items-center gap-3 w-full">
+              <Building size={18} /> Properties
+            </span>
           </button>
 
           <button 
-            onClick={() => setActiveTab('announcements')} 
+            onClick={() => { setActiveTab('announcements'); setIsSidebarOpen(false); }} 
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
               activeTab === 'announcements' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
             }`}
+            style={{
+              minHeight: '44px',
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+            }}
           >
-            <Bell size={18} /> Announcements
+            <span style={{ pointerEvents: 'none' }} className="flex items-center gap-3 w-full">
+              <Bell size={18} /> Announcements
+            </span>
           </button>
 
           <button 
-            onClick={() => setActiveTab('settings')} 
+            onClick={() => { setActiveTab('settings'); setIsSidebarOpen(false); }} 
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
               activeTab === 'settings' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white hover:bg-navy-light/20'
             }`}
+            style={{
+              minHeight: '44px',
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+            }}
           >
-            <Settings size={18} /> Settings
+            <span style={{ pointerEvents: 'none' }} className="flex items-center gap-3 w-full">
+              <Settings size={18} /> Settings
+            </span>
           </button>
         </nav>
 
@@ -1294,8 +1384,16 @@ export default function AdminDashboard({ adminSecret }: { adminSecret?: string }
           <button 
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-950/20 transition"
+            style={{
+              minHeight: '44px',
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+            }}
           >
-            <LogOut size={18} /> Logout
+            <span style={{ pointerEvents: 'none' }} className="flex items-center gap-3 w-full">
+              <LogOut size={18} /> Logout
+            </span>
           </button>
         </div>
       </aside>
@@ -1304,9 +1402,24 @@ export default function AdminDashboard({ adminSecret }: { adminSecret?: string }
       <main className="flex-1 overflow-y-auto flex flex-col bg-navy">
         
         {/* Top Navigation Bar */}
-        <header className="h-16 border-b border-border-subtle bg-[#060D1A] flex items-center justify-between px-8 sticky top-0 z-20">
+        <header className="h-16 border-b border-border-subtle bg-[#060D1A] flex items-center justify-between px-6 lg:px-8 sticky top-0 z-20">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gold/10 border border-gold flex items-center justify-center text-gold font-serif font-bold text-lg">W</div>
+            <button 
+              onClick={() => setIsSidebarOpen(true)} 
+              className="lg:hidden text-gray-text hover:text-white flex items-center justify-center mr-1"
+              style={{
+                minHeight: '44px',
+                minWidth: '44px',
+                cursor: 'pointer',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+                <Menu size={20} />
+              </span>
+            </button>
+            <div className="w-8 h-8 rounded-lg bg-gold/10 border border-gold flex items-center justify-center text-gold font-serif font-bold text-lg hidden lg:flex">W</div>
             <span className="font-serif text-sm font-bold tracking-wider text-gold">WILLISTON ADMIN</span>
           </div>
 

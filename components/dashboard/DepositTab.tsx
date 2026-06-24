@@ -280,8 +280,20 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
                   onClick={handleNext}
                   disabled={parseInt(amount) < 20000}
                   className="w-full py-4 bg-gold text-navy rounded-xl font-bold text-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  style={{
+                    minHeight: '48px',
+                    minWidth: '48px',
+                    padding: '14px 24px',
+                    cursor: 'pointer',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
                 >
-                  Continue <ArrowRight size={20} />
+                  <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-2">
+                    Continue <ArrowRight size={20} />
+                  </span>
                 </button>
               </div>
             </div>
@@ -290,8 +302,22 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
           {step === 2 && (
             <div className="space-y-6">
               <div className="flex items-center gap-4 mb-6">
-                <button onClick={handleBack} className="p-2 bg-navy rounded-lg border border-border-subtle text-gray-text hover:text-white transition-colors">
-                  <ArrowLeft size={16} />
+                <button 
+                  onClick={handleBack} 
+                  className="p-2 bg-navy rounded-lg border border-border-subtle text-gray-text hover:text-white transition-colors flex items-center justify-center"
+                  style={{
+                    minHeight: '48px',
+                    minWidth: '48px',
+                    cursor: 'pointer',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
+                >
+                  <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+                    <ArrowLeft size={16} />
+                  </span>
                 </button>
                 <div>
                   <h3 className="text-xl font-serif mb-1">Choose Payment Method</h3>
@@ -305,8 +331,20 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
                 <div 
                   className={`border rounded-xl p-5 cursor-pointer transition ${paymentMethod === 'paystack' ? 'bg-gold/5 border-gold shadow-[0_0_15px_rgba(201,168,76,0.1)]' : 'bg-navy border-border-subtle hover:border-gray-500'}`}
                   onClick={() => setPaymentMethod('paystack')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      setPaymentMethod('paystack');
+                    }
+                  }}
+                  style={{
+                    minHeight: '64px',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                  }}
                 >
-                  <div className="flex items-center gap-4">
+                  <div style={{ pointerEvents: 'none' }} className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-[#00C3F7]/20 text-[#00C3F7] flex items-center justify-center shrink-0 border border-[#00C3F7]/30">
                       💳
                     </div>
@@ -321,8 +359,20 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
                 <div 
                   className={`border rounded-xl p-5 cursor-pointer transition ${paymentMethod === 'flutterwave' ? 'bg-gold/5 border-gold shadow-[0_0_15px_rgba(201,168,76,0.1)]' : 'bg-navy border-border-subtle hover:border-gray-500'}`}
                   onClick={() => setPaymentMethod('flutterwave')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      setPaymentMethod('flutterwave');
+                    }
+                  }}
+                  style={{
+                    minHeight: '64px',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                  }}
                 >
-                  <div className="flex items-center gap-4">
+                  <div style={{ pointerEvents: 'none' }} className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-[#F5A623]/20 text-[#F5A623] flex items-center justify-center shrink-0 border border-[#F5A623]/30">
                       🌊
                     </div>
@@ -337,8 +387,20 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
                 <div 
                   className={`border rounded-xl p-5 cursor-pointer transition ${paymentMethod === 'bank' ? 'bg-gold/5 border-gold shadow-[0_0_15px_rgba(201,168,76,0.1)]' : 'bg-navy border-border-subtle hover:border-gray-500'}`}
                   onClick={() => setPaymentMethod('bank')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      setPaymentMethod('bank');
+                    }
+                  }}
+                  style={{
+                    minHeight: '64px',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                  }}
                 >
-                  <div className="flex items-center gap-4 mb-4">
+                  <div style={{ pointerEvents: 'none' }} className="flex items-center gap-4 mb-4">
                     <div className="w-12 h-12 rounded-full bg-navy-light flex items-center justify-center shrink-0 border border-border-subtle text-white">
                       <Landmark size={24} />
                     </div>
@@ -375,6 +437,12 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-green-400 text-xs hover:underline flex items-center gap-1.5"
+                                style={{
+                                  minHeight: '44px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  touchAction: 'manipulation',
+                                }}
                               >
                                 💬 Contact on WhatsApp for instant confirmation
                               </a>
@@ -416,8 +484,20 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
                 <div 
                   className={`border rounded-xl p-5 cursor-pointer transition ${paymentMethod === 'crypto' ? 'bg-gold/5 border-gold shadow-[0_0_15px_rgba(201,168,76,0.1)]' : 'bg-navy border-border-subtle hover:border-gray-500'}`}
                   onClick={() => setPaymentMethod('crypto')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      setPaymentMethod('crypto');
+                    }
+                  }}
+                  style={{
+                    minHeight: '64px',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                  }}
                 >
-                  <div className="flex items-center gap-4 mb-4">
+                  <div style={{ pointerEvents: 'none' }} className="flex items-center gap-4 mb-4">
                     <div className="w-12 h-12 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center shrink-0 border border-orange-500/30">
                       <Bitcoin size={24} />
                     </div>
@@ -430,8 +510,30 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
                   {paymentMethod === 'crypto' && (
                     <div className="mt-4 pt-4 border-t border-border-subtle space-y-4 animate-in fade-in slide-in-from-top-2 duration-300" onClick={(e) => e.stopPropagation()}>
                       <div className="flex border border-border-subtle rounded-lg overflow-hidden bg-navy">
-                        <button onClick={() => { setCryptoTab('USDT'); setUploadFile(null); }} className={`flex-1 py-2 text-xs font-bold font-mono transition border-r border-border-subtle ${cryptoTab === 'USDT' ? 'bg-[#26A17B] text-white' : 'text-gray-400 hover:text-white hover:bg-navy-light'}`}>USDT (TRC20)</button>
-                        <button onClick={() => { setCryptoTab('BTC'); setUploadFile(null); }} className={`flex-1 py-2 text-xs font-bold font-mono transition ${cryptoTab === 'BTC' ? 'bg-orange-500 text-white' : 'text-gray-400 hover:text-white hover:bg-navy-light'}`}>Bitcoin (BTC)</button>
+                        <button 
+                          onClick={() => { setCryptoTab('USDT'); setUploadFile(null); }} 
+                          className={`flex-1 py-2 text-xs font-bold font-mono transition border-r border-border-subtle ${cryptoTab === 'USDT' ? 'bg-[#26A17B] text-white' : 'text-gray-400 hover:text-white hover:bg-navy-light'}`}
+                          style={{
+                            minHeight: '44px',
+                            cursor: 'pointer',
+                            touchAction: 'manipulation',
+                            WebkitTapHighlightColor: 'transparent',
+                          }}
+                        >
+                          USDT (TRC20)
+                        </button>
+                        <button 
+                          onClick={() => { setCryptoTab('BTC'); setUploadFile(null); }} 
+                          className={`flex-1 py-2 text-xs font-bold font-mono transition ${cryptoTab === 'BTC' ? 'bg-orange-500 text-white' : 'text-gray-400 hover:text-white hover:bg-navy-light'}`}
+                          style={{
+                            minHeight: '44px',
+                            cursor: 'pointer',
+                            touchAction: 'manipulation',
+                            WebkitTapHighlightColor: 'transparent',
+                          }}
+                        >
+                          Bitcoin (BTC)
+                        </button>
                       </div>
 
                       <div className="bg-navy-light p-4 rounded-lg space-y-3">
@@ -531,7 +633,14 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
                 </div>
               </div>
 
-              <label className="flex items-start gap-3 cursor-pointer group">
+              <label 
+                className="flex items-start gap-3 cursor-pointer group"
+                style={{
+                  minHeight: '44px',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
                 <div className="relative flex items-center">
                   <input 
                     type="checkbox" 
@@ -553,24 +662,46 @@ export default function DepositTab({ setActiveTab, profile, fetchProfile }: Depo
                   onClick={handleSubmitDeposit}
                   disabled={!confirmed || isSubmitting || isUploading}
                   className="w-full py-4 bg-gold text-navy rounded-xl font-bold text-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  style={{
+                    minHeight: '48px',
+                    minWidth: '48px',
+                    padding: '14px 24px',
+                    cursor: 'pointer',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
                 >
                   {isSubmitting ? (
-                    <>
+                    <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-2">
                       <Loader2 size={20} className="animate-spin" />
                       {isUploading ? 'Uploading proof...' : 'Submitting request...'}
-                    </>
+                    </span>
                   ) : (
-                    <>
+                    <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-2">
                       Confirm Deposit <CheckCircle2 size={20} />
-                    </>
+                    </span>
                   )}
                 </button>
                 <button 
                   onClick={() => setActiveTab('wallet')}
                   disabled={isSubmitting}
                   className="w-full py-4 bg-navy border border-border-subtle text-white rounded-xl font-bold hover:border-white transition-colors disabled:opacity-50"
+                  style={{
+                    minHeight: '48px',
+                    minWidth: '48px',
+                    padding: '14px 24px',
+                    cursor: 'pointer',
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
                 >
-                  Cancel
+                  <span style={{ pointerEvents: 'none' }}>
+                    Cancel
+                  </span>
                 </button>
               </div>
             </div>

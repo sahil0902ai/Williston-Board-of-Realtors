@@ -516,16 +516,30 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
               subTab === 'profile' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white'
             }`}
+            style={{
+              minHeight: '44px',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+            }}
           >
-            <User size={14} /> Profile & KYC
+            <span style={{ pointerEvents: 'none' }} className="flex items-center gap-2">
+              <User size={14} /> Profile & KYC
+            </span>
           </button>
           <button
             onClick={() => setSubTab('security')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
               subTab === 'security' ? 'bg-gold text-navy font-bold' : 'text-gray-text hover:text-white'
             }`}
+            style={{
+              minHeight: '44px',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+            }}
           >
-            <KeyRound size={14} /> Security & 2FA
+            <span style={{ pointerEvents: 'none' }} className="flex items-center gap-2">
+              <KeyRound size={14} /> Security & 2FA
+            </span>
           </button>
         </div>
       </div>
@@ -576,10 +590,18 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
                   <span className="text-xs font-mono text-white truncate px-3 flex-1">{profile?.referral_code || 'WILLISTON'}</span>
                   <button 
                     onClick={copyReferralLink} 
-                    className="p-2.5 bg-gold hover:bg-gold-light text-navy rounded-lg transition shrink-0 cursor-pointer"
+                    className="p-2.5 bg-gold hover:bg-gold-light text-navy rounded-lg transition shrink-0 cursor-pointer flex items-center justify-center"
                     title="Copy Partner URL"
+                    style={{
+                      minHeight: '44px',
+                      minWidth: '44px',
+                      touchAction: 'manipulation',
+                      WebkitTapHighlightColor: 'transparent',
+                    }}
                   >
-                    {copied ? <Check size={14} /> : <Copy size={14} />}
+                    <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+                      {copied ? <Check size={14} /> : <Copy size={14} />}
+                    </span>
                   </button>
                 </div>
                 <p className="text-[9px] text-gray-500 font-sans leading-relaxed">Refer investors to earn 5%-10% instant commissions paid directly into your wallet.</p>
@@ -685,10 +707,17 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
                   <button
                     type="submit"
                     disabled={profileSaving}
-                    className="px-6 py-3 bg-gold hover:bg-gold-light text-navy font-bold rounded-xl transition text-xs shadow-lg uppercase tracking-wider flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    className="px-6 py-3 bg-gold hover:bg-gold-light text-navy font-bold rounded-xl transition text-xs shadow-lg uppercase tracking-wider flex items-center gap-1.5 cursor-pointer disabled:opacity-50 justify-center"
+                    style={{
+                      minHeight: '44px',
+                      touchAction: 'manipulation',
+                      WebkitTapHighlightColor: 'transparent',
+                    }}
                   >
-                    {profileSaving && <RefreshCw size={14} className="animate-spin" />}
-                    Save Profile changes
+                    <span style={{ pointerEvents: 'none' }} className="flex items-center gap-1.5 justify-center">
+                      {profileSaving && <RefreshCw size={14} className="animate-spin" />}
+                      Save Profile changes
+                    </span>
                   </button>
                 </div>
               </form>
@@ -786,7 +815,19 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
                         ))}
                       </div>
                       <div className="flex justify-end pt-4">
-                        <button type="button" onClick={() => setKycStep(2)} className="px-5 py-2.5 bg-gold hover:bg-gold-light text-navy font-bold rounded-lg text-xs transition uppercase tracking-wider cursor-pointer">Continue</button>
+                        <button 
+                          type="button" 
+                          onClick={() => setKycStep(2)} 
+                          className="px-5 py-2.5 bg-gold hover:bg-gold-light text-navy font-bold rounded-lg text-xs transition uppercase tracking-wider cursor-pointer flex items-center justify-center"
+                          style={{
+                            minHeight: '44px',
+                            minWidth: '44px',
+                            touchAction: 'manipulation',
+                            WebkitTapHighlightColor: 'transparent',
+                          }}
+                        >
+                          <span style={{ pointerEvents: 'none' }}>Continue</span>
+                        </button>
                       </div>
                     </div>
                   )}
@@ -804,7 +845,18 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
                             <div className="relative border border-border-subtle rounded-xl overflow-hidden h-40 bg-navy">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={idFrontPreview} alt="Front ID Preview" className="w-full h-full object-contain" />
-                              <button onClick={() => { setIdFrontFile(null); setIdFrontPreview(''); }} className="absolute top-2 right-2 bg-red-600 hover:bg-red-500 p-1.5 rounded text-white text-[10px] font-bold">Remove</button>
+                              <button 
+                                onClick={() => { setIdFrontFile(null); setIdFrontPreview(''); }} 
+                                className="absolute top-2 right-2 bg-red-600 hover:bg-red-500 p-1.5 rounded text-white text-[10px] font-bold flex items-center justify-center"
+                                style={{
+                                  minHeight: '44px',
+                                  minWidth: '44px',
+                                  touchAction: 'manipulation',
+                                  WebkitTapHighlightColor: 'transparent',
+                                }}
+                              >
+                                <span style={{ pointerEvents: 'none' }}>Remove</span>
+                              </button>
                             </div>
                           ) : (
                             <label className="border border-dashed border-border-subtle/80 hover:border-gold/50 rounded-xl h-40 flex flex-col items-center justify-center bg-[#04091A] cursor-pointer transition text-gray-text hover:text-white">
@@ -822,7 +874,18 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
                             <div className="relative border border-border-subtle rounded-xl overflow-hidden h-40 bg-navy">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={idBackPreview} alt="Back ID Preview" className="w-full h-full object-contain" />
-                              <button onClick={() => { setIdBackFile(null); setIdBackPreview(''); }} className="absolute top-2 right-2 bg-red-600 hover:bg-red-500 p-1.5 rounded text-white text-[10px] font-bold">Remove</button>
+                              <button 
+                                onClick={() => { setIdBackFile(null); setIdBackPreview(''); }} 
+                                className="absolute top-2 right-2 bg-red-600 hover:bg-red-500 p-1.5 rounded text-white text-[10px] font-bold flex items-center justify-center"
+                                style={{
+                                  minHeight: '44px',
+                                  minWidth: '44px',
+                                  touchAction: 'manipulation',
+                                  WebkitTapHighlightColor: 'transparent',
+                                }}
+                              >
+                                <span style={{ pointerEvents: 'none' }}>Remove</span>
+                              </button>
                             </div>
                           ) : (
                             <label className="border border-dashed border-border-subtle/80 hover:border-gold/50 rounded-xl h-40 flex flex-col items-center justify-center bg-[#04091A] cursor-pointer transition text-gray-text hover:text-white">
@@ -834,9 +897,33 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
                         </div>
                       </div>
 
-                      <div className="flex justify-between pt-4">
-                        <button type="button" onClick={() => setKycStep(1)} className="px-5 py-2.5 bg-navy border border-border-subtle text-xs text-gray-text hover:text-white rounded-lg transition uppercase tracking-wider cursor-pointer">Back</button>
-                        <button type="button" onClick={() => { if (idFrontFile) setKycStep(3); else setKycErrorMsg('Front of ID document is required.'); }} className="px-5 py-2.5 bg-gold hover:bg-gold-light text-navy font-bold rounded-lg text-xs transition uppercase tracking-wider cursor-pointer">Continue</button>
+                      <div className="flex justify-between pt-4 gap-3">
+                        <button 
+                          type="button" 
+                          onClick={() => setKycStep(1)} 
+                          className="px-5 py-2.5 bg-navy border border-border-subtle text-xs text-gray-text hover:text-white rounded-lg transition uppercase tracking-wider cursor-pointer flex items-center justify-center"
+                          style={{
+                            minHeight: '44px',
+                            minWidth: '44px',
+                            touchAction: 'manipulation',
+                            WebkitTapHighlightColor: 'transparent',
+                          }}
+                        >
+                          <span style={{ pointerEvents: 'none' }}>Back</span>
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={() => { if (idFrontFile) setKycStep(3); else setKycErrorMsg('Front of ID document is required.'); }} 
+                          className="px-5 py-2.5 bg-gold hover:bg-gold-light text-navy font-bold rounded-lg text-xs transition uppercase tracking-wider cursor-pointer flex items-center justify-center"
+                          style={{
+                            minHeight: '44px',
+                            minWidth: '44px',
+                            touchAction: 'manipulation',
+                            WebkitTapHighlightColor: 'transparent',
+                          }}
+                        >
+                          <span style={{ pointerEvents: 'none' }}>Continue</span>
+                        </button>
                       </div>
                     </div>
                   )}
@@ -864,7 +951,18 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
                             <div className="relative border border-border-subtle rounded-xl overflow-hidden h-44 bg-navy">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img src={selfiePreview} alt="Selfie ID Preview" className="w-full h-full object-contain" />
-                              <button onClick={() => { setSelfieFile(null); setSelfiePreview(''); }} className="absolute top-2 right-2 bg-red-600 hover:bg-red-500 p-1.5 rounded text-white text-[10px] font-bold">Remove</button>
+                              <button 
+                                onClick={() => { setSelfieFile(null); setSelfiePreview(''); }} 
+                                className="absolute top-2 right-2 bg-red-600 hover:bg-red-500 p-1.5 rounded text-white text-[10px] font-bold flex items-center justify-center"
+                                style={{
+                                  minHeight: '44px',
+                                  minWidth: '44px',
+                                  touchAction: 'manipulation',
+                                  WebkitTapHighlightColor: 'transparent',
+                                }}
+                              >
+                                <span style={{ pointerEvents: 'none' }}>Remove</span>
+                              </button>
                             </div>
                           ) : (
                             <label className="border border-dashed border-border-subtle/80 hover:border-gold/50 rounded-xl h-44 flex flex-col items-center justify-center bg-[#04091A] cursor-pointer transition text-gray-text hover:text-white">
@@ -876,9 +974,33 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
                         </div>
                       </div>
 
-                      <div className="flex justify-between pt-4">
-                        <button type="button" onClick={() => setKycStep(2)} className="px-5 py-2.5 bg-navy border border-border-subtle text-xs text-gray-text hover:text-white rounded-lg transition uppercase tracking-wider cursor-pointer">Back</button>
-                        <button type="button" onClick={() => { if (selfieFile) setKycStep(4); else setKycErrorMsg('Verification selfie holding ID is required.'); }} className="px-5 py-2.5 bg-gold hover:bg-gold-light text-navy font-bold rounded-lg text-xs transition uppercase tracking-wider cursor-pointer">Continue</button>
+                      <div className="flex justify-between pt-4 gap-3">
+                        <button 
+                          type="button" 
+                          onClick={() => setKycStep(2)} 
+                          className="px-5 py-2.5 bg-navy border border-border-subtle text-xs text-gray-text hover:text-white rounded-lg transition uppercase tracking-wider cursor-pointer flex items-center justify-center"
+                          style={{
+                            minHeight: '44px',
+                            minWidth: '44px',
+                            touchAction: 'manipulation',
+                            WebkitTapHighlightColor: 'transparent',
+                          }}
+                        >
+                          <span style={{ pointerEvents: 'none' }}>Back</span>
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={() => { if (selfieFile) setKycStep(4); else setKycErrorMsg('Verification selfie holding ID is required.'); }} 
+                          className="px-5 py-2.5 bg-gold hover:bg-gold-light text-navy font-bold rounded-lg text-xs transition uppercase tracking-wider cursor-pointer flex items-center justify-center"
+                          style={{
+                            minHeight: '44px',
+                            minWidth: '44px',
+                            touchAction: 'manipulation',
+                            WebkitTapHighlightColor: 'transparent',
+                          }}
+                        >
+                          <span style={{ pointerEvents: 'none' }}>Continue</span>
+                        </button>
                       </div>
                     </div>
                   )}
@@ -918,15 +1040,34 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
                         </div>
                       )}
 
-                      <div className="flex justify-between pt-4">
-                        <button type="button" onClick={() => setKycStep(3)} className="px-5 py-2.5 bg-navy border border-border-subtle text-xs text-gray-text hover:text-white rounded-lg transition uppercase tracking-wider cursor-pointer">Back</button>
+                      <div className="flex justify-between pt-4 gap-3">
+                        <button 
+                          type="button" 
+                          onClick={() => setKycStep(3)} 
+                          className="px-5 py-2.5 bg-navy border border-border-subtle text-xs text-gray-text hover:text-white rounded-lg transition uppercase tracking-wider cursor-pointer flex items-center justify-center"
+                          style={{
+                            minHeight: '44px',
+                            minWidth: '44px',
+                            touchAction: 'manipulation',
+                            WebkitTapHighlightColor: 'transparent',
+                          }}
+                        >
+                          <span style={{ pointerEvents: 'none' }}>Back</span>
+                        </button>
                         <button 
                           type="submit" 
                           disabled={kycSubmitting}
-                          className="px-5 py-2.5 bg-gold hover:bg-gold-light text-navy font-bold rounded-lg text-xs transition uppercase tracking-wider cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                          className="px-5 py-2.5 bg-gold hover:bg-gold-light text-navy font-bold rounded-lg text-xs transition uppercase tracking-wider cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+                          style={{
+                            minHeight: '44px',
+                            touchAction: 'manipulation',
+                            WebkitTapHighlightColor: 'transparent',
+                          }}
                         >
-                          {kycSubmitting && <RefreshCw size={14} className="animate-spin" />}
-                          Submit for Verification
+                          <span style={{ pointerEvents: 'none' }} className="flex items-center gap-1.5 justify-center">
+                            {kycSubmitting && <RefreshCw size={14} className="animate-spin" />}
+                            Submit for Verification
+                          </span>
                         </button>
                       </div>
                     </div>
@@ -1157,10 +1298,23 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
                       required
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
-                      className="w-full bg-[#04091A] border border-border-subtle rounded-xl pl-4 pr-10 py-3 text-xs text-white focus:outline-none focus:border-gold"
+                      className="w-full bg-[#04091A] border border-border-subtle rounded-xl pl-4 pr-12 py-3 text-xs text-white focus:outline-none focus:border-gold"
                     />
-                    <button type="button" onClick={() => setShowCurrentPwd(!showCurrentPwd)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-text hover:text-white">
-                      {showCurrentPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                    <button 
+                      type="button" 
+                      onClick={() => setShowCurrentPwd(!showCurrentPwd)} 
+                      className="absolute right-0 top-0 h-full px-3 text-gray-text hover:text-white flex items-center justify-center"
+                      style={{
+                        minHeight: '44px',
+                        minWidth: '44px',
+                        cursor: 'pointer',
+                        WebkitTapHighlightColor: 'transparent',
+                        touchAction: 'manipulation',
+                      }}
+                    >
+                      <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+                        {showCurrentPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -1173,10 +1327,23 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
                       required
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      className="w-full bg-[#04091A] border border-border-subtle rounded-xl pl-4 pr-10 py-3 text-xs text-white focus:outline-none focus:border-gold"
+                      className="w-full bg-[#04091A] border border-border-subtle rounded-xl pl-4 pr-12 py-3 text-xs text-white focus:outline-none focus:border-gold"
                     />
-                    <button type="button" onClick={() => setShowNewPwd(!showNewPwd)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-text hover:text-white">
-                      {showNewPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                    <button 
+                      type="button" 
+                      onClick={() => setShowNewPwd(!showNewPwd)} 
+                      className="absolute right-0 top-0 h-full px-3 text-gray-text hover:text-white flex items-center justify-center"
+                      style={{
+                        minHeight: '44px',
+                        minWidth: '44px',
+                        cursor: 'pointer',
+                        WebkitTapHighlightColor: 'transparent',
+                        touchAction: 'manipulation',
+                      }}
+                    >
+                      <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+                        {showNewPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </span>
                     </button>
                   </div>
 
@@ -1206,10 +1373,23 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
                       required
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full bg-[#04091A] border border-border-subtle rounded-xl pl-4 pr-10 py-3 text-xs text-white focus:outline-none focus:border-gold"
+                      className="w-full bg-[#04091A] border border-border-subtle rounded-xl pl-4 pr-12 py-3 text-xs text-white focus:outline-none focus:border-gold"
                     />
-                    <button type="button" onClick={() => setShowConfirmPwd(!showConfirmPwd)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-text hover:text-white">
-                      {showConfirmPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                    <button 
+                      type="button" 
+                      onClick={() => setShowConfirmPwd(!showConfirmPwd)} 
+                      className="absolute right-0 top-0 h-full px-3 text-gray-text hover:text-white flex items-center justify-center"
+                      style={{
+                        minHeight: '44px',
+                        minWidth: '44px',
+                        cursor: 'pointer',
+                        WebkitTapHighlightColor: 'transparent',
+                        touchAction: 'manipulation',
+                      }}
+                    >
+                      <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center">
+                        {showConfirmPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -1229,9 +1409,16 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
                   type="submit"
                   disabled={pwdSaving}
                   className="w-full mt-2 py-3 bg-gold hover:bg-gold-light text-navy font-bold rounded-xl transition text-xs shadow-lg uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  style={{
+                    minHeight: '44px',
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                  }}
                 >
-                  {pwdSaving && <RefreshCw size={14} className="animate-spin" />}
-                  Save Password
+                  <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-1.5">
+                    {pwdSaving && <RefreshCw size={14} className="animate-spin" />}
+                    Save Password
+                  </span>
                 </button>
               </form>
             </div>
@@ -1262,10 +1449,17 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
                     <button
                       onClick={handleSetup2FA}
                       disabled={twoFaLoading}
-                      className="px-6 py-3 bg-gold hover:bg-gold-light text-navy font-bold rounded-xl transition text-xs uppercase tracking-wider cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                      className="px-6 py-3 bg-gold hover:bg-gold-light text-navy font-bold rounded-xl transition text-xs uppercase tracking-wider cursor-pointer flex items-center gap-1.5 disabled:opacity-50 justify-center"
+                      style={{
+                        minHeight: '44px',
+                        touchAction: 'manipulation',
+                        WebkitTapHighlightColor: 'transparent',
+                      }}
                     >
-                      {twoFaLoading && <RefreshCw size={14} className="animate-spin" />}
-                      Setup 2FA Authentication
+                      <span style={{ pointerEvents: 'none' }} className="flex items-center gap-1.5 justify-center">
+                        {twoFaLoading && <RefreshCw size={14} className="animate-spin" />}
+                        Setup 2FA Authentication
+                      </span>
                     </button>
                   ) : (
                     // Setup Wizard Renders QR
@@ -1301,9 +1495,16 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
                             type="submit"
                             disabled={twoFaLoading}
                             className="px-5 py-2.5 bg-green-600 hover:bg-green-500 text-white font-bold rounded-xl text-xs transition uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                            style={{
+                              minHeight: '44px',
+                              touchAction: 'manipulation',
+                              WebkitTapHighlightColor: 'transparent',
+                            }}
                           >
-                            {twoFaLoading && <RefreshCw size={14} className="animate-spin" />}
-                            Confirm & Enable
+                            <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-1.5">
+                              {twoFaLoading && <RefreshCw size={14} className="animate-spin" />}
+                              Confirm & Enable
+                            </span>
                           </button>
                         </form>
                       </div>
@@ -1326,9 +1527,16 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
 
                       <button
                         onClick={downloadBackupCodes}
-                        className="px-4 py-2 bg-navy border border-border-subtle text-[11px] text-gray-text hover:text-white rounded-lg flex items-center gap-1.5 transition font-semibold uppercase tracking-wider cursor-pointer"
+                        className="px-4 py-2 bg-navy border border-border-subtle text-[11px] text-gray-text hover:text-white rounded-lg flex items-center gap-1.5 transition font-semibold uppercase tracking-wider cursor-pointer justify-center"
+                        style={{
+                          minHeight: '44px',
+                          touchAction: 'manipulation',
+                          WebkitTapHighlightColor: 'transparent',
+                        }}
                       >
-                        <Download size={13} /> Download Codes (.txt)
+                        <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-1.5">
+                          <Download size={13} /> Download Codes (.txt)
+                        </span>
                       </button>
                     </div>
                   )}
@@ -1339,9 +1547,16 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
                   {!showDisableForm ? (
                     <button
                       onClick={() => setShowDisableForm(true)}
-                      className="px-5 py-2.5 bg-red-650 hover:bg-red-600 text-white font-bold rounded-xl text-xs transition uppercase tracking-wider cursor-pointer flex items-center gap-1.5"
+                      className="px-5 py-2.5 bg-red-650 hover:bg-red-600 text-white font-bold rounded-xl text-xs transition uppercase tracking-wider cursor-pointer flex items-center gap-1.5 justify-center"
+                      style={{
+                        minHeight: '44px',
+                        touchAction: 'manipulation',
+                        WebkitTapHighlightColor: 'transparent',
+                      }}
                     >
-                      Disable Two-Factor Auth
+                      <span style={{ pointerEvents: 'none' }}>
+                        Disable Two-Factor Auth
+                      </span>
                     </button>
                   ) : (
                     <form onSubmit={handleDisable2FA} className="bg-navy p-5 border border-red-500/20 rounded-xl space-y-4 animate-in zoom-in-95 duration-200">
@@ -1362,16 +1577,30 @@ export default function SettingsTab({ profile, fetchProfile }: SettingsTabProps)
                           type="submit"
                           disabled={twoFaLoading}
                           className="px-5 py-2.5 bg-red-650 hover:bg-red-600 text-white font-bold rounded-xl text-xs transition uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                          style={{
+                            minHeight: '44px',
+                            touchAction: 'manipulation',
+                            WebkitTapHighlightColor: 'transparent',
+                          }}
                         >
-                          {twoFaLoading && <RefreshCw size={14} className="animate-spin" />}
-                          Confirm Deactivation
+                          <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-1.5">
+                            {twoFaLoading && <RefreshCw size={14} className="animate-spin" />}
+                            Confirm Deactivation
+                          </span>
                         </button>
                         <button
                           type="button"
                           onClick={() => setShowDisableForm(false)}
-                          className="px-5 py-2.5 bg-navy border border-border-subtle text-xs text-gray-text hover:text-white rounded-xl transition uppercase tracking-wider cursor-pointer"
+                          className="px-5 py-2.5 bg-navy border border-border-subtle text-xs text-gray-text hover:text-white rounded-xl transition uppercase tracking-wider cursor-pointer flex items-center justify-center"
+                          style={{
+                            minHeight: '44px',
+                            touchAction: 'manipulation',
+                            WebkitTapHighlightColor: 'transparent',
+                          }}
                         >
-                          Cancel
+                          <span style={{ pointerEvents: 'none' }}>
+                            Cancel
+                          </span>
                         </button>
                       </div>
                     </form>

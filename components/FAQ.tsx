@@ -211,32 +211,42 @@ export default function FAQSection() {
             <a
               href="mailto:willistonboardofrealtors@gmail.com"
               style={{
-                padding: '10px 24px',
+                padding: '12px 24px',
+                minHeight: '44px',
                 background: '#C9A84C',
                 color: '#04091A',
                 fontWeight: 600,
                 fontSize: '13px',
                 textDecoration: 'none',
-                display: 'inline-block',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                touchAction: 'manipulation',
+                cursor: 'pointer',
               }}
             >
-              ✉️ Email Us
+              <span style={{ pointerEvents: 'none' }}>✉️ Email Us</span>
             </a>
             <a
               href="https://t.me/willistonboardofrealtors"
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                padding: '10px 24px',
+                padding: '12px 24px',
+                minHeight: '44px',
                 border: '1px solid rgba(201,168,76,0.3)',
                 color: '#C9A84C',
                 fontWeight: 600,
                 fontSize: '13px',
                 textDecoration: 'none',
-                display: 'inline-block',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                touchAction: 'manipulation',
+                cursor: 'pointer',
               }}
             >
-              ✈️ Telegram
+              <span style={{ pointerEvents: 'none' }}>✈️ Telegram</span>
             </a>
           </div>
         </div>

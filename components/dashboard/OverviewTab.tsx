@@ -145,6 +145,7 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
             style={{
               display: 'inline-flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: '8px',
               padding: '14px 32px',
               background: '#C9A84C',
@@ -154,15 +155,21 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
               textDecoration: 'none',
               border: 'none',
               cursor: 'pointer',
+              minHeight: '48px',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
             }}
           >
-            💳 Deposit Funds
+            <span style={{ pointerEvents: 'none' }} className="flex items-center gap-2">
+              💳 Deposit Funds
+            </span>
           </a>
           <a
             href="/withdraw"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: '8px',
               padding: '14px 32px',
               background: 'transparent',
@@ -172,9 +179,14 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
               textDecoration: 'none',
               border: '1px solid rgba(201,168,76,0.4)',
               cursor: 'pointer',
+              minHeight: '48px',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
             }}
           >
-            💸 Withdraw Funds
+            <span style={{ pointerEvents: 'none' }} className="flex items-center gap-2">
+              💸 Withdraw Funds
+            </span>
           </a>
         </div>
       </div>
@@ -283,19 +295,58 @@ export default function OverviewTab({ setActiveTab, profile, fetchProfile }: Ove
         </div>
       </div>
 
-      {/* Quick Actions */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <a href="/deposit" className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-gold rounded-xl hover:bg-gold/10 transition-colors text-sm font-medium text-gold">
-          <ArrowDownRight size={16} /> Deposit Funds
+        <a 
+          href="/deposit" 
+          className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-gold rounded-xl hover:bg-gold/10 transition-colors text-sm font-medium text-gold"
+          style={{
+            minHeight: '48px',
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-2">
+            <ArrowDownRight size={16} /> Deposit Funds
+          </span>
         </a>
-        <a href="/withdraw" className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-subtle rounded-xl hover:border-gold/30 hover:text-white transition-colors text-sm font-medium text-gray-text">
-          <ArrowUpRight size={16} /> Withdraw
+        <a 
+          href="/withdraw" 
+          className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-subtle rounded-xl hover:border-gold/30 hover:text-white transition-colors text-sm font-medium text-gray-text"
+          style={{
+            minHeight: '48px',
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-2">
+            <ArrowUpRight size={16} /> Withdraw
+          </span>
         </a>
-        <a href="/#invest" className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-subtle rounded-xl hover:border-gold/30 hover:text-white transition-colors text-sm font-medium text-gray-text">
-          <Plus size={16} /> New Investment
+        <a 
+          href="/#invest" 
+          className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-subtle rounded-xl hover:border-gold/30 hover:text-white transition-colors text-sm font-medium text-gray-text"
+          style={{
+            minHeight: '48px',
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-2">
+            <Plus size={16} /> New Investment
+          </span>
         </a>
-        <button className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-subtle rounded-xl hover:border-gold/30 hover:text-white transition-colors text-sm font-medium text-gray-text cursor-pointer" onClick={handleReferFriend}>
-          <Share2 size={16} /> Refer a Friend
+        <button 
+          className="flex items-center justify-center gap-2 p-4 bg-navy border border-border-subtle rounded-xl hover:border-gold/30 hover:text-white transition-colors text-sm font-medium text-gray-text cursor-pointer" 
+          onClick={handleReferFriend}
+          style={{
+            minHeight: '48px',
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          <span style={{ pointerEvents: 'none' }} className="flex items-center justify-center gap-2">
+            <Share2 size={16} /> Refer a Friend
+          </span>
         </button>
       </div>
 
