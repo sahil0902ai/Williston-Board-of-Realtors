@@ -3,7 +3,7 @@ import Footer from '@/components/Footer';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Risk Disclosure | Williston Board of Realtors & Investments',
+  title: 'Risk Disclosure | Williston Investments',
   description: 'Understand the risks associated with real estate investments on the Williston platform.',
 };
 
@@ -13,45 +13,47 @@ export default function RiskPage() {
       <Header />
       <main className="min-h-screen bg-navy text-white pt-32 pb-16 md:pb-24">
         <div className="max-w-4xl mx-auto px-6">
-          <h1 className="text-4xl md:text-5xl font-serif text-white mb-8 border-b border-border-subtle pb-4">
+          <h1 className="text-4xl md:text-5xl font-serif text-white mb-6 border-b border-border-subtle pb-4">
             Risk <span className="text-gold">Disclosure</span>
           </h1>
+
+          {/* Warning Banner */}
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-5 mb-8 flex items-start gap-4">
+            <span className="text-2xl mt-0.5 select-none shrink-0">⚠️</span>
+            <div className="text-sm text-amber-200 leading-relaxed font-sans">
+              <strong className="font-bold text-white block mb-1">Important Notice:</strong>
+              Williston Board of Realtors and Investments is currently completing formal CAC registration. While we maintain full operational transparency, please invest responsibly and only amounts you are comfortable with during our growth phase.
+            </div>
+          </div>
           
-          <div className="space-y-6 text-gray-text leading-relaxed">
-            <p className="text-sm">Last Updated: May 2026</p>
+          <div className="space-y-8 text-gray-text leading-relaxed font-sans">
+            <p className="text-xs text-gray-500">Last Updated: June 2026</p>
             
             <section className="space-y-3">
-              <h2 className="text-xl font-serif text-white">General Investment Warning</h2>
+              <h2 className="text-xl font-serif text-white">1. Business Registration Status</h2>
               <p>
-                All financial investments carry some degree of risk, including the loss of principal. Real estate investments are not guaranteed and are subject to market conditions, supply and demand, local economic climates, and zoning laws.
+                We are actively pursuing CAC registration. Current operations are run with full transparency and direct accountability from our founder.
               </p>
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-serif text-white">1. Liquidity Risk</h2>
+              <h2 className="text-xl font-serif text-white">2. Market Risk</h2>
               <p>
-                Real estate is an inherently illiquid asset. Capital invested in property development plans is locked for the duration of the cycle (the maturity period). Early withdrawals are not guaranteed and may be subject to substantial liquidation fees.
+                Real estate values can fluctuate based on economic conditions in Nigeria. Property market conditions, interest rates, inflation, and government policy shifts can affect property valuations and expected rental yields.
               </p>
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-serif text-white">2. Projections & Forward-Looking Estimates</h2>
+              <h2 className="text-xl font-serif text-white">3. Liquidity Risk</h2>
               <p>
-                Projections, targets, and expected ROI presented on our platform are estimations based on historical data and current property market research. Actual performance may differ, and past performance is not a guarantee of future payouts.
+                Funds invested in fixed plans cannot be withdrawn before maturity without a 10% early exit penalty. Real estate is fundamentally an illiquid asset, and capital allocation cycles must run their full course to generate optimal returns.
               </p>
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-serif text-white">3. Third-Party Risks</h2>
+              <h2 className="text-xl font-serif text-white">4. No Guarantee</h2>
               <p>
-                Development projects are subject to constructor performance, supply-chain constraints, material cost increases, and regulatory inspections. While Williston manages projects closely, delays in development cycles may occur.
-              </p>
-            </section>
-
-            <section className="space-y-3">
-              <h2 className="text-xl font-serif text-white">4. Secure Protections</h2>
-              <p>
-                To mitigate risk, Williston secures all investments with direct underlying physical assets (such as land titles or built structures) and maintains robust commercial property insurance policies.
+                Returns are targeted based on our investment strategy but are not guaranteed by any regulatory body at this time. Past performance of our property programs is not an absolute indicator of future success.
               </p>
             </section>
           </div>

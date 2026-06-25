@@ -9,7 +9,7 @@ import {
   Settings, LogOut, Search, Shield, Eye, Check, X, ShieldAlert, 
   ArrowUpRight, ArrowDownRight, Edit, Trash2, Mail, Phone, 
   Calendar, User, FileUp, CheckCircle, RefreshCw, ChevronRight, 
-  Download, Plus, AlertCircle, Lock, MapPin, Menu
+  Download, Plus, AlertCircle, Lock, MapPin, Menu, TrendingUp
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
@@ -1249,6 +1249,21 @@ export default function AdminDashboard({ adminSecret }: { adminSecret?: string }
             </span>
           </button>
 
+          <a 
+            href="/admin/analytics"
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition text-gray-text hover:text-white hover:bg-navy-light/20"
+            style={{
+              minHeight: '44px',
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+          >
+            <span className="flex items-center gap-3 w-full">
+              <TrendingUp size={18} className="text-gold" /> Client Analytics
+            </span>
+          </a>
+
           <button 
             onClick={() => { setActiveTab('deposits'); setIsSidebarOpen(false); }} 
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
@@ -2426,6 +2441,11 @@ export default function AdminDashboard({ adminSecret }: { adminSecret?: string }
                           <td className="p-4 font-semibold text-white">
                             <div>{w.investorName}</div>
                             <div className="text-[10px] text-gray-500 font-normal">{w.email}</div>
+                            {w.fraudScore === 95 && (
+                              <div className="mt-1 text-red-400 bg-red-500/10 border border-red-500/20 rounded px-1.5 py-0.5 text-[9px] inline-flex items-center gap-1 font-sans font-bold">
+                                ⚠️ Matches Recent Deposit (Possible Scam)
+                              </div>
+                            )}
                           </td>
                           <td className="p-4 font-mono font-bold text-gold">₦{w.amount.toLocaleString()}</td>
                           <td className="p-4 font-semibold text-gray-200">{w.bank}</td>
@@ -2569,6 +2589,15 @@ export default function AdminDashboard({ adminSecret }: { adminSecret?: string }
                                   </a>
                                 </div>
                               )}
+                              {d.is_flagged && (
+                                <div className="mt-2 text-red-400 bg-red-500/10 border border-red-500/20 rounded px-2 py-1 text-[10px] inline-flex items-start gap-1.5 max-w-[240px] whitespace-normal break-words font-sans">
+                                  <span className="shrink-0">⚠️</span>
+                                  <div>
+                                    <span className="font-bold">Flagged: </span>
+                                    <span className="text-red-300 font-normal">{d.flagged_reason}</span>
+                                  </div>
+                                </div>
+                              )}
                             </td>
                             <td className="p-4 font-mono font-bold text-gold">₦{d.amount.toLocaleString()}</td>
                             <td className="p-4 text-xs">{d.method === 'bank_transfer' ? 'OPay Transfer' : d.method}</td>
@@ -2650,6 +2679,13 @@ export default function AdminDashboard({ adminSecret }: { adminSecret?: string }
                             'bg-red-500/10 text-red-400'
                           }`}>{d.status}</span>
                         </div>
+
+                        {d.is_flagged && (
+                          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-xs text-red-400 space-y-1">
+                            <span className="font-bold flex items-center gap-1">⚠️ Flagged Pattern Detected</span>
+                            <p className="text-[11px] text-red-300 leading-relaxed font-normal">{d.flagged_reason}</p>
+                          </div>
+                        )}
 
                         <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-xs border-t border-b border-border-subtle/50 py-3">
                           <div>
@@ -3396,6 +3432,28 @@ export default function AdminDashboard({ adminSecret }: { adminSecret?: string }
             <p className="text-sm text-gray-300 leading-relaxed mb-6 font-sans">
               Confirm you received <strong className="text-gold">₦{confirmDepositTarget.amount.toLocaleString()}</strong> in your <strong className="text-white">{confirmDepositTarget.method === 'opay' || confirmDepositTarget.method === 'OPay Transfer' || confirmDepositTarget.method === 'OPay Bank Transfer' ? 'OPay' : 'bank'}</strong> account from <strong className="text-white">{confirmDepositTarget.investorName}</strong>?
             </p>
+
+            <div className="bg-navy border border-border-subtle/50 rounded-xl p-4 mb-6 space-y-3 font-sans text-xs">
+              <p className="font-bold text-amber-400 flex items-center gap-1.5 mb-1">
+                ⚠️ Before confirming, please verify:
+              </p>
+              <label className="flex items-start gap-2.5 cursor-pointer text-gray-300 hover:text-white select-none">
+                <input type="checkbox" className="mt-0.5 rounded border-gray-600 bg-navy-mid text-gold focus:ring-0 focus:ring-offset-0" />
+                <span>Amount in screenshot matches amount requested</span>
+              </label>
+              <label className="flex items-start gap-2.5 cursor-pointer text-gray-300 hover:text-white select-none">
+                <input type="checkbox" className="mt-0.5 rounded border-gray-600 bg-navy-mid text-gold focus:ring-0 focus:ring-offset-0" />
+                <span>Money is actually in your OPay account</span>
+              </label>
+              <label className="flex items-start gap-2.5 cursor-pointer text-gray-300 hover:text-white select-none">
+                <input type="checkbox" className="mt-0.5 rounded border-gray-600 bg-navy-mid text-gold focus:ring-0 focus:ring-offset-0" />
+                <span>Sender name looks legitimate</span>
+              </label>
+              <label className="flex items-start gap-2.5 cursor-pointer text-gray-300 hover:text-white select-none">
+                <input type="checkbox" className="mt-0.5 rounded border-gray-600 bg-navy-mid text-gold focus:ring-0 focus:ring-offset-0" />
+                <span>This is not a duplicate of a recent deposit</span>
+              </label>
+            </div>
 
             <div className="flex gap-3 justify-end">
               <button 

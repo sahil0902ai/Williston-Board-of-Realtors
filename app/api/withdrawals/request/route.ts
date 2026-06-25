@@ -59,9 +59,67 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Insufficient wallet balance' }, { status: 400 });
     }
 
-    // 3. Calculate Audit Risk Score
+    // --- WITHDRAWAL FRAUD CHECKS ---
+    
+    // 1. User must have completed at least 1 confirmed deposit before withdrawing
+    const { data: confirmedDeposits, error: depError } = await supabaseAdmin
+      .from('deposits')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('status', 'confirmed')
+      .limit(1);
+
+    if (depError || !confirmedDeposits || confirmedDeposits.length === 0) {
+      return NextResponse.json({ error: 'You must complete at least 1 confirmed deposit before you can make a withdrawal.' }, { status: 400 });
+    }
+
+    // 2. New accounts (under 24 hours old) cannot withdraw more than their deposited amount
+    const { data: userRecord } = await supabaseAdmin
+      .from('users')
+      .select('created_at')
+      .eq('id', user.id)
+      .single();
+    
+    if (userRecord) {
+      const accountAgeMs = Date.now() - new Date(userRecord.created_at).getTime();
+      const accountAgeHours = accountAgeMs / (3600 * 1000);
+      if (accountAgeHours < 24) {
+        const { data: depositsData } = await supabaseAdmin
+          .from('deposits')
+          .select('amount')
+          .eq('user_id', user.id)
+          .eq('status', 'confirmed');
+        
+        const totalDepositedAmt = depositsData?.reduce((sum, d) => sum + parseFloat(d.amount as any), 0) || 0;
+        if (amount > totalDepositedAmt) {
+          return NextResponse.json({ 
+            error: `New accounts under 24 hours old cannot withdraw more than their total deposited amount (₦${totalDepositedAmt.toLocaleString()}).` 
+          }, { status: 400 });
+        }
+      }
+    }
+
+    // 3. Flag if withdrawal amount exactly matches a recent deposit (possible scam pattern)
+    let isScamPattern = false;
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+    const { data: matchingDeposit } = await supabaseAdmin
+      .from('deposits')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('amount', amount)
+      .gte('created_at', twentyFourHoursAgo)
+      .limit(1)
+      .maybeSingle();
+
+    if (matchingDeposit) {
+      isScamPattern = true;
+    }
+
+    // Calculate Audit Risk Score
     let fraudScore = 0;
-    if (amount > 40000) {
+    if (isScamPattern) {
+      fraudScore = 95; // Flagged scam pattern
+    } else if (amount > 40000) {
       fraudScore = 85;
     } else if (amount > 10000) {
       fraudScore = 60;

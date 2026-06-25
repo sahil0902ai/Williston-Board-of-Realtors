@@ -3,8 +3,8 @@ import Footer from '@/components/Footer';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | Williston Board of Realtors & Investments',
-  description: 'Read the privacy policy for using the Williston Board of Realtors & Investments platform.',
+  title: 'Privacy Policy | Williston Investments',
+  description: 'Read the privacy policy for using the Williston Investments platform.',
 };
 
 export default function PrivacyPage() {
@@ -17,41 +17,52 @@ export default function PrivacyPage() {
             Privacy <span className="text-gold">Policy</span>
           </h1>
           
-          <div className="space-y-6 text-gray-text leading-relaxed">
-            <p className="text-sm">Last Updated: May 2026</p>
+          <div className="space-y-8 text-gray-text leading-relaxed font-sans">
+            <p className="text-xs text-gray-500">Last Updated: June 2026</p>
             
             <section className="space-y-3">
               <h2 className="text-xl font-serif text-white">1. Information We Collect</h2>
               <p>
-                We collect personal information that you provide when registering, including your name, email, phone number, physical address, and verification details (KYC documentation, BVN, NIN, or passport copies).
+                We collect personal information that you provide when registering and using our platform. This includes:
               </p>
+              <ul className="list-disc list-inside pl-4 space-y-1.5 text-gray-300">
+                <li>Full name, email address, and phone number</li>
+                <li>BVN (Bank Verification Number) or NIN (National Identification Number) for legal verification</li>
+                <li>Bank account details for withdrawals</li>
+                <li>Transaction history and proof of payments</li>
+              </ul>
             </section>
 
             <section className="space-y-3">
               <h2 className="text-xl font-serif text-white">2. How We Use Your Data</h2>
               <p>
-                Your information is used to verify your identity, process transactions, secure property deeds under your name, distribute payouts, and provide customer support. We do not sell your personal data to third parties.
+                This information is used solely for:
+              </p>
+              <ul className="list-disc list-inside pl-4 space-y-1.5 text-gray-300">
+                <li>Account verification and security validation (KYC)</li>
+                <li>Processing deposit credits and payout withdrawals</li>
+                <li>Communicating important updates about your investment accounts</li>
+              </ul>
+            </section>
+
+            <section className="space-y-3">
+              <h2 className="text-xl font-serif text-white">3. Information Sharing</h2>
+              <p>
+                We do not sell or share your personal information with third parties except as required for payment processing (Monnify, local bank APIs) or legal compliance.
               </p>
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-serif text-white">3. Data Protection & Security</h2>
+              <h2 className="text-xl font-serif text-white">4. Data Storage & Security</h2>
               <p>
-                We implement industry-standard security measures, including SSL encryption, restricted administrative access, and secure database hosting, to prevent unauthorized access, alteration, or disclosure of your information. We strictly comply with the Nigeria Data Protection Regulation (NDPR).
+                Your data is stored securely using industry-standard encryption via our database provider Supabase. We implement technical and administrative guardrails to prevent unauthorized access, alteration, or exposure of your details.
               </p>
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-serif text-white">4. Cookies & Tracking</h2>
+              <h2 className="text-xl font-serif text-white">5. Cookies & Tracking</h2>
               <p>
-                We use cookies to analyze web traffic, remember user login states, and optimize platform navigation. You can manage your cookie preferences through our consent banner.
-              </p>
-            </section>
-
-            <section className="space-y-3">
-              <h2 className="text-xl font-serif text-white">5. Access and Rights</h2>
-              <p>
-                Under the NDPR, you have the right to request access to the personal data we hold about you and request corrections or deletion. For any inquiry, please email our support desk at willistonboardofrealtors@gmail.com.
+                We use cookies to analyze web traffic, remember user login states, and optimize platform navigation. You can manage your cookie preferences through your browser settings.
               </p>
             </section>
           </div>

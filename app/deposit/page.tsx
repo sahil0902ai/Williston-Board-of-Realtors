@@ -228,7 +228,7 @@ export default function DepositPage() {
             Deposit Submitted!
           </h2>
           <p style={{ color: '#8A9BB5', fontSize: '14px', lineHeight: 1.8, marginBottom: '24px' }}>
-            Your deposit of <strong style={{ color: '#fff' }}>₦{parseFloat(amount).toLocaleString()}</strong> via{' '}
+            Your deposit of <strong style={{ color: '#fff' }}>₦{parseFloat(amount).toLocaleString('en-US')}</strong> via{' '}
             <strong style={{ color: '#fff' }}>{selectedMethod?.label}</strong> is under review.
             You will be notified once confirmed — usually within 15-60 minutes.
           </p>
@@ -449,7 +449,7 @@ export default function DepositPage() {
                     }}
                   >
                     <span style={{ pointerEvents: 'none' }}>
-                      ₦{q.toLocaleString()}
+                      ₦{q.toLocaleString('en-US')}
                     </span>
                   </button>
                 ))}
@@ -513,7 +513,7 @@ export default function DepositPage() {
             </h3>
             <p style={{ color: '#8A9BB5', fontSize: '13px', marginBottom: '20px' }}>
               Depositing: <strong style={{ color: '#C9A84C' }}>
-                ₦{parseFloat(amount).toLocaleString()}
+                ₦{parseFloat(amount).toLocaleString('en-US')}
               </strong>
             </p>
 
@@ -733,7 +733,7 @@ export default function DepositPage() {
                 </h3>
                 <p style={{ color: '#8A9BB5', fontSize: '13px', marginBottom: '20px' }}>
                   Send <strong style={{ color: '#C9A84C' }}>
-                    ₦{parseFloat(amount).toLocaleString()}
+                    ₦{parseFloat(amount).toLocaleString('en-US')}
                   </strong> via {selectedMethod.label}
                 </p>
 

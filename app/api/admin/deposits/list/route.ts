@@ -36,6 +36,8 @@ export async function GET(request: Request) {
       status: d.status,
       receipt: d.proof_url || null,
       notes: d.notes || '',
+      is_flagged: d.is_flagged || false,
+      flagged_reason: d.flagged_reason || null,
       created_at: d.created_at
     })) || [];
 

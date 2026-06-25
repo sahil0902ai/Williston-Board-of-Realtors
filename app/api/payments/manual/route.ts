@@ -4,6 +4,7 @@ import { getAuthenticatedUser } from '@/lib/auth-helper';
 import { sendDepositSubmittedEmail } from '@/lib/emails';
 import { promises as fs } from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,6 +36,7 @@ export async function POST(request: Request) {
     }
 
     let proofUrl = null;
+    let fileHash = null;
 
     if (proof) {
       const timestamp = Date.now();
@@ -43,6 +45,27 @@ export async function POST(request: Request) {
 
       const arrayBuffer = await proof.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
+
+      // Generate file hash
+      fileHash = crypto
+        .createHash('md5')
+        .update(buffer)
+        .digest('hex');
+
+      // Check if this exact file was used before
+      const { data: existing } = await supabaseAdmin
+        .from('deposits')
+        .select('id')
+        .eq('proof_hash', fileHash)
+        .limit(1)
+        .maybeSingle();
+
+      if (existing) {
+        return NextResponse.json(
+          { error: 'This payment proof has already been submitted. If you believe this is an error, contact support.' },
+          { status: 400 }
+        );
+      }
 
       // Try Supabase Storage first in 'deposit-proofs' bucket
       try {
@@ -87,12 +110,60 @@ export async function POST(request: Request) {
     // Fetch user details for email template
     const { data: profile } = await supabaseAdmin
       .from('users')
-      .select('full_name, email')
+      .select('full_name, email, created_at')
       .eq('id', user.id)
       .single();
 
     const fullName = profile?.full_name || 'Investor';
     const email = profile?.email || '';
+
+    // --- FLAG SUSPICIOUS PATTERNS ---
+    let isFlagged = false;
+    let flaggedReasons = [];
+
+    // 1. Same user submits 3+ deposits in 1 hour
+    const oneHourAgo = new Date(Date.now() - 3600 * 1000).toISOString();
+    const { data: recentDeposits } = await supabaseAdmin
+      .from('deposits')
+      .select('id')
+      .eq('user_id', user.id)
+      .gte('created_at', oneHourAgo);
+
+    if (recentDeposits && recentDeposits.length >= 2) {
+      isFlagged = true;
+      flaggedReasons.push('User submitted 3+ deposits in 1 hour');
+    }
+
+    // 2. Amount doesn't match common amounts (₦50,000 increments)
+    if (amount % 50000 !== 0) {
+      isFlagged = true;
+      flaggedReasons.push(`Suspicious amount: ₦${amount.toLocaleString()} is not a ₦50,000 increment`);
+    }
+
+    // 3. New account (<1 hour) tries large deposit (>₦500,000)
+    if (profile?.created_at) {
+      const accountAgeMs = Date.now() - new Date(profile.created_at).getTime();
+      const accountAgeHours = accountAgeMs / (3600 * 1000);
+      if (accountAgeHours < 1 && amount > 500000) {
+        isFlagged = true;
+        flaggedReasons.push('New account (under 1 hour old) attempted deposit over ₦500,000');
+      }
+    }
+
+    // 4. Multiple deposits with same reference number
+    if (reference) {
+      const { data: duplicateRef } = await supabaseAdmin
+        .from('deposits')
+        .select('id')
+        .eq('bank_reference', reference as string)
+        .limit(1)
+        .maybeSingle();
+
+      if (duplicateRef) {
+        isFlagged = true;
+        flaggedReasons.push(`Duplicate bank reference number used: ${reference}`);
+      }
+    }
 
     // Create Deposit Record
     const { data: deposit, error: dbError } = await supabaseAdmin
@@ -104,6 +175,9 @@ export async function POST(request: Request) {
         bank_reference: (reference as string) || null,
         proof_url: proofUrl,
         status: 'pending',
+        proof_hash: fileHash,
+        is_flagged: isFlagged,
+        flagged_reason: isFlagged ? flaggedReasons.join(' | ') : null
       })
       .select('*')
       .single();
