@@ -65,7 +65,7 @@ export default function Footer() {
             <ul className="space-y-4 text-sm text-gray-text">
               <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
               <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="hover:text-white transition-colors">Investment Agreement</Link></li>
+              <li><Link href="/about-founder" className="hover:text-white transition-colors text-gold font-semibold">Meet the Founder</Link></li>
               <li><Link href="/risk" className="hover:text-white transition-colors">Risk Disclosure</Link></li>
               <li><Link href="/aml" className="hover:text-white transition-colors">AML / KYC Policy</Link></li>
               <li><Link href="/terms#investor-protection" className="hover:text-white transition-colors text-gold">Investor Protection</Link></li>
@@ -75,7 +75,7 @@ export default function Footer() {
 
         <div className="pt-8 border-t border-border-subtle flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-xs text-gray-text text-center md:text-left order-2 md:order-1">
-            &copy; {currentYear} Williston Board of Realtors and Investments. Ltd Registered. CAC Registered. SEC Nigeria Compliant.<br className="hidden lg:block"/>
+            &copy; {currentYear} Williston Board of Realtors and Investments. Currently completing formal business registration with the Corporate Affairs Commission (CAC) of Nigeria.<br className="hidden lg:block"/>
             Investment involves risk. Returns are targeted but not guaranteed. Past performance is not indicative of future results.
           </div>
           
